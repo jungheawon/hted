@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTRO EDU — 선생님의 시간을 돌려드립니다</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAFB;
+    --bg-alt:#F1F2F6;
+    --surface:#FFFFFF;
+    --text:#0B0C10;
+    --text-secondary:#5B5F6B;
+    --text-tertiary:#9498A3;
+    --accent:#3654F4;
+    --accent-dark:#1E2FB0;
+    --accent-soft:#EAEDFE;
+    --border:#E4E6ED;
+    --border-strong:#D3D6E0;
+    --font-display:'Pretendard Variable','Pretendard',-apple-system,sans-serif;
+    --font-body:'Pretendard Variable','Pretendard',-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+    --radius-s:8px;
+    --radius-m:14px;
+    --radius-l:22px;
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001s !important; transition-duration:0.001s !important;}
+  }
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  img,svg{display:block;max-width:100%;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+  @media (max-width:720px){.wrap{padding:0 20px;}}
+
+  ::selection{background:var(--accent);color:#fff;}
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--accent);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-weight:600;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:6px;height:6px;border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+    flex-shrink:0;
+  }
+
+  /* ============ NAV ============ */
+  header.nav{
+    position:fixed;top:0;left:0;right:0;z-index:1000;
+    background:rgba(250,250,251,0.7);
+    backdrop-filter:blur(14px) saturate(160%);
+    -webkit-backdrop-filter:blur(14px) saturate(160%);
+    border-bottom:1px solid transparent;
+    transition:border-color .35s var(--ease), background .35s var(--ease);
+  }
+  header.nav.scrolled{
+    border-bottom-color:var(--border);
+    background:rgba(250,250,251,0.92);
+  }
+  .nav-inner{
+    max-width:1180px;margin:0 auto;padding:0 32px;
+    height:72px;display:flex;align-items:center;justify-content:space-between;
+  }
+  @media (max-width:720px){.nav-inner{padding:0 20px;height:64px;}}
+  .logo{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:19px;
+    letter-spacing:-0.01em;
+    display:flex;align-items:center;gap:8px;
+  }
+  .logo .dot{width:8px;height:8px;background:var(--accent);border-radius:2px;display:inline-block;}
+  .nav-links{display:flex;align-items:center;gap:clamp(18px,2.2vw,32px);}
+  .nav-links a, .nav-dropdown > button, .logo{white-space:nowrap;}
+  .nav-links a{
+    font-size:14.5px;font-weight:500;color:var(--text-secondary);
+    transition:color .2s;
+    position:relative;
+  }
+  .nav-links a:hover{color:var(--text);}
+  .nav-right{display:flex;align-items:center;gap:14px;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-weight:600;font-size:14.5px;
+    padding:11px 22px;
+    border-radius:999px;
+    transition:transform .25s var(--ease), box-shadow .25s var(--ease), background .25s, color .25s;
+    white-space:nowrap;
+  }
+  .btn-primary{background:var(--text);color:#fff;}
+  .btn-primary:hover{background:var(--accent);transform:translateY(-2px);box-shadow:0 10px 24px -8px rgba(54,84,244,.55);}
+  .btn-ghost{color:var(--text);font-weight:500;padding:11px 8px;}
+  .btn-ghost:hover{color:var(--accent);}
+  .btn-outline{
+    border:1.5px solid var(--border-strong);color:var(--text);background:var(--surface);
+  }
+  .btn-outline:hover{border-color:var(--text);transform:translateY(-2px);}
+  .nav-cta-only{display:none;}
+  @media (max-width:1160px){
+    .nav-links{display:none;}
+    .nav-login{display:none;}
+  }
+  /* Nav dropdown (다운로드) */
+  .nav-dropdown{position:relative;}
+  .nav-dropdown > button{
+    display:flex;align-items:center;gap:6px;
+    font-size:14.5px;font-weight:500;color:var(--text-secondary);
+    transition:color .2s;
+  }
+  .nav-dropdown > button:hover{color:var(--text);}
+  .nav-dropdown.open > button{color:var(--text);}
+  .nav-dropdown .chevron{width:13px;height:13px;transition:transform .3s var(--ease);flex-shrink:0;}
+  .nav-dropdown.open .chevron{transform:rotate(180deg);}
+  .dropdown-panel{
+    position:absolute;top:calc(100% + 16px);left:50%;
+    transform:translateX(-50%) translateY(-6px);
+    width:248px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-m);
+    box-shadow:0 24px 48px -20px rgba(20,25,55,.28);
+    padding:8px;
+    opacity:0;max-height:0;overflow:hidden;
+    transition:opacity .32s var(--ease), transform .32s var(--ease), max-height .38s var(--ease);
+    pointer-events:none;
+  }
+  .nav-dropdown.open .dropdown-panel{
+    opacity:1;max-height:520px;transform:translateX(-50%) translateY(0);pointer-events:auto;
+  }
+  .dropdown-panel a{
+    display:flex;flex-direction:column;gap:2px;
+    padding:11px 12px;border-radius:9px;
+    transition:background .2s;
+  }
+  .dropdown-panel a:hover{background:var(--bg-alt);}
+  .dropdown-panel a b{font-size:13.5px;font-weight:700;letter-spacing:-0.01em;}
+  .dropdown-panel a small{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);}
+
+  /* Mobile accordion (다운로드) */
+  .mm-accordion button{
+    width:100%;display:flex;align-items:center;justify-content:space-between;
+    padding:16px 4px;font-size:19px;font-weight:600;border-bottom:1px solid var(--border);
+  }
+  .mm-accordion .chevron{width:16px;height:16px;transition:transform .3s var(--ease);}
+  .mm-accordion.open .chevron{transform:rotate(180deg);}
+  .mm-sub{max-height:0;overflow:hidden;transition:max-height .35s var(--ease);}
+  .mm-accordion.open .mm-sub{max-height:560px;}
+  .mm-sub a{
+    padding:14px 4px 14px 14px !important;font-size:16px !important;font-weight:500 !important;
+    color:var(--text-secondary);border-bottom:1px solid var(--border);
+  }
+
+  /* Blank page view (nav destinations under construction) */
+  .page-view{
+    display:none;
+    min-height:100svh;
+    align-items:center;justify-content:center;text-align:center;
+    padding:140px 32px 100px;
+  }
+  .page-view.active{display:flex;}
+  .page-view-inner{max-width:520px;margin:0 auto;}
+  .page-view-inner h1{
+    font-family:var(--font-display);font-weight:800;
+    font-size:clamp(28px,4vw,42px);letter-spacing:-0.02em;margin-bottom:14px;
+  }
+  .page-view-inner p{color:var(--text-secondary);font-size:15.5px;line-height:1.7;margin-bottom:32px;}
+  .page-view-inner .btn-outline{padding:13px 26px;}
+
+  /* Resource list pages (수업 자료실 / 프로그램 자료실) */
+  .res-view{display:none;min-height:100svh;padding:140px 32px 100px;}
+  .res-view.active{display:block;}
+  .res-inner{max-width:920px;margin:0 auto;}
+  .res-inner h1{
+    font-family:var(--font-display);font-weight:800;
+    font-size:clamp(28px,4vw,42px);letter-spacing:-0.02em;margin-bottom:12px;
+  }
+  .res-desc{color:var(--text-secondary);font-size:15.5px;line-height:1.7;margin-bottom:36px;max-width:560px;}
+  .res-count{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);letter-spacing:.04em;margin-bottom:12px;}
+  .res-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-m);overflow:hidden;}
+  .res-item{
+    display:grid;grid-template-columns:56px 1fr auto;gap:18px;align-items:center;
+    padding:20px 22px;border-bottom:1px solid var(--border);transition:background .2s;
+  }
+  .res-item:last-child{border-bottom:none;}
+  .res-item:hover{background:var(--bg);}
+  .res-badge{
+    width:56px;height:40px;border-radius:9px;background:var(--accent-soft);color:var(--accent-dark);
+    font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.03em;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .res-body h3{font-size:15.5px;font-weight:700;letter-spacing:-0.01em;margin-bottom:4px;}
+  .res-body p{font-size:13.5px;color:var(--text-secondary);line-height:1.55;}
+  .res-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);}
+  .res-meta .cat{color:var(--accent-dark);background:var(--accent-soft);padding:2px 8px;border-radius:999px;font-weight:600;}
+  .res-action{padding:10px 18px;font-size:13.5px;}
+  .res-action[aria-disabled="true"]{opacity:.45;pointer-events:none;}
+  .res-empty{padding:56px 24px;text-align:center;color:var(--text-tertiary);font-size:14.5px;}
+  @media (max-width:640px){
+    .res-view{padding:112px 20px 72px;}
+    .res-item{grid-template-columns:44px 1fr;gap:14px;padding:18px 16px;}
+    .res-badge{width:44px;height:36px;}
+    .res-action{grid-column:1 / -1;width:100%;}
+  }
+
+  /* Google login state */
+  [hidden]{display:none !important;}
+  .nav-user{display:flex;align-items:center;gap:10px;}
+  .nav-avatar{
+    width:32px;height:32px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;overflow:hidden;flex-shrink:0;
+  }
+  .nav-avatar img{width:100%;height:100%;object-fit:cover;}
+  .nav-user-name{font-size:14px;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .nav-logout{
+    font-size:13px;font-weight:600;color:var(--text-secondary);padding:7px 14px;border-radius:999px;
+    border:1.5px solid var(--border-strong);transition:.2s;
+  }
+  .nav-logout:hover{color:var(--text);border-color:var(--text);}
+  @media (max-width:900px){.nav-user-name{display:none;}}
+  .mm-user{display:flex;align-items:center;justify-content:space-between;padding:16px 4px;font-size:17px;font-weight:600;border-bottom:1px solid var(--border);}
+  .mm-user button{font-size:14px;font-weight:600;color:var(--text-secondary);padding:8px 16px;border-radius:999px;border:1.5px solid var(--border-strong);}
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);z-index:2000;
+    background:var(--text);color:#fff;font-size:14px;line-height:1.55;padding:14px 20px;border-radius:12px;
+    max-width:min(520px,calc(100vw - 40px));text-align:center;
+    opacity:0;pointer-events:none;transition:opacity .3s var(--ease), transform .3s var(--ease);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  .burger{display:none;flex-direction:column;gap:5px;width:22px;}
+  .burger span{height:2px;background:var(--text);border-radius:2px;transition:transform .3s,opacity .3s;}
+  @media (max-width:1160px){.burger{display:flex;}}
+  .mobile-menu{
+    position:fixed;inset:0;top:64px;background:var(--bg);z-index:999;
+    display:flex;flex-direction:column;padding:28px 24px;gap:4px;
+    transform:translateY(-12px);opacity:0;pointer-events:none;
+    transition:transform .3s var(--ease), opacity .3s var(--ease);
+  }
+  .mobile-menu.open{transform:translateY(0);opacity:1;pointer-events:auto;}
+  .mobile-menu a{padding:16px 4px;font-size:19px;font-weight:600;border-bottom:1px solid var(--border);}
+  .mobile-menu .btn{margin-top:20px;width:100%;padding:16px;}
+
+  /* ============ HERO ============ */
+  .hero{
+    padding:168px 0 100px;
+    position:relative;
+  }
+  .hero-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;
+  }
+  @media (max-width:960px){
+    .hero{padding:130px 0 60px;}
+    .hero-grid{grid-template-columns:1fr;gap:56px;}
+  }
+  .hero h1{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(28px,3.5vw,46px);
+    line-height:1.25;
+    word-break:keep-all;
+    letter-spacing:-0.025em;
+    margin-bottom:22px;
+  }
+  .hero h1 .accent-text{color:var(--accent);}
+  .hero-sub{
+    font-size:17px;color:var(--text-secondary);
+    line-height:1.7;
+    max-width:460px;
+    margin-bottom:36px;
+  }
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px;}
+  .hero-actions .btn-primary{padding:15px 28px;font-size:15.5px;}
+  .hero-actions .btn-outline{padding:15px 26px;font-size:15.5px;}
+  .hero-meta{
+    display:flex;gap:28px;font-family:var(--font-mono);font-size:12.5px;color:var(--text-tertiary);
+    flex-wrap:wrap;
+  }
+  .hero-meta b{color:var(--text);font-weight:600;}
+
+  /* Dashboard mockup */
+  .dash{
+    position:relative;
+    background:linear-gradient(180deg,#FFFFFF, #F7F8FB);
+    border:1px solid var(--border);
+    border-radius:var(--radius-l);
+    padding:20px;
+    box-shadow:0 30px 70px -30px rgba(20,25,55,.25), 0 4px 12px -4px rgba(20,25,55,.06);
+    animation:floatY 7s ease-in-out infinite;
+  }
+  @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .dash-topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:2px 4px 16px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:16px;
+  }
+  .dash-topbar .dots{display:flex;gap:6px;}
+  .dash-topbar .dots span{width:9px;height:9px;border-radius:50%;background:var(--border-strong);}
+  .dash-label{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);letter-spacing:.04em;}
+  .dash-status{
+    font-family:var(--font-mono);font-size:11px;color:var(--accent);
+    display:flex;align-items:center;gap:6px;font-weight:600;
+  }
+  .dash-status i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1.8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .dash-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-m);
+    padding:16px 14px;
+    transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s;
+  }
+  .dash-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -12px rgba(20,25,55,.18);border-color:var(--border-strong);}
+  .dash-card.wide{grid-column:span 2;}
+  a.dash-card, a.feat-card{display:block;color:inherit;}
+  .dash-card .ico{
+    width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;margin-bottom:12px;
+  }
+  .dash-card .ico svg{width:16px;height:16px;}
+  .dash-card h4{font-size:13.5px;font-weight:700;margin-bottom:4px;}
+  .dash-card p{font-size:11.5px;color:var(--text-tertiary);font-family:var(--font-mono);}
+  .dash-bars{display:flex;align-items:flex-end;gap:5px;height:34px;margin-top:10px;}
+  .dash-bars i{flex:1;background:var(--accent);opacity:.75;border-radius:3px 3px 0 0;}
+
+  /* ============ SECTION SHARED ============ */
+  section{padding:110px 0;}
+  @media (max-width:720px){section{padding:76px 0;}}
+  .section-head{max-width:640px;margin-bottom:56px;}
+  .section-head h2{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(26px,3.4vw,40px);
+    letter-spacing:-0.02em;
+    line-height:1.28;
+  }
+  .section-head p{color:var(--text-secondary);font-size:16px;margin-top:14px;max-width:520px;}
+  .alt-bg{background:var(--bg-alt);}
+
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease), transform .7s var(--ease);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* ============ FEATURES ============ */
+  .feat-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+  }
+  @media (max-width:900px){.feat-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:600px){.feat-grid{grid-template-columns:1fr;}}
+  .feat-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-m);
+    padding:28px 24px;
+    transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s;
+    position:relative;
+    overflow:hidden;
+  }
+  .feat-card:hover{transform:translateY(-5px);box-shadow:0 18px 36px -18px rgba(20,25,55,.2);border-color:var(--border-strong);}
+  .feat-card .ico{
+    width:42px;height:42px;border-radius:11px;
+    background:var(--accent-soft);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;margin-bottom:20px;
+  }
+  .feat-card .ico svg{width:21px;height:21px;}
+  .feat-card h3{font-size:17.5px;font-weight:700;margin-bottom:9px;letter-spacing:-0.01em;}
+  .feat-card p{font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;}
+  .status-tag{
+    font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.04em;
+    display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+  }
+  .status-tag.avail{background:var(--accent-soft);color:var(--accent-dark);}
+  .status-tag.avail i{width:5px;height:5px;border-radius:50%;background:var(--accent);}
+  .status-tag.soon{background:#F0F0F3;color:var(--text-tertiary);}
+  .status-tag.soon i{width:5px;height:5px;border-radius:50%;background:var(--text-tertiary);}
+
+  /* ============ TEACHER AI / STUDENT AI (chat mock) ============ */
+  .split{
+    display:grid;grid-template-columns:0.9fr 1.1fr;gap:64px;align-items:center;
+  }
+  .split.reverse{grid-template-columns:1.1fr 0.9fr;}
+  @media (max-width:900px){
+    .split, .split.reverse{grid-template-columns:1fr;gap:40px;}
+    .split.reverse .chat-panel{order:-1;}
+  }
+  .split h2{font-family:var(--font-display);font-weight:800;font-size:clamp(26px,3.2vw,36px);letter-spacing:-0.02em;line-height:1.25;margin-bottom:16px;}
+  .split .lead{font-size:16px;color:var(--text-secondary);margin-bottom:28px;line-height:1.7;}
+  .tag-line{
+    font-family:var(--font-mono);font-size:13px;color:var(--accent-dark);
+    background:var(--accent-soft);display:inline-block;padding:9px 14px;border-radius:var(--radius-s);
+    margin-top:8px;font-weight:600;
+  }
+  .mini-list{list-style:none;display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;}
+  .mini-list li{
+    font-size:13px;font-weight:600;color:var(--text-secondary);
+    background:var(--surface);border:1px solid var(--border);
+    padding:8px 14px;border-radius:999px;
+  }
+
+  .chat-panel{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-l);
+    box-shadow:0 24px 60px -30px rgba(20,25,55,.22);
+    padding:22px;
+  }
+  .chat-panel .head{display:flex;align-items:center;gap:10px;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--border);}
+  .chat-panel .head .avatar{width:28px;height:28px;border-radius:8px;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-family:var(--font-mono);font-weight:700;}
+  .chat-panel .head span{font-size:13px;font-weight:600;color:var(--text-secondary);font-family:var(--font-mono);}
+  .bubble-row{display:flex;margin-bottom:14px;}
+  .bubble-row.right{justify-content:flex-end;}
+  .bubble{
+    max-width:82%;padding:13px 16px;border-radius:16px;font-size:14.5px;line-height:1.55;
+  }
+  .bubble-row.right .bubble{background:var(--text);color:#fff;border-bottom-right-radius:5px;}
+  .bubble-row.left .bubble{background:var(--bg-alt);color:var(--text);border-bottom-left-radius:5px;}
+  .ai-steps{display:flex;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;}
+  .ai-steps .step{
+    display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary);
+    background:var(--surface);border:1px solid var(--border);padding:10px 12px;border-radius:10px;
+  }
+  .ai-steps .step .n{
+    font-family:var(--font-mono);font-size:11px;color:var(--accent);font-weight:700;
+    width:20px;height:20px;border-radius:6px;background:var(--accent-soft);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .typing-dots{display:inline-flex;gap:3px;align-items:center;}
+  .typing-dots i{width:5px;height:5px;background:var(--text-tertiary);border-radius:50%;animation:tdot 1.2s infinite;}
+  .typing-dots i:nth-child(2){animation-delay:.2s;}
+  .typing-dots i:nth-child(3){animation-delay:.4s;}
+  @keyframes tdot{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
+
+  /* ============ CLASSROOM TOOLS (seat map) ============ */
+  .seat-panel{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-l);
+    padding:24px;box-shadow:0 24px 60px -30px rgba(20,25,55,.22);
+  }
+  .seat-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .seat-toolbar button{
+    font-family:var(--font-mono);font-size:11.5px;font-weight:600;
+    padding:8px 13px;border-radius:8px;border:1px solid var(--border);color:var(--text-secondary);
+    transition:.2s;
+  }
+  .seat-toolbar button.active{background:var(--text);color:#fff;border-color:var(--text);}
+  .seat-toolbar button:hover:not(.active){border-color:var(--border-strong);color:var(--text);}
+  .seat-board{
+    display:grid;grid-template-columns:repeat(6,1fr);gap:8px;
+    background:var(--bg-alt);padding:16px;border-radius:var(--radius-m);
+  }
+  .seat{
+    aspect-ratio:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);font-weight:600;
+    transition:transform .35s var(--ease), background .35s, color .35s, border-color .35s;
+  }
+  .seat.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .seat-front{
+    text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);
+    letter-spacing:.08em;padding:10px 0 14px;
+  }
+
+  /* ============ PROBLEMS ============ */
+  .prob-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius-m);overflow:hidden;}
+  @media (max-width:820px){.prob-grid{grid-template-columns:1fr;}}
+  .prob-card{background:var(--surface);padding:36px 30px;}
+  .prob-card .k{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:16px;letter-spacing:.05em;}
+  .prob-card h3{font-size:19px;font-weight:700;margin-bottom:12px;letter-spacing:-0.01em;}
+  .prob-card p{font-size:14.5px;color:var(--text-secondary);line-height:1.65;}
+  .prob-resolve{
+    text-align:center;margin-top:48px;
+    font-family:var(--font-display);font-weight:800;font-size:clamp(20px,2.6vw,28px);
+    letter-spacing:-0.02em;
+  }
+  .prob-resolve .accent-text{color:var(--accent);}
+
+  /* ============ FUTURE ============ */
+  .future-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media (max-width:900px){.future-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:520px){.future-grid{grid-template-columns:1fr;}}
+  .future-card{
+    border:1.5px dashed var(--border-strong);border-radius:var(--radius-m);
+    padding:22px 20px;background:transparent;
+    transition:border-color .3s, transform .3s var(--ease);
+  }
+  a.future-card{display:block;color:inherit;}
+  .future-card:hover{border-color:var(--accent);transform:translateY(-3px);}
+  .future-card h4{font-size:14.5px;font-weight:700;margin-bottom:8px;}
+  .future-card .status-tag{margin-top:2px;}
+
+  /* ============ CTA ============ */
+  .cta-section{
+    background:var(--text);color:#fff;border-radius:28px;
+    padding:80px 48px;text-align:center;
+    margin:0 32px;
+    position:relative;overflow:hidden;
+  }
+  @media (max-width:720px){.cta-section{padding:56px 26px;margin:0 20px;border-radius:20px;}}
+  .cta-section h2{
+    font-family:var(--font-display);font-weight:800;
+    font-size:clamp(28px,4vw,44px);letter-spacing:-0.02em;margin-bottom:16px;
+  }
+  .cta-section p{color:rgba(255,255,255,.65);font-size:16px;margin-bottom:34px;}
+  .cta-section .btn-primary{background:var(--accent);padding:16px 32px;font-size:15.5px;}
+  .cta-section .btn-primary:hover{background:#fff;color:var(--text);box-shadow:0 14px 30px -10px rgba(54,84,244,.4);}
+  .cta-section::before{
+    content:"";position:absolute;width:600px;height:600px;border-radius:50%;
+    background:radial-gradient(circle,rgba(54,84,244,.35),transparent 70%);
+    top:-300px;right:-200px;pointer-events:none;
+  }
+
+  /* ============ FOOTER ============ */
+  footer{padding:70px 0 40px;}
+  .footer-top{
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:36px;
+    padding-bottom:36px;border-bottom:1px solid var(--border);margin-bottom:28px;
+  }
+  .footer-brand .logo{margin-bottom:10px;}
+  .footer-brand p{font-family:var(--font-mono);font-size:12.5px;color:var(--text-tertiary);}
+  .footer-links{display:flex;gap:48px;flex-wrap:wrap;}
+  .footer-col h5{font-size:12.5px;font-family:var(--font-mono);color:var(--text-tertiary);margin-bottom:14px;letter-spacing:.05em;}
+  .footer-col a{display:block;font-size:14px;color:var(--text-secondary);margin-bottom:10px;transition:color .2s;}
+  .footer-col a:hover{color:var(--text);}
+  .footer-home{transition:color .2s;}
+  .footer-home:hover{color:var(--text);}
+  .footer-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--text-tertiary);font-family:var(--font-mono);}
+</style>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#top" class="logo" data-route="home"><span class="dot"></span>HTRO EDU</a>
+    <nav class="nav-links">
+      <a href="#/features" data-route="features">기능</a>
+
+      <div class="nav-dropdown">
+        <button aria-haspopup="true" aria-expanded="false">
+          Class AI
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-panel">
+          <a href="#/class-seating" data-route="class-seating"><b>자리배치</b><small>AVAILABLE</small></a>
+          <a href="#/class-group" data-route="class-group"><b>모둠 편성</b><small>CLASSROOM TOOL</small></a>
+          <a href="#/class-presentation" data-route="class-presentation"><b>발표 순서</b><small>CLASSROOM TOOL</small></a>
+          <a href="#/class-lottery" data-route="class-lottery"><b>번호 추첨</b><small>CLASSROOM TOOL</small></a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button aria-haspopup="true" aria-expanded="false">
+          Teacher AI
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-panel">
+          <a href="#/teacher-quiz" data-route="teacher-quiz"><b>AI Quiz 프로그램</b><small>AVAILABLE</small></a>
+          <a href="#/teacher-material" data-route="teacher-material"><b>수업자료</b><small>COMING SOON</small></a>
+          <a href="#/teacher-assessment" data-route="teacher-assessment"><b>수행평가</b><small>COMING SOON</small></a>
+          <a href="#/teacher-record" data-route="teacher-record"><b>생기부 AI</b><small>COMING SOON</small></a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button aria-haspopup="true" aria-expanded="false">
+          AI Tutor
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-panel">
+          <a href="#/tutor-korean" data-route="tutor-korean"><b>국어</b><small>COMING SOON</small></a>
+          <a href="#/tutor-english" data-route="tutor-english"><b>영어</b><small>COMING SOON</small></a>
+          <a href="#/tutor-math" data-route="tutor-math"><b>수학</b><small>COMING SOON</small></a>
+          <a href="#/tutor-social" data-route="tutor-social"><b>사탐</b><small>COMING SOON</small></a>
+          <a href="#/tutor-science" data-route="tutor-science"><b>과탐</b><small>COMING SOON</small></a>
+          <a href="#/tutor-info" data-route="tutor-info"><b>정보</b><small>COMING SOON</small></a>
+          <a href="#/tutor-plan" data-route="tutor-plan"><b>AI 학습 플랜</b><small>COMING SOON</small></a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button aria-haspopup="true" aria-expanded="false">
+          다운로드
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-panel">
+          <a href="#/download-classroom" data-route="download-classroom"><b>수업 자료실</b><small>RESOURCES</small></a>
+          <a href="#/download-program" data-route="download-program"><b>프로그램 자료실</b><small>RESOURCES</small></a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button aria-haspopup="true" aria-expanded="false">
+          고객센터
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-panel">
+          <a href="#/support-inquiry" data-route="support-inquiry"><b>문의 게시판</b><small>SUPPORT</small></a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button aria-haspopup="true" aria-expanded="false">
+          대입정보
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-panel">
+          <a href="https://www.adiga.kr" target="_blank" rel="noopener"><b>어디가</b><small>대입정보</small></a>
+          <a href="https://ipsinaban.kr/" target="_blank" rel="noopener"><b>입시나침반</b><small>수시 내신 진단</small></a>
+          <a href="https://www.nesin.com/" target="_blank" rel="noopener"><b>내신닷컴</b><small>대입정보</small></a>
+          <a href="https://www.ebsi.co.kr/ebs/ent/enta/retrieveEntInfo2019Mn.ebs" target="_blank" rel="noopener"><b>EBSi</b><small>입시정보</small></a>
+          <a href="#/admissions-gradecut" data-route="admissions-gradecut"><b>등급컷 게시판</b><small>대입정보</small></a>
+        </div>
+      </div>
+    </nav>
+    <div class="nav-right">
+      <a href="#" data-google-login id="navLogin" class="btn btn-ghost nav-login">로그인</a>
+      <a href="#" data-google-login id="navStart" class="btn btn-primary">시작하기</a>
+      <div class="nav-user" id="navUser" hidden>
+        <span class="nav-avatar" id="navAvatar"></span>
+        <span class="nav-user-name" id="navUserName"></span>
+        <button class="nav-logout" data-google-logout>로그아웃</button>
+      </div>
+      <button class="burger" id="burger" aria-label="메뉴 열기">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#/features" data-route="features">기능</a>
+
+    <div class="mm-accordion">
+      <button aria-expanded="false">
+        Class AI
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="mm-sub">
+        <a href="#/class-seating" data-route="class-seating">자리배치</a>
+        <a href="#/class-group" data-route="class-group">모둠 편성</a>
+        <a href="#/class-presentation" data-route="class-presentation">발표 순서</a>
+        <a href="#/class-lottery" data-route="class-lottery">번호 추첨</a>
+      </div>
+    </div>
+
+    <div class="mm-accordion">
+      <button aria-expanded="false">
+        Teacher AI
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="mm-sub">
+        <a href="#/teacher-quiz" data-route="teacher-quiz">AI Quiz 프로그램</a>
+        <a href="#/teacher-material" data-route="teacher-material">수업자료</a>
+        <a href="#/teacher-assessment" data-route="teacher-assessment">수행평가</a>
+        <a href="#/teacher-record" data-route="teacher-record">생기부 AI</a>
+      </div>
+    </div>
+
+    <div class="mm-accordion">
+      <button aria-expanded="false">
+        AI Tutor
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="mm-sub">
+        <a href="#/tutor-korean" data-route="tutor-korean">국어</a>
+        <a href="#/tutor-english" data-route="tutor-english">영어</a>
+        <a href="#/tutor-math" data-route="tutor-math">수학</a>
+        <a href="#/tutor-social" data-route="tutor-social">사탐</a>
+        <a href="#/tutor-science" data-route="tutor-science">과탐</a>
+        <a href="#/tutor-info" data-route="tutor-info">정보</a>
+        <a href="#/tutor-plan" data-route="tutor-plan">AI 학습 플랜</a>
+      </div>
+    </div>
+
+    <div class="mm-accordion">
+      <button aria-expanded="false">
+        다운로드
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="mm-sub">
+        <a href="#/download-classroom" data-route="download-classroom">수업 자료실</a>
+        <a href="#/download-program" data-route="download-program">프로그램 자료실</a>
+      </div>
+    </div>
+
+    <div class="mm-accordion">
+      <button aria-expanded="false">
+        고객센터
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="mm-sub">
+        <a href="#/support-inquiry" data-route="support-inquiry">문의 게시판</a>
+      </div>
+    </div>
+
+    <div class="mm-accordion">
+      <button aria-expanded="false">
+        대입정보
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="mm-sub">
+        <a href="https://www.adiga.kr" target="_blank" rel="noopener">어디가</a>
+        <a href="https://ipsinaban.kr/" target="_blank" rel="noopener">입시나침반</a>
+        <a href="https://www.nesin.com/" target="_blank" rel="noopener">내신닷컴</a>
+        <a href="https://www.ebsi.co.kr/ebs/ent/enta/retrieveEntInfo2019Mn.ebs" target="_blank" rel="noopener">EBSi</a>
+        <a href="#/admissions-gradecut" data-route="admissions-gradecut">등급컷 게시판</a>
+      </div>
+    </div>
+
+    <a href="#" data-google-login id="mmLogin">로그인</a>
+    <a href="#" data-google-login id="mmStart" class="btn btn-primary">시작하기</a>
+    <div class="mm-user" id="mmUser" hidden>
+      <span id="mmUserName"></span>
+      <button data-google-logout>로그아웃</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">HTRO EDU · TEACHER OS</div>
+        <h1>교사를 위한<br>스마트한 교육 운영체제,<br><span class="accent-text">TEACHER OS</span>를 만듭니다.</h1>
+        <p class="hero-sub">반복적인 교사 업무는 AI에게 맡기고, 선생님은 수업과 학생에게 더 집중하세요.</p>
+        <div class="hero-actions">
+          <a href="#" data-google-login class="btn btn-primary">무료로 시작하기</a>
+          <a href="#features" class="btn btn-outline">기능 살펴보기</a>
+        </div>
+        <div class="hero-meta">
+          <span><b>초·중·고</b> 전 과정 지원</span>
+        </div>
+      </div>
+
+      <div class="dash reveal in">
+        <div class="dash-topbar">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="dash-label">HTRO_EDU / DASHBOARD</div>
+          <div class="dash-status"><i></i>LIVE</div>
+        </div>
+        <div class="dash-grid">
+          <a href="#/teacher-material" data-route="teacher-material" class="dash-card">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></div>
+            <h4>오늘의 수업</h4>
+            <p>12정보 · 3교시</p>
+          </a>
+          <a href="#/class-seating" data-route="class-seating" class="dash-card">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+            <h4>자리배치</h4>
+            <p>AVAILABLE</p>
+          </a>
+          <a href="#/class-group" data-route="class-group" class="dash-card">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 2.2 5 5"/></svg></div>
+            <h4>모둠 편성</h4>
+            <p>CLASSROOM TOOL</p>
+          </a>
+          <a href="#/class-presentation" data-route="class-presentation" class="dash-card">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg></div>
+            <h4>발표 순서</h4>
+            <p>CLASSROOM TOOL</p>
+          </a>
+          <a href="#/tutor-plan" data-route="tutor-plan" class="dash-card wide">
+            <h4>학생 학습 분석</h4>
+            <div class="dash-bars">
+              <i style="height:40%"></i><i style="height:65%"></i><i style="height:30%"></i>
+              <i style="height:80%"></i><i style="height:55%"></i><i style="height:70%"></i>
+              <i style="height:45%"></i><i style="height:90%"></i>
+            </div>
+            <p style="margin-top:8px;">AI TUTOR · SOON</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Features</div>
+        <h2>교사가 자주 하는 일을<br>더 간단하게</h2>
+      </div>
+      <div class="feat-grid">
+
+        <a href="#/teacher-quiz" data-route="teacher-quiz" class="feat-card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+          <h3>AI Quiz</h3>
+          <p>교과와 단원을 입력하면 AI가 다양한 형태의 퀴즈를 생성합니다.</p>
+          <span class="status-tag avail"><i></i>Available</span>
+        </a>
+
+        <a href="#/class-seating" data-route="class-seating" class="feat-card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+          <h3>자리배치</h3>
+          <p>학생 정보를 기반으로 원하는 조건에 맞는 최적의 자리배치를 만들어줍니다.</p>
+          <span class="status-tag avail"><i></i>Available</span>
+        </a>
+
+        <a href="#/teacher-material" data-route="teacher-material" class="feat-card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+          <h3>수업자료</h3>
+          <p>수업 주제와 학습 수준을 입력하면 수업자료와 활동 아이디어를 생성합니다.</p>
+          <span class="status-tag soon"><i></i>Coming Soon</span>
+        </a>
+
+        <a href="#/teacher-assessment" data-route="teacher-assessment" class="feat-card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h11"/></svg></div>
+          <h3>수행평가</h3>
+          <p>수행평가 주제, 평가 기준, 루브릭 등을 빠르게 만들 수 있습니다.</p>
+          <span class="status-tag soon"><i></i>Coming Soon</span>
+        </a>
+
+        <a href="#/teacher-record" data-route="teacher-record" class="feat-card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V6a2 2 0 012-2h9l5 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M14 4v5h5"/></svg></div>
+          <h3>학생기록 AI</h3>
+          <p>교사가 입력한 실제 학생 활동 자료를 바탕으로 기록 정리를 보조합니다.</p>
+          <span class="status-tag soon"><i></i>Coming Soon</span>
+        </a>
+
+        <a href="#/tutor-korean" data-route="tutor-korean" class="feat-card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10s.75-1.5 3-1.5 3 1.5 3 1.5-1 2-3 2-3-2-3-2z"/><path d="M9 16h6"/></svg></div>
+          <h3>AI Tutor</h3>
+          <p>학생의 질문에 답하고 학습 수준에 맞춰 문제와 설명을 제공합니다.</p>
+          <span class="status-tag soon"><i></i>Coming Soon</span>
+        </a>
+
+        <a href="#/tutor-plan" data-route="tutor-plan" class="feat-card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/></svg></div>
+          <h3>AI 학습 플랜</h3>
+          <p>시험 점수를 입력하면 과목별 취약점을 분석해 앞으로의 학습 플랜을 짜줍니다.</p>
+          <span class="status-tag soon"><i></i>Coming Soon</span>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- TEACHER AI -->
+  <section id="teacher-ai" class="alt-bg">
+    <div class="wrap">
+      <div class="split">
+        <div class="reveal">
+          <div class="eyebrow">Teacher AI</div>
+          <h2>교사를 위한 AI</h2>
+          <p class="lead">자료를 찾고, 정리하고, 만드는 반복적인 업무를 AI가 도와줍니다.</p>
+          <div class="tag-line">교사가 결정하고, AI가 준비합니다.</div>
+        </div>
+        <div class="chat-panel reveal">
+          <div class="head"><div class="avatar">AI</div><span>TEACHER_AI · SESSION</span></div>
+          <div class="bubble-row right"><div class="bubble">1학년 정보 데이터 단원 50분 수업을 준비해줘.</div></div>
+          <div class="bubble-row left"><div class="bubble">수업 목표와 활동을 구성했습니다.</div></div>
+          <div class="ai-steps">
+            <div class="step"><span class="n">01</span>학습 목표</div>
+            <div class="step"><span class="n">02</span>수업 도입</div>
+            <div class="step"><span class="n">03</span>실습 활동</div>
+            <div class="step"><span class="n">04</span>형성평가</div>
+            <div class="step"><span class="n">05</span>마무리</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLASSROOM TOOLS -->
+  <section id="classroom-tools">
+    <div class="wrap">
+      <div class="split reverse">
+        <div class="seat-panel reveal">
+          <div class="seat-toolbar">
+            <button class="active">랜덤 자리배치</button>
+            <button>조건별 자리배치</button>
+            <button>모둠 편성</button>
+            <button>발표 순서</button>
+            <button>번호 추첨</button>
+          </div>
+          <div class="seat-front">TEACHER · 칠판</div>
+          <div class="seat-board" id="seatBoard"></div>
+        </div>
+        <div class="reveal">
+          <div class="eyebrow">Classroom Tools</div>
+          <h2>교실에서<br>바로 사용하는 도구</h2>
+          <p class="lead">매번 반복하는 작은 업무를 자동화하세요.</p>
+          <ul class="mini-list">
+            <li>랜덤 자리배치</li>
+            <li>조건별 자리배치</li>
+            <li>모둠 편성</li>
+            <li>발표 순서</li>
+            <li>번호 추첨</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STUDENT AI TUTOR -->
+  <section id="tutor" class="alt-bg">
+    <div class="wrap">
+      <div class="split">
+        <div class="reveal">
+          <div class="eyebrow">Student AI Tutor</div>
+          <h2>학생에게는<br>개인 AI 튜터를</h2>
+          <p class="lead">학생마다 다른 학습 속도와 질문에 맞춰 AI가 설명하고 문제를 제시합니다.</p>
+          <ul class="mini-list">
+            <li>질문 답변</li>
+            <li>개념 설명</li>
+            <li>개인별 문제</li>
+            <li>오답 분석</li>
+            <li>학습 수준 조절</li>
+          </ul>
+        </div>
+        <div class="chat-panel reveal">
+          <div class="head"><div class="avatar">AI</div><span>STUDENT_TUTOR · SESSION</span></div>
+          <div class="bubble-row right"><div class="bubble">for문이 아직 잘 이해되지 않아요.</div></div>
+          <div class="bubble-row left">
+            <div class="bubble">좋아요. 아주 간단한 예제부터 시작해볼게요<span class="typing-dots" style="margin-left:6px;"><i></i><i></i><i></i></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEMS -->
+  <section id="problems">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Why HTRO EDU</div>
+        <h2>교사의 하루에는<br>너무 많은 반복 업무가 있습니다.</h2>
+      </div>
+      <div class="prob-grid reveal">
+        <div class="prob-card">
+          <div class="k">PREP</div>
+          <h3>반복되는 준비</h3>
+          <p>수업자료, 문제, 활동지를 매번 새로 준비해야 합니다.</p>
+        </div>
+        <div class="prob-card">
+          <div class="k">MANAGE</div>
+          <h3>반복되는 관리</h3>
+          <p>자리배치, 모둠 편성, 발표 순서 등 작은 업무가 계속 발생합니다.</p>
+        </div>
+        <div class="prob-card">
+          <div class="k">TIME</div>
+          <h3>부족한 시간</h3>
+          <p>가장 중요한 학생과의 상호작용에 사용할 시간이 줄어듭니다.</p>
+        </div>
+      </div>
+      <p class="prob-resolve reveal">HTRO EDU는 이 시간을 다시 <span class="accent-text">선생님</span>에게 돌려드립니다.</p>
+    </div>
+  </section>
+
+  <!-- FUTURE -->
+  <section class="alt-bg">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Roadmap</div>
+        <h2>교육의 미래를<br>만들어갑니다.</h2>
+        <p>앞으로 교사 AI와 AI 튜터까지 확장됩니다.</p>
+      </div>
+      <div class="future-grid reveal">
+        <a href="#/teacher-material" data-route="teacher-material" class="future-card"><h4>AI 수업 설계</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
+        <a href="#/teacher-assessment" data-route="teacher-assessment" class="future-card"><h4>AI 수행평가</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
+        <a href="#/tutor-plan" data-route="tutor-plan" class="future-card"><h4>학생 학습 분석</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
+        <a href="#/tutor-korean" data-route="tutor-korean" class="future-card"><h4>개인화 학습</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
+        <a href="#/teacher-quiz" data-route="teacher-quiz" class="future-card"><h4>교사 AI Assistant</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
+        <a href="#/teacher-record" data-route="teacher-record" class="future-card"><h4>학교 데이터 분석</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
+        <a href="#/teacher-quiz" data-route="teacher-quiz" class="future-card"><h4>교육용 AI Agent</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta">
+    <div class="cta-section reveal">
+      <h2>더 중요한 일에<br>시간을 쓰세요.</h2>
+      <p>HTRO EDU와 함께 교사의 시간을 다시 설계하세요.</p>
+      <a href="#" data-google-login class="btn btn-primary">HTRO EDU 시작하기</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#top" class="logo" data-route="home"><span class="dot"></span>HTRO EDU</a>
+        <p>Teacher × Technology × AI</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h5>SERVICE</h5>
+          <a href="#features">서비스</a>
+          <a href="#features">기능</a>
+        </div>
+        <div class="footer-col">
+          <h5>LEGAL</h5>
+          <a href="#">이용약관</a>
+          <a href="#">개인정보처리방침</a>
+        </div>
+        <div class="footer-col">
+          <h5>SUPPORT</h5>
+          <a href="#">문의</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 HTRO. All rights reserved.</span>
+      <a href="#top" data-route="home" class="footer-home">HTRO EDU / TEACHER OS</a>
+    </div>
+  </div>
+</footer>
+
+<div class="page-view" id="pageView">
+  <div class="page-view-inner">
+    <div class="eyebrow" id="pvEyebrow" style="justify-content:center;">PAGE</div>
+    <h1 id="pvTitle">기능</h1>
+    <p id="pvDesc">준비 중입니다.</p>
+    <a href="#top" class="btn btn-outline" data-route="home">홈으로 돌아가기</a>
+  </div>
+</div>
+
+<div class="res-view" id="resView">
+  <div class="res-inner">
+    <div class="eyebrow" id="resEyebrow">DOWNLOAD</div>
+    <h1 id="resTitle">자료실</h1>
+    <p class="res-desc" id="resDesc"></p>
+    <div class="res-count" id="resCount"></div>
+    <div class="res-list" id="resList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  // sticky nav
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 12);
+  });
+
+  // mobile menu
+  const burger = document.getElementById('burger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+  });
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.remove('open')));
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // seat board generator
+  const seatBoard = document.getElementById('seatBoard');
+  const total = 30;
+  let activeSeats = new Set();
+  function randomSeats(){
+    activeSeats.clear();
+    while(activeSeats.size < 6){ activeSeats.add(Math.floor(Math.random()*total)); }
+  }
+  function renderSeats(){
+    seatBoard.innerHTML = '';
+    for(let i=0;i<total;i++){
+      const s = document.createElement('div');
+      s.className = 'seat' + (activeSeats.has(i) ? ' active' : '');
+      s.textContent = String(i+1).padStart(2,'0');
+      seatBoard.appendChild(s);
+    }
+  }
+  randomSeats();
+  renderSeats();
+  setInterval(() => { randomSeats(); renderSeats(); }, 2600);
+
+  // toolbar buttons (visual only)
+  document.querySelectorAll('.seat-toolbar button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.seat-toolbar button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      randomSeats();
+      renderSeats();
+    });
+  });
+
+  // ============ Dropdowns (desktop) — generic, only one open at a time ============
+  document.querySelectorAll('.nav-dropdown').forEach(dd => {
+    const btn = dd.querySelector(':scope > button');
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !dd.classList.contains('open');
+      document.querySelectorAll('.nav-dropdown.open').forEach(o => {
+        o.classList.remove('open');
+        o.querySelector(':scope > button').setAttribute('aria-expanded', 'false');
+      });
+      if(willOpen){ dd.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+    });
+  });
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('.nav-dropdown.open').forEach(dd => {
+      if(!dd.contains(e.target)){
+        dd.classList.remove('open');
+        dd.querySelector(':scope > button').setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      document.querySelectorAll('.nav-dropdown.open').forEach(dd => {
+        dd.classList.remove('open');
+        dd.querySelector(':scope > button').setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
+
+  // ============ Accordions (mobile) — generic, independent toggles ============
+  document.querySelectorAll('.mm-accordion').forEach(acc => {
+    const btn = acc.querySelector(':scope > button');
+    btn.addEventListener('click', () => {
+      const isOpen = acc.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(isOpen));
+    });
+  });
+
+  // ============ Router: nav links go to blank pages, header stays ============
+  const routeMeta = {
+    'features':           { eyebrow: 'FEATURES',    title: '기능' },
+    'class-seating':       { eyebrow: 'CLASS AI',    title: '자리배치' },
+    'class-group':         { eyebrow: 'CLASS AI',    title: '모둠 편성' },
+    'class-presentation':  { eyebrow: 'CLASS AI',    title: '발표 순서' },
+    'class-lottery':       { eyebrow: 'CLASS AI',    title: '번호 추첨' },
+    'teacher-quiz':        { eyebrow: 'TEACHER AI',  title: 'AI Quiz 프로그램' },
+    'teacher-material':    { eyebrow: 'TEACHER AI',  title: '수업자료' },
+    'teacher-assessment':  { eyebrow: 'TEACHER AI',  title: '수행평가' },
+    'teacher-record':      { eyebrow: 'TEACHER AI',  title: '생기부 AI' },
+    'tutor-korean':        { eyebrow: 'AI TUTOR',    title: '국어' },
+    'tutor-english':       { eyebrow: 'AI TUTOR',    title: '영어' },
+    'tutor-math':          { eyebrow: 'AI TUTOR',    title: '수학' },
+    'tutor-social':        { eyebrow: 'AI TUTOR',    title: '사탐' },
+    'tutor-science':       { eyebrow: 'AI TUTOR',    title: '과탐' },
+    'tutor-info':          { eyebrow: 'AI TUTOR',    title: '정보' },
+    'tutor-plan':          { eyebrow: 'AI TUTOR',    title: 'AI 학습 플랜' },
+    'download-classroom':  { eyebrow: 'DOWNLOAD',    title: '수업 자료실' },
+    'download-program':    { eyebrow: 'DOWNLOAD',    title: '프로그램 자료실' },
+    'support-inquiry':     { eyebrow: '고객센터',     title: '문의 게시판' },
+    'admissions-gradecut': { eyebrow: '대입정보',     title: '등급컷 게시판' }
+  };
+
+  // ============ 자료실 데이터 — 여기에 파일/링크를 직접 적어 넣으세요 ============
+  // 항목 하나 = { ... } 한 덩어리. 위에 적을수록 목록 위쪽에 표시됩니다.
+  //   title    : 자료 이름 (필수)
+  //   desc     : 한 줄 설명 (선택)
+  //   category : 분류 태그 (선택) 예: '1학년', '정보', '도구'
+  //   date     : 등록일 (선택) 예: '2026-10-12'
+  //   url      : 파일 경로 또는 외부 링크 (필수)
+  //              - 파일: 'files/classroom/정보1_1단원.pdf'  (HTML 파일 옆 files 폴더에 업로드)
+  //              - 링크: 'https://drive.google.com/...'
+  //              - 비워두면 버튼이 "준비 중"으로 비활성화됩니다.
+  //   label    : 왼쪽 배지 글자 직접 지정 (선택, 생략하면 확장자로 자동 표시)
+  // 항목을 모두 지우면 "등록된 자료가 없습니다"가 표시됩니다.
+  const RESOURCES = {
+    'download-classroom': {
+      desc: '수업에 바로 쓸 수 있는 PPT, 활동지, 학습지를 모았습니다.',
+      items: [
+        { title: '(예시) 정보 1학기 수업 PPT', desc: '파일 경로를 url에 적으면 다운로드 버튼이 활성화됩니다.', category: '정보', date: '2026-10-12', url: '' },
+        { title: '(예시) 데이터 단원 활동지', desc: '외부 링크(구글 드라이브 등)도 url에 그대로 넣을 수 있어요.', category: '활동지', date: '2026-10-12', url: '' }
+      ]
+    },
+    'download-program': {
+      desc: 'HTRO EDU에서 만든 교실용 프로그램과 설치 파일을 모았습니다.',
+      items: [
+        { title: '(예시) 자리배치 프로그램', desc: '설치 파일 또는 실행 링크를 url에 적어 주세요.', category: '도구', date: '2026-10-12', url: '' },
+        { title: '(예시) AI Quiz 프로그램', desc: '버전·사용법은 desc에 한 줄로 적으면 됩니다.', category: '도구', date: '2026-10-12', url: '' }
+      ]
+    }
+  };
+
+  const FILE_EXT = ['pdf','hwp','hwpx','doc','docx','ppt','pptx','xls','xlsx','csv','txt','zip','7z','exe','msi','dmg','png','jpg','jpeg','mp4'];
+
+  const mainEl = document.getElementById('top');
+  const footerEl = document.querySelector('footer');
+  const pageView = document.getElementById('pageView');
+  const pvEyebrow = document.getElementById('pvEyebrow');
+  const pvTitle = document.getElementById('pvTitle');
+  const pvDesc = document.getElementById('pvDesc');
+  const resView = document.getElementById('resView');
+  const resEyebrow = document.getElementById('resEyebrow');
+  const resTitle = document.getElementById('resTitle');
+  const resDesc = document.getElementById('resDesc');
+  const resCount = document.getElementById('resCount');
+  const resList = document.getElementById('resList');
+
+  function resInfo(item){
+    const url = item.url || '';
+    const external = /^https?:\/\//i.test(url);
+    const m = url.split('#')[0].split('?')[0].match(/\.([a-z0-9]{1,5})$/i);
+    const ext = m ? m[1].toLowerCase() : '';
+    const isFile = FILE_EXT.includes(ext);
+    return {
+      url, external, isFile,
+      badge: item.label || (isFile ? ext.toUpperCase() : (external ? 'LINK' : 'FILE')),
+      action: (isFile || !external) ? '다운로드' : '열기'
+    };
+  }
+
+  function renderResources(route){
+    const data = RESOURCES[route];
+    resEyebrow.textContent = routeMeta[route].eyebrow;
+    resTitle.textContent = routeMeta[route].title;
+    resDesc.textContent = data.desc || '';
+    resList.textContent = '';
+    resCount.textContent = data.items.length ? ('총 ' + data.items.length + '개 자료') : '';
+
+    if(!data.items.length){
+      const empty = document.createElement('div');
+      empty.className = 'res-empty';
+      empty.textContent = '등록된 자료가 없습니다.';
+      resList.appendChild(empty);
+      return;
+    }
+
+    data.items.forEach(item => {
+      const info = resInfo(item);
+      const row = document.createElement('div');
+      row.className = 'res-item';
+
+      const badge = document.createElement('div');
+      badge.className = 'res-badge';
+      badge.textContent = info.badge;
+
+      const body = document.createElement('div');
+      body.className = 'res-body';
+      const h = document.createElement('h3');
+      h.textContent = item.title;
+      body.appendChild(h);
+      if(item.desc){
+        const p = document.createElement('p');
+        p.textContent = item.desc;
+        body.appendChild(p);
+      }
+      if(item.category || item.date){
+        const meta = document.createElement('div');
+        meta.className = 'res-meta';
+        if(item.category){
+          const c = document.createElement('span');
+          c.className = 'cat';
+          c.textContent = item.category;
+          meta.appendChild(c);
+        }
+        if(item.date){
+          const d = document.createElement('span');
+          d.textContent = item.date;
+          meta.appendChild(d);
+        }
+        body.appendChild(meta);
+      }
+
+      const act = document.createElement('a');
+      if(info.url){
+        act.className = 'btn res-action ' + (info.action === '다운로드' ? 'btn-primary' : 'btn-outline');
+        act.href = info.url;
+        act.textContent = info.action;
+        if(info.external){
+          act.target = '_blank';
+          act.rel = 'noopener noreferrer';
+        } else {
+          act.setAttribute('download', '');
+        }
+      } else {
+        act.className = 'btn btn-outline res-action';
+        act.setAttribute('aria-disabled', 'true');
+        act.textContent = '준비 중';
+      }
+
+      row.appendChild(badge);
+      row.appendChild(body);
+      row.appendChild(act);
+      resList.appendChild(row);
+    });
+  }
+
+  function closeMenus(){
+    mobileMenu.classList.remove('open');
+    document.querySelectorAll('.nav-dropdown.open').forEach(dd => {
+      dd.classList.remove('open');
+      dd.querySelector(':scope > button').setAttribute('aria-expanded', 'false');
+    });
+    document.querySelectorAll('.mm-accordion.open').forEach(acc => {
+      acc.classList.remove('open');
+      acc.querySelector(':scope > button').setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function goHome(){
+    mainEl.style.display = '';
+    footerEl.style.display = '';
+    pageView.classList.remove('active');
+    resView.classList.remove('active');
+  }
+
+  function goToPage(route){
+    const meta = routeMeta[route];
+    if(!meta) return goHome();
+    mainEl.style.display = 'none';
+    footerEl.style.display = 'none';
+    if(RESOURCES[route]){
+      renderResources(route);
+      pageView.classList.remove('active');
+      resView.classList.add('active');
+      return;
+    }
+    pvEyebrow.textContent = meta.eyebrow;
+    pvTitle.textContent = meta.title;
+    pvDesc.textContent = meta.title + ' 페이지는 준비 중입니다. 곧 이 자리에서 만나보실 수 있어요.';
+    resView.classList.remove('active');
+    pageView.classList.add('active');
+  }
+
+  function navigate(route, pushHash){
+    if(!route || route === 'home'){
+      goHome();
+      if(pushHash !== false) history.pushState(null, '', '#top');
+      window.scrollTo(0, 0);
+    } else {
+      goToPage(route);
+      if(pushHash !== false) history.pushState(null, '', '#/' + route);
+      window.scrollTo(0, 0);
+    }
+    closeMenus();
+  }
+
+  document.querySelectorAll('a[data-route]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigate(a.dataset.route);
+    });
+  });
+
+  window.addEventListener('popstate', () => {
+    const hash = location.hash;
+    if(hash.startsWith('#/')){
+      navigate(hash.slice(2), false);
+    } else {
+      navigate('home', false);
+    }
+  });
+
+  // initial load: honor a direct #/route link
+  (function initRoute(){
+    const hash = location.hash;
+    if(hash.startsWith('#/') && routeMeta[hash.slice(2)]){
+      navigate(hash.slice(2), false);
+    }
+  })();
+
+  // ============ Google 로그인 (새 창 팝업) ============
+  // 1) https://console.cloud.google.com → API 및 서비스 → 사용자 인증 정보 → OAuth 클라이언트 ID(웹 애플리케이션) 생성
+  // 2) "승인된 JavaScript 원본"에 사이트 주소(예: https://내도메인.com) 와 테스트용 http://localhost:8000 추가
+  // 3) 발급된 클라이언트 ID를 아래에 붙여넣기
+  const GOOGLE_CLIENT_ID = '606491348899-oterfp4inoj3jf1u6k00ig61ivn0hpbu.apps.googleusercontent.com';
+  const USER_KEY = 'htro_user';
+
+  const toastEl = document.getElementById('toast');
+  let toastTimer;
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 5000);
+  }
+
+  function loadUser(){
+    try { return JSON.parse(localStorage.getItem(USER_KEY)); } catch(e){ return null; }
+  }
+  function saveUser(u){
+    try { u ? localStorage.setItem(USER_KEY, JSON.stringify(u)) : localStorage.removeItem(USER_KEY); } catch(e){}
+  }
+
+  let currentUser = loadUser();
+
+  function renderAuth(){
+    const on = !!currentUser;
+    ['navLogin','navStart','mmLogin','mmStart'].forEach(id => { document.getElementById(id).hidden = on; });
+    document.getElementById('navUser').hidden = !on;
+    document.getElementById('mmUser').hidden = !on;
+    if(on){
+      const name = currentUser.name || currentUser.email || '사용자';
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('mmUserName').textContent = name + ' 님';
+      const av = document.getElementById('navAvatar');
+      av.textContent = '';
+      if(currentUser.picture){
+        const img = document.createElement('img');
+        img.src = currentUser.picture;
+        img.alt = '';
+        img.referrerPolicy = 'no-referrer';
+        av.appendChild(img);
+      } else {
+        av.textContent = name.charAt(0).toUpperCase();
+      }
+    }
+  }
+
+  let tokenClient = null;
+  function getTokenClient(){
+    if(tokenClient) return tokenClient;
+    if(!(window.google && google.accounts && google.accounts.oauth2)) return null;
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'openid email profile',
+      callback: async (res) => {
+        if(res.error || !res.access_token){
+          showToast('Google 로그인이 취소되었거나 실패했어요. 다시 시도해 주세요.');
+          return;
+        }
+        try {
+          const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: 'Bearer ' + res.access_token }
+          });
+          if(!r.ok) throw new Error('userinfo ' + r.status);
+          const info = await r.json();
+          currentUser = { sub: info.sub, name: info.name, email: info.email, picture: info.picture };
+          saveUser(currentUser);
+          renderAuth();
+          closeMenus();
+          showToast((currentUser.name || '사용자') + '님, 환영합니다!');
+        } catch(err){
+          showToast('로그인 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
+        }
+      },
+      error_callback: (err) => {
+        // 팝업이 차단되었거나 사용자가 창을 닫은 경우
+        if(err && err.type === 'popup_failed_to_open'){
+          showToast('팝업이 차단되었어요. 브라우저 주소창에서 팝업을 허용해 주세요.');
+        }
+      }
+    });
+    return tokenClient;
+  }
+
+  function startGoogleLogin(){
+    if(location.protocol === 'file:'){
+      showToast('로컬 파일(file://)에서는 Google 로그인이 동작하지 않아요. 배포한 주소나 http://localhost 에서 열어 주세요.');
+      return;
+    }
+    if(GOOGLE_CLIENT_ID.startsWith('YOUR_')){
+      showToast('Google 클라이언트 ID가 아직 설정되지 않았어요. 파일 하단의 GOOGLE_CLIENT_ID에 발급받은 값을 넣어 주세요.');
+      return;
+    }
+    const client = getTokenClient();
+    if(!client){
+      showToast('Google 로그인 모듈을 불러오는 중이에요. 잠시 후 다시 눌러 주세요.');
+      return;
+    }
+    client.requestAccessToken({ prompt: 'select_account' });
+  }
+
+  function logout(){
+    currentUser = null;
+    saveUser(null);
+    renderAuth();
+    closeMenus();
+    showToast('로그아웃되었어요.');
+  }
+
+  document.querySelectorAll('[data-google-login]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      if(currentUser){
+        // 이미 로그인된 상태: 홈의 기능 소개로 이동
+        navigate('home');
+        closeMenus();
+        const f = document.getElementById('features');
+        if(f) f.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      startGoogleLogin();
+    });
+  });
+  document.querySelectorAll('[data-google-logout]').forEach(el => el.addEventListener('click', logout));
+
+  renderAuth();
+</script>
+
+</body>
+</html>
