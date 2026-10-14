@@ -231,8 +231,8 @@
   .res-action[aria-disabled="true"]{opacity:.45;pointer-events:none;}
   .res-actions{display:flex;gap:8px;}
   .res-actions .res-action{grid-column:auto;width:auto;white-space:nowrap;}
-  .res-body .res-fallback{margin-top:6px;font-size:clamp(8px,2.1vw,11px);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;}
-  .res-body .res-fallback a{color:var(--accent-dark);text-decoration:underline;}
+  .res-body .res-fallback{margin-top:6px;font-size:clamp(8px,2.1vw,11px);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;opacity:.55;}
+  .res-body .res-fallback a{color:inherit;text-decoration:none;}
   .res-empty{padding:56px 24px;text-align:center;color:var(--text-tertiary);font-size:14.5px;}
   @media (max-width:640px){
     .res-view{padding:112px 20px 72px;}
@@ -1226,9 +1226,11 @@
       // actions: 버튼 목록. url을 비워두면 해당 버튼이 "준비 중"으로 비활성화됩니다.
       items: [
         { title: '리로스쿨 수행평가 프로그램', desc: '수행평가 전용 프로그램입니다. 처음 한 번만 설치하고, 이후에는 시험 시작 버튼만 누르세요. 시험 시작이 안 되면 먼저 설치해 주세요.', category: '프로그램', date: '2026-10-14', label: '1',
-          fallback: { text: '다운로드가 안 될 때 링크', url: 'https://drive.google.com/file/d/1qRc5lBufMbF5oyZA85tNO4CB2KfhqDGw/view?usp=drive_link' },
+          fallback: { text: '설치가 안될 때 다운로드', url: 'https://drive.google.com/file/d/1qRc5lBufMbF5oyZA85tNO4CB2KfhqDGw/view?usp=drive_link' },
           actions: [ { label: '설치', url: 'https://github.com/jungheawon/hted/releases/download/1.0/HaewonBrowser-Setup.exe', primary: true }, { label: '시험 시작', url: 'haewon://start' } ] },
         { title: '리로스쿨 (전체) 프로그램', desc: '리로스쿨 전체 기능 프로그램입니다. 설치 후 시험 시작 버튼으로 실행하세요.', category: '프로그램', date: '2026-10-14', label: '2',
+          actions: [ { label: '설치', url: '', primary: true }, { label: '시험 시작', url: '' } ] },
+        { title: '데이터과학 수행평가 프로그램', desc: '데이터과학 수행평가 전용 프로그램입니다. 처음 한 번만 설치하고, 이후에는 시험 시작 버튼만 누르세요.', category: '프로그램', date: '2026-10-15', label: '3',
           actions: [ { label: '설치', url: '', primary: true }, { label: '시험 시작', url: '' } ] }
       ]
     }
