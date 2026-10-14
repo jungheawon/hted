@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>발표 순서 · HTRO EDU</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAFB;--bg-alt:#F1F2F6;--surface:#FFFFFF;--text:#0B0C10;--text-secondary:#5B5F6B;--text-tertiary:#9498A3;
+    --accent:#3654F4;--accent-dark:#1E2FB0;--accent-soft:#EAEDFE;--green:#10A25E;--green-dark:#0A7A45;--green-soft:#E3F7EC;
+    --amber:#E08A00;--amber-soft:#FCEFD6;--red:#E8384F;--red-soft:#FBE4E7;--indigo:#6366F1;--border:#E4E6ED;--border-strong:#D3D6E0;
+    --font-body:'Pretendard Variable','Pretendard',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;
+    --radius-s:8px;--radius-m:14px;--radius-l:22px;--ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--accent);color:#fff}
+  header{background:var(--surface);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+  header h1{font-weight:800;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  header h1::before{content:"";width:8px;height:8px;background:var(--accent);border-radius:2px;flex-shrink:0}
+  .subtitle{font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);letter-spacing:.04em;margin-top:4px}
+  .header-actions{display:flex;gap:7px;flex-wrap:wrap}
+  .btn{padding:8px 16px;border:none;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform .2s var(--ease),box-shadow .2s var(--ease),background .2s,color .2s,border-color .2s;white-space:nowrap}
+  .btn:hover{transform:translateY(-1px)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .btn-primary{background:var(--text);color:#fff}.btn-primary:hover{background:var(--accent);box-shadow:0 8px 18px -8px rgba(54,84,244,.5)}
+  .btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:var(--accent-dark);box-shadow:0 8px 18px -8px rgba(54,84,244,.5)}
+  .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:var(--green-dark)}
+  .btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border-strong)}.btn-outline:hover{border-color:var(--text)}
+  .btn-lg{padding:12px 20px;font-size:14px;width:100%}
+  .app{display:flex;flex:1;min-height:0}
+  .sidebar{width:280px;min-width:280px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto}
+  .section{padding:14px;border-bottom:1px solid var(--border)}
+  .section h3{font-family:var(--font-mono);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+  .section h3 .cnt{color:var(--accent);text-transform:none}
+  textarea,input[type=number]{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-s);font:inherit;font-size:12px;background:var(--surface);color:var(--text)}
+  textarea{resize:vertical;line-height:1.55}
+  textarea:focus,input:focus{outline:none;border-color:var(--accent)}
+  .row{display:flex;gap:6px;align-items:center}
+  .row input{flex:1}
+  .unit{font-size:12px;color:var(--text-secondary);white-space:nowrap}
+  .hint{font-size:10.5px;color:var(--text-tertiary);margin-top:6px;line-height:1.5}
+  .check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-secondary);cursor:pointer;margin-top:9px}
+  .check input{accent-color:var(--accent);width:15px;height:15px}
+
+  .main{flex:1;display:flex;min-width:0;min-height:0}
+  .stage-wrap{flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0;overflow:auto}
+  .stage{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-l);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;position:relative;overflow:hidden;min-height:320px;transition:background .3s,border-color .3s}
+  .stage.timeup{animation:flash 1s ease-in-out 3;border-color:var(--red)}
+  @keyframes flash{50%{background:var(--red-soft)}}
+  .stage .label{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:600;margin-bottom:14px}
+  .stage .now{font-size:clamp(48px,9vw,120px);font-weight:800;letter-spacing:-.03em;line-height:1.05;word-break:keep-all}
+  .stage .now.pop{animation:pop .5s var(--ease)}
+  .stage .now.spin{color:var(--text-tertiary)}
+  @keyframes pop{0%{transform:scale(.85);opacity:.2}60%{transform:scale(1.04)}100%{transform:none;opacity:1}}
+  .stage .pos{font-family:var(--font-mono);font-size:13px;color:var(--text-tertiary);margin-top:14px}
+  .stage .next{margin-top:22px;font-size:16px;color:var(--text-secondary)}
+  .stage .next b{color:var(--text)}
+  .timer{position:absolute;top:18px;right:20px;font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--text-secondary)}
+  .timer.warn{color:var(--red)}
+  .tbar{position:absolute;left:0;bottom:0;height:5px;background:var(--accent);transition:width 1s linear,background .3s}
+  .tbar.warn{background:var(--red)}
+  .controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .controls .btn{padding:11px 22px;font-size:14px}
+  .keys{text-align:center;font-family:var(--font-mono);font-size:10.5px;color:var(--text-tertiary)}
+
+  .list{width:290px;min-width:290px;border-left:1px solid var(--border);background:var(--surface);overflow-y:auto;padding:14px}
+  .list h3{font-family:var(--font-mono);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:10px}
+  .item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-s);border:1px solid var(--border);margin-bottom:5px;cursor:pointer;font-size:14px;font-weight:600;transition:background .15s,border-color .15s}
+  .item.anim{animation:rise .4s var(--ease) both;animation-delay:var(--d)}
+  @keyframes rise{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+  .item:hover{border-color:var(--border-strong)}
+  .item .n{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);width:22px;text-align:right}
+  .item .nm{flex:1}
+  .item .x{border:none;background:none;color:var(--text-tertiary);cursor:pointer;font-size:12px;padding:2px 4px}
+  .item .x:hover{color:var(--red)}
+  .item.done{background:var(--bg-alt);color:var(--text-tertiary)}
+  .item.done .nm{text-decoration:line-through}
+  .item.cur{background:var(--accent);border-color:var(--accent);color:#fff}
+  .item.cur .n,.item.cur .x{color:rgba(255,255,255,.75)}
+  .empty-list{font-size:12px;color:var(--text-tertiary);line-height:1.6}
+
+  body.present .sidebar,body.present .subtitle,body.present .keys{display:none}
+  body.present .list .item{font-size:17px}
+
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:999px;font-family:var(--font-mono);font-size:11.5px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+  #toast.show{opacity:1}
+  @media (max-width:1000px){body{height:auto;min-height:100vh}.app,.main{flex-direction:column}.sidebar,.list{width:100%;min-width:0;border:none;border-bottom:1px solid var(--border)}}
+  @media print{header,.sidebar,.stage-wrap{display:none!important}body{height:auto}.list{width:100%;border:none}.item{animation:none!important}}
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>발표 순서</h1>
+    <div class="subtitle">RANDOM ORDER · PRESENTER TIMER</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" onclick="copyText()">📋 순서 복사</button>
+    <button class="btn btn-outline" onclick="window.print()">🖨️ 인쇄</button>
+    <button class="btn btn-primary" id="presentBtn" onclick="togglePresent()">⛶ 크게 보기</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="section">
+      <h3>발표자 명단 <span class="cnt" id="count">0명</span></h3>
+      <textarea id="studentInput" rows="10" placeholder="이름 또는 모둠명을 줄바꿈/쉼표로 구분&#10;홍길동&#10;1모둠, 2모둠"></textarea>
+      <div class="row" style="margin-top:6px">
+        <input type="number" id="fillN" min="1" max="200" placeholder="인원 수">
+        <button class="btn btn-outline" onclick="fillNumbers()">번호로 채우기</button>
+      </div>
+      <div class="hint">명단은 모둠 편성 · 번호 추첨 페이지와 함께 쓰여요.</div>
+    </div>
+    <div class="section">
+      <h3>발표 타이머</h3>
+      <div class="row">
+        <input type="number" id="minutes" min="0" max="60" step="0.5" value="3">
+        <span class="unit">분 / 1인</span>
+      </div>
+      <label class="check"><input type="checkbox" id="autoStart" checked> 다음 발표자로 넘기면 자동 시작</label>
+      <div class="hint">0분으로 두면 타이머를 쓰지 않아요.</div>
+    </div>
+    <div class="section">
+      <button class="btn btn-accent btn-lg" onclick="makeOrder()">🎲 순서 정하기</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="stage-wrap">
+      <div class="stage" id="stage">
+        <div class="timer" id="timer"></div>
+        <div class="label" id="label">PRESENTATION ORDER</div>
+        <div class="now" id="now">🎤</div>
+        <div class="pos" id="pos">명단을 입력하고 순서를 정해 주세요</div>
+        <div class="next" id="next"></div>
+        <div class="tbar" id="tbar" style="width:0"></div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-outline" id="prevBtn" onclick="prev()">◀ 이전</button>
+        <button class="btn btn-outline" id="timerBtn" onclick="toggleTimer()">⏱ 타이머 시작</button>
+        <button class="btn btn-green" id="nextBtn" onclick="next()">다음 발표자 ▶</button>
+      </div>
+      <div class="keys">→ / SPACE 다음 · ← 이전 · T 타이머 · ESC 크게 보기 끄기</div>
+    </div>
+    <aside class="list">
+      <h3>발표 순서</h3>
+      <div id="orderList"><div class="empty-list">아직 순서가 없어요.<br>목록의 이름을 클릭하면 그 순서로 이동하고, ✕로 결석자를 뺄 수 있어요.</div></div>
+    </aside>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const KEY = 'htro_students_v1';
+const OKEY = 'htro_order_v1';
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let students = [], order = [], cur = -1, spinning = false;
+let tLeft = 0, tTotal = 0, tRun = false, tInt = null;
+
+function store(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function read(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+function parse(t){ return [...new Set(t.split(/[\n,，\t]+/).map(s => s.trim()).filter(Boolean))]; }
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function saveOrder(){ store(OKEY, { order, cur }); }
+
+const listEl = $('#studentInput');
+listEl.addEventListener('input', () => { students = parse(listEl.value); store(KEY, students); $('#count').textContent = students.length + '명'; });
+function fillNumbers(){
+  const n = parseInt($('#fillN').value);
+  if (!(n > 0 && n <= 200)) return toast('1~200 사이로 입력하세요');
+  students = Array.from({length:n}, (_, i) => `${i+1}번`);
+  listEl.value = students.join('\n'); store(KEY, students); $('#count').textContent = n + '명';
+}
+
+// ── 순서 정하기 (룰렛 연출) ──
+function makeOrder(){
+  if (spinning) return;
+  if (students.length < 1) return toast('발표자를 입력하세요');
+  spinning = true;
+  stopTimer(); $('#stage').classList.remove('timeup');
+  order = shuffle([...students]); cur = -1;
+  const now = $('#now');
+  $('#label').textContent = 'SHUFFLING';
+  $('#pos').textContent = '순서를 섞는 중…'; $('#next').innerHTML = '';
+  $('#orderList').innerHTML = '';
+  now.classList.add('spin');
+  const start = performance.now(), dur = 1600;
+  (function tick(){
+    const t = performance.now() - start;
+    if (t >= dur) {
+      now.classList.remove('spin'); spinning = false;
+      cur = 0; saveOrder(); renderList(true); show(true);
+      if ($('#autoStart').checked) startTimer(true);
+      toast(`🎲 ${order.length}명 순서가 정해졌어요`);
+      return;
+    }
+    now.textContent = students[Math.floor(Math.random() * students.length)];
+    setTimeout(tick, 50 + (t / dur) ** 2 * 200);
+  })();
+}
+
+// ── 표시 ──
+function show(pop){
+  const now = $('#now');
+  if (!order.length || cur < 0) {
+    $('#label').textContent = 'PRESENTATION ORDER'; now.textContent = '🎤';
+    $('#pos').textContent = '명단을 입력하고 순서를 정해 주세요'; $('#next').innerHTML = '';
+  } else if (cur >= order.length) {
+    $('#label').textContent = 'ALL DONE'; now.textContent = '발표 완료! 🎉';
+    $('#pos').textContent = `${order.length}명 모두 발표했어요`; $('#next').innerHTML = '';
+  } else {
+    $('#label').textContent = 'NOW PRESENTING';
+    now.textContent = order[cur];
+    $('#pos').textContent = `${cur + 1} / ${order.length}`;
+    $('#next').innerHTML = cur + 1 < order.length ? `다음 발표: <b>${esc(order[cur + 1])}</b>` : '마지막 발표자예요';
+  }
+  if (pop) { now.classList.remove('pop'); void now.offsetWidth; now.classList.add('pop'); }
+  $('#prevBtn').disabled = cur <= 0;
+  $('#nextBtn').disabled = !order.length || cur >= order.length;
+  updateTimerUI();
+}
+
+function renderList(animate){
+  const el = $('#orderList');
+  if (!order.length) { el.innerHTML = '<div class="empty-list">아직 순서가 없어요.</div>'; return; }
+  el.innerHTML = order.map((n, i) => `
+    <div class="item ${i < cur ? 'done' : ''} ${i === cur ? 'cur' : ''} ${animate ? 'anim' : ''}" data-i="${i}" style="--d:${Math.min(i, 30) * 45}ms">
+      <span class="n">${i + 1}</span><span class="nm">${esc(n)}</span>
+      <button class="x" data-x="${i}" title="순서에서 빼기">✕</button>
+    </div>`).join('');
+  el.querySelectorAll('.item').forEach(it => it.addEventListener('click', e => {
+    if (e.target.dataset.x !== undefined) { removeAt(+e.target.dataset.x); return; }
+    go(+it.dataset.i);
+  }));
+  const c = el.querySelector('.cur'); if (c && !animate) c.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+
+function go(i){
+  if (spinning) return;
+  cur = Math.max(0, Math.min(i, order.length));
+  $('#stage').classList.remove('timeup');
+  saveOrder(); renderList(false); show(true);
+  resetTimer(); if ($('#autoStart').checked && cur < order.length) startTimer(true);
+}
+function next(){ if (order.length && cur < order.length) go(cur + 1); }
+function prev(){ if (cur > 0) go(cur - 1); }
+function removeAt(i){
+  const n = order[i];
+  order.splice(i, 1);
+  if (i < cur) cur--;
+  saveOrder(); renderList(false); show(i === cur);
+  toast(`✕ ${n} 제외`);
+}
+
+// ── 타이머 ──
+function totalSec(){ return Math.round((parseFloat($('#minutes').value) || 0) * 60); }
+function fmt(s){ return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
+function updateTimerUI(){
+  const active = tTotal > 0 && order.length && cur >= 0 && cur < order.length;
+  $('#timer').textContent = active ? fmt(tLeft) : '';
+  $('#tbar').style.width = active ? (tLeft / tTotal * 100) + '%' : '0';
+  const warn = active && tLeft <= 30;
+  $('#timer').classList.toggle('warn', warn); $('#tbar').classList.toggle('warn', warn);
+  $('#timerBtn').textContent = tRun ? '⏸ 일시정지' : (tLeft < tTotal && tLeft > 0 ? '▶ 이어서' : '⏱ 타이머 시작');
+  $('#timerBtn').disabled = !active;
+}
+function resetTimer(){ stopTimer(); tTotal = totalSec(); tLeft = tTotal; updateTimerUI(); }
+function startTimer(fresh){
+  if (fresh) { tTotal = totalSec(); tLeft = tTotal; }
+  if (tTotal <= 0 || tLeft <= 0) { updateTimerUI(); return; }
+  stopTimer(); tRun = true;
+  tInt = setInterval(() => {
+    tLeft--;
+    if (tLeft <= 0) { tLeft = 0; stopTimer(); $('#stage').classList.add('timeup'); beep(); }
+    updateTimerUI();
+  }, 1000);
+  updateTimerUI();
+}
+function stopTimer(){ tRun = false; clearInterval(tInt); }
+function toggleTimer(){
+  if (tRun) { stopTimer(); updateTimerUI(); return; }
+  if (tLeft <= 0) { tTotal = totalSec(); tLeft = tTotal; $('#stage').classList.remove('timeup'); }
+  startTimer(false);
+}
+$('#minutes').addEventListener('change', () => { if (!tRun) resetTimer(); });
+let actx;
+function beep(){
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    [0, .25, .5].forEach(d => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.frequency.value = 880; g.gain.setValueAtTime(.12, actx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime + d + .2);
+      o.connect(g).connect(actx.destination); o.start(actx.currentTime + d); o.stop(actx.currentTime + d + .2);
+    });
+  } catch(e) {}
+}
+
+// ── 기타 ──
+document.addEventListener('keydown', e => {
+  if (['TEXTAREA', 'INPUT'].includes(document.activeElement.tagName)) return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  else if (e.key.toLowerCase() === 't') toggleTimer();
+  else if (e.key === 'Escape' && document.body.classList.contains('present')) togglePresent();
+});
+function togglePresent(){
+  const on = document.body.classList.toggle('present');
+  $('#presentBtn').textContent = on ? '✕ 크게 보기 끄기' : '⛶ 크게 보기';
+}
+function copyText(){
+  if (!order.length) return toast('먼저 순서를 정하세요');
+  const txt = order.map((n, i) => `${i + 1}. ${n}`).join('\n');
+  const done = () => toast('📋 클립보드에 복사했어요');
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done).catch(() => fb(txt, done)); else fb(txt, done);
+}
+function fb(t, cb){ const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try{ document.execCommand('copy'); cb(); }catch(e){} a.remove(); }
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2400); }
+
+(function init(){
+  const s = read(KEY); if (Array.isArray(s)) students = s;
+  listEl.value = students.join('\n'); $('#count').textContent = students.length + '명';
+  const o = read(OKEY);
+  if (o && Array.isArray(o.order)) { order = o.order; cur = typeof o.cur === 'number' ? o.cur : -1; }
+  tTotal = totalSec(); tLeft = tTotal;
+  renderList(false); show(false);
+})();
+</script>
+</body>
+</html>

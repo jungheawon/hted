@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모둠 편성 · HTRO EDU</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAFB;--bg-alt:#F1F2F6;--surface:#FFFFFF;--text:#0B0C10;--text-secondary:#5B5F6B;--text-tertiary:#9498A3;
+    --accent:#3654F4;--accent-dark:#1E2FB0;--accent-soft:#EAEDFE;--green:#10A25E;--green-dark:#0A7A45;--green-soft:#E3F7EC;
+    --amber:#E08A00;--amber-soft:#FCEFD6;--red:#E8384F;--red-soft:#FBE4E7;--indigo:#6366F1;--border:#E4E6ED;--border-strong:#D3D6E0;
+    --font-body:'Pretendard Variable','Pretendard',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;
+    --radius-s:8px;--radius-m:14px;--radius-l:22px;--ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--accent);color:#fff}
+  header{background:var(--surface);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+  header h1{font-weight:800;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  header h1::before{content:"";width:8px;height:8px;background:var(--accent);border-radius:2px;flex-shrink:0}
+  .subtitle{font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);letter-spacing:.04em;margin-top:4px}
+  .header-actions{display:flex;gap:7px;flex-wrap:wrap}
+  .btn{padding:8px 16px;border:none;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform .2s var(--ease),box-shadow .2s var(--ease),background .2s,color .2s,border-color .2s;white-space:nowrap}
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{background:var(--text);color:#fff}.btn-primary:hover{background:var(--accent);box-shadow:0 8px 18px -8px rgba(54,84,244,.5)}
+  .btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:var(--accent-dark);box-shadow:0 8px 18px -8px rgba(54,84,244,.5)}
+  .btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border-strong)}.btn-outline:hover{border-color:var(--text)}
+  .btn-lg{padding:12px 20px;font-size:14px;width:100%}
+  .app{display:flex;flex:1;min-height:0}
+  .sidebar{width:300px;min-width:300px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto}
+  .section{padding:14px;border-bottom:1px solid var(--border)}
+  .section h3{font-family:var(--font-mono);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+  .section h3 .cnt{color:var(--accent);text-transform:none}
+  textarea,input[type=number],input[type=text]{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-s);font:inherit;font-size:12px;background:var(--surface);color:var(--text)}
+  textarea{resize:vertical;line-height:1.55}
+  textarea:focus,input:focus{outline:none;border-color:var(--accent)}
+  .row{display:flex;gap:6px;align-items:center}
+  .row input{flex:1}
+  .hint{font-size:10.5px;color:var(--text-tertiary);margin-top:6px;line-height:1.5}
+  .seg{display:flex;background:var(--bg-alt);border-radius:999px;padding:3px;margin-bottom:8px}
+  .seg button{flex:1;border:none;background:none;padding:6px;border-radius:999px;font:inherit;font-size:11.5px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all .2s}
+  .seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(11,12,16,.1)}
+  .check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-secondary);cursor:pointer;margin-top:9px}
+  .check input{accent-color:var(--accent);width:15px;height:15px}
+  .unit{font-size:12px;color:var(--text-secondary);white-space:nowrap}
+
+  .main{flex:1;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+  .toolbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .toolbar .info{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);margin-left:auto}
+  .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+  .gcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-m);padding:14px;min-height:120px;transition:border-color .2s,box-shadow .2s}
+  .gcard.anim{animation:rise .5s var(--ease) both;animation-delay:var(--d)}
+  .gcard.drop{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+  .ghead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .gname{font-weight:800;font-size:16px;letter-spacing:-.01em;display:flex;align-items:center;gap:7px}
+  .gname .dot{width:10px;height:10px;border-radius:3px}
+  .gcount{font-family:var(--font-mono);font-size:10.5px;color:var(--text-tertiary)}
+  .members{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{padding:6px 11px;border-radius:999px;background:var(--bg-alt);font-size:13px;font-weight:600;cursor:grab;user-select:none;border:1.5px solid transparent;transition:background .15s,border-color .15s}
+  .chip:hover{border-color:var(--border-strong)}
+  .chip.leader{background:var(--amber-soft);color:#8A5300;border-color:#F3D29A}
+  .chip .crown{margin-right:4px}
+  .chip.dragging{opacity:.4}
+  .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-tertiary);gap:8px;text-align:center;min-height:300px}
+  .empty .big{font-size:40px}
+  .empty p{font-size:13px;line-height:1.6}
+  .warn{background:var(--red-soft);color:#A3172A;border-radius:var(--radius-s);padding:9px 12px;font-size:12px;display:none}
+  .warn.show{display:block}
+
+  body.present .sidebar,body.present .subtitle,body.present .toolbar .info{display:none}
+  body.present .groups{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+  body.present .gname{font-size:24px}
+  body.present .chip{font-size:20px;padding:9px 16px}
+  body.present .gcount{font-size:13px}
+
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:999px;font-family:var(--font-mono);font-size:11.5px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+  #toast.show{opacity:1}
+  @media (max-width:860px){body{height:auto;min-height:100vh}.app{flex-direction:column}.sidebar{width:100%;min-width:0;border-right:none;border-bottom:1px solid var(--border)}}
+  @media print{header,.sidebar,.toolbar,.warn{display:none!important}body{background:#fff;height:auto}.main{overflow:visible}.gcard{break-inside:avoid;animation:none!important}}
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>모둠 편성</h1>
+    <div class="subtitle">RANDOM GROUPS · SEPARATION RULES · LEADERS</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" onclick="copyText()">📋 텍스트 복사</button>
+    <button class="btn btn-outline" onclick="window.print()">🖨️ 인쇄</button>
+    <button class="btn btn-primary" id="presentBtn" onclick="togglePresent()">⛶ 크게 보기</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="section">
+      <h3>학생 명단 <span class="cnt" id="count">0명</span></h3>
+      <textarea id="studentInput" rows="9" placeholder="이름을 줄바꿈 또는 쉼표로 구분&#10;홍길동&#10;이순신, 강감찬"></textarea>
+      <div class="row" style="margin-top:6px">
+        <input type="number" id="fillN" min="1" max="200" placeholder="인원 수">
+        <button class="btn btn-outline" onclick="fillNumbers()">번호로 채우기</button>
+      </div>
+      <div class="hint">명단은 발표 순서 · 번호 추첨 페이지와 함께 쓰여요.</div>
+    </div>
+
+    <div class="section">
+      <h3>편성 방법</h3>
+      <div class="seg">
+        <button id="modeCount" class="on" onclick="setMode('count')">모둠 수로</button>
+        <button id="modeSize" onclick="setMode('size')">모둠당 인원으로</button>
+      </div>
+      <div class="row">
+        <input type="number" id="modeVal" min="1" max="50" value="6">
+        <span class="unit" id="modeUnit">개 모둠</span>
+      </div>
+      <div class="hint" id="preview"></div>
+      <label class="check"><input type="checkbox" id="leaderChk" checked> 모둠장 랜덤 지정</label>
+    </div>
+
+    <div class="section">
+      <h3>같은 모둠 금지</h3>
+      <textarea id="sepInput" rows="4" placeholder="한 줄에 서로 떨어뜨릴 학생들&#10;홍길동, 이순신&#10;강감찬, 유관순, 안중근"></textarea>
+      <div class="hint">같은 줄에 적은 학생끼리는 서로 다른 모둠에 배정돼요.</div>
+    </div>
+
+    <div class="section">
+      <button class="btn btn-accent btn-lg" onclick="makeGroups()">🎲 모둠 편성하기</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="toolbar" id="toolbar" style="display:none">
+      <button class="btn btn-accent" onclick="makeGroups()">🔀 다시 섞기</button>
+      <button class="btn btn-outline" onclick="reLeader()">★ 모둠장만 다시 뽑기</button>
+      <span class="info">이름을 끌어 모둠 이동 · 클릭하면 모둠장 지정</span>
+    </div>
+    <div class="warn" id="warn"></div>
+    <div class="groups" id="groups"></div>
+    <div class="empty" id="empty">
+      <div class="big">👥</div>
+      <p>왼쪽에 명단을 입력하고<br><b>모둠 편성하기</b>를 눌러 주세요.</p>
+    </div>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+const KEY = 'htro_students_v1';
+const GKEY = 'htro_groups_v1';
+const COLORS = ['#3654F4','#10A25E','#E08A00','#E8384F','#6366F1','#0EA5B7','#D946EF','#84CC16','#F97316','#64748B'];
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let students = [], groups = [], mode = 'count';
+
+function store(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function read(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+function parse(t){ return [...new Set(t.split(/[\n,，\t]+/).map(s => s.trim()).filter(Boolean))]; }
+
+// ── 명단 ──
+const listEl = $('#studentInput');
+function updateCount(){ $('#count').textContent = students.length + '명'; updatePreview(); }
+listEl.addEventListener('input', () => { students = parse(listEl.value); store(KEY, students); updateCount(); });
+function fillNumbers(){
+  const n = parseInt($('#fillN').value);
+  if (!(n > 0 && n <= 200)) return toast('1~200 사이로 입력하세요');
+  students = Array.from({length:n}, (_, i) => `${i+1}번`);
+  listEl.value = students.join('\n'); store(KEY, students); updateCount();
+}
+
+// ── 편성 방법 ──
+function setMode(m){
+  mode = m;
+  $('#modeCount').classList.toggle('on', m === 'count');
+  $('#modeSize').classList.toggle('on', m === 'size');
+  $('#modeUnit').textContent = m === 'count' ? '개 모둠' : '명씩';
+  $('#modeVal').value = m === 'count' ? 6 : 4;
+  updatePreview();
+}
+$('#modeVal').addEventListener('input', updatePreview);
+function groupCount(n){
+  const v = Math.max(1, parseInt($('#modeVal').value) || 1);
+  return mode === 'count' ? Math.min(v, Math.max(n, 1)) : Math.max(1, Math.round(n / v));
+}
+function updatePreview(){
+  const n = students.length;
+  if (!n) { $('#preview').textContent = ''; return; }
+  const k = groupCount(n), base = Math.floor(n / k), extra = n % k;
+  const desc = extra ? `${base+1}명 ${extra}개 + ${base}명 ${k-extra}개` : `${base}명씩`;
+  $('#preview').textContent = `→ ${n}명을 ${k}개 모둠으로 (${desc})`;
+}
+
+// ── 편성 ──
+function sepRules(){
+  return $('#sepInput').value.split('\n')
+    .map(l => l.split(/[,，\/]+/).map(s => s.trim()).filter(Boolean))
+    .filter(a => a.length >= 2);
+}
+function violations(gs, rules){
+  let v = 0;
+  for (const r of rules) for (const g of gs) {
+    const c = g.filter(m => r.includes(m)).length;
+    if (c > 1) v += c - 1;
+  }
+  return v;
+}
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function makeGroups(){
+  if (students.length < 2) return toast('학생을 2명 이상 입력하세요');
+  const k = groupCount(students.length);
+  const rules = sepRules();
+  let best = null, bestV = Infinity;
+  for (let t = 0; t < 3000 && bestV > 0; t++) {
+    const pool = shuffle([...students]);
+    const gs = Array.from({length:k}, () => []);
+    pool.forEach((s, i) => gs[i % k].push(s));
+    const v = violations(gs, rules);
+    if (v < bestV) { bestV = v; best = gs; }
+  }
+  const lead = $('#leaderChk').checked;
+  groups = best.map(m => ({ members: m, leader: lead ? m[Math.floor(Math.random() * m.length)] : null }));
+  store(GKEY, groups);
+  render(true);
+  const w = $('#warn');
+  if (bestV > 0) { w.textContent = `⚠️ 같은 모둠 금지 조건을 모두 만족하지 못했어요 (${bestV}건). 모둠 수를 늘리거나 조건을 줄여 보세요.`; w.classList.add('show'); }
+  else w.classList.remove('show');
+  toast(`🎲 ${k}개 모둠 편성 완료`);
+}
+
+function reLeader(){
+  groups.forEach(g => g.leader = g.members.length ? g.members[Math.floor(Math.random() * g.members.length)] : null);
+  store(GKEY, groups); render(false); toast('★ 모둠장을 다시 뽑았어요');
+}
+
+// ── 렌더 ──
+function render(animate){
+  const wrap = $('#groups');
+  const has = groups.length > 0;
+  $('#empty').style.display = has ? 'none' : 'flex';
+  $('#toolbar').style.display = has ? 'flex' : 'none';
+  wrap.innerHTML = groups.map((g, gi) => `
+    <div class="gcard ${animate ? 'anim' : ''}" data-g="${gi}" style="--d:${gi * 70}ms">
+      <div class="ghead">
+        <span class="gname"><span class="dot" style="background:${COLORS[gi % COLORS.length]}"></span>${gi + 1}모둠</span>
+        <span class="gcount">${g.members.length}명</span>
+      </div>
+      <div class="members">${g.members.map(m => `
+        <div class="chip ${g.leader === m ? 'leader' : ''}" draggable="true" data-g="${gi}" data-name="${esc(m)}">${g.leader === m ? '<span class="crown">★</span>' : ''}${esc(m)}</div>`).join('')}
+      </div>
+    </div>`).join('');
+  bindDrag();
+}
+
+let dragData = null;
+function bindDrag(){
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('dragstart', e => { dragData = { g: +c.dataset.g, name: c.dataset.name }; c.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', c.dataset.name); });
+    c.addEventListener('dragend', () => { c.classList.remove('dragging'); dragData = null; });
+    c.addEventListener('click', () => {
+      const g = groups[+c.dataset.g], n = c.dataset.name;
+      g.leader = g.leader === n ? null : n;
+      store(GKEY, groups); render(false);
+    });
+  });
+  document.querySelectorAll('.gcard').forEach(card => {
+    card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drop'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drop'));
+    card.addEventListener('drop', e => {
+      e.preventDefault(); card.classList.remove('drop');
+      if (!dragData) return;
+      const to = +card.dataset.g, from = groups[dragData.g];
+      if (to === dragData.g) return;
+      from.members = from.members.filter(m => m !== dragData.name);
+      if (from.leader === dragData.name) from.leader = null;
+      groups[to].members.push(dragData.name);
+      store(GKEY, groups); render(false);
+    });
+  });
+}
+
+// ── 기타 ──
+function copyText(){
+  if (!groups.length) return toast('먼저 모둠을 편성하세요');
+  const txt = groups.map((g, i) => `${i + 1}모둠: ` + g.members.map(m => g.leader === m ? `${m}(★모둠장)` : m).join(', ')).join('\n');
+  const done = () => toast('📋 클립보드에 복사했어요');
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done).catch(() => fallbackCopy(txt, done));
+  else fallbackCopy(txt, done);
+}
+function fallbackCopy(t, cb){ const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try{ document.execCommand('copy'); cb(); }catch(e){} a.remove(); }
+function togglePresent(){
+  const on = document.body.classList.toggle('present');
+  $('#presentBtn').textContent = on ? '✕ 크게 보기 끄기' : '⛶ 크게 보기';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('present')) togglePresent(); });
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2400); }
+
+// ── 시작 ──
+(function init(){
+  const s = read(KEY); if (Array.isArray(s)) students = s;
+  listEl.value = students.join('\n');
+  const g = read(GKEY); if (Array.isArray(g)) groups = g;
+  updateCount(); render(false);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>번호 추첨 · HTRO EDU</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAFB;--bg-alt:#F1F2F6;--surface:#FFFFFF;--text:#0B0C10;--text-secondary:#5B5F6B;--text-tertiary:#9498A3;
+    --accent:#3654F4;--accent-dark:#1E2FB0;--accent-soft:#EAEDFE;--green:#10A25E;--green-dark:#0A7A45;--green-soft:#E3F7EC;
+    --amber:#E08A00;--amber-soft:#FCEFD6;--red:#E8384F;--red-soft:#FBE4E7;--indigo:#6366F1;--border:#E4E6ED;--border-strong:#D3D6E0;
+    --font-body:'Pretendard Variable','Pretendard',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;
+    --radius-s:8px;--radius-m:14px;--radius-l:22px;--ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--accent);color:#fff}
+  header{background:var(--surface);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+  header h1{font-weight:800;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  header h1::before{content:"";width:8px;height:8px;background:var(--accent);border-radius:2px;flex-shrink:0}
+  .subtitle{font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);letter-spacing:.04em;margin-top:4px}
+  .header-actions{display:flex;gap:7px;flex-wrap:wrap}
+  .btn{padding:8px 16px;border:none;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform .2s var(--ease),box-shadow .2s var(--ease),background .2s,color .2s,border-color .2s;white-space:nowrap}
+  .btn:hover{transform:translateY(-1px)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .btn-primary{background:var(--text);color:#fff}.btn-primary:hover{background:var(--accent);box-shadow:0 8px 18px -8px rgba(54,84,244,.5)}
+  .btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:var(--accent-dark);box-shadow:0 8px 18px -8px rgba(54,84,244,.5)}
+  .btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border-strong)}.btn-outline:hover{border-color:var(--text)}
+  .btn-danger{background:var(--red-soft);color:#A3172A}.btn-danger:hover{background:var(--red);color:#fff}
+  .app{display:flex;flex:1;min-height:0}
+  .sidebar{width:290px;min-width:290px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto}
+  .section{padding:14px;border-bottom:1px solid var(--border)}
+  .section h3{font-family:var(--font-mono);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+  .section h3 .cnt{color:var(--accent);text-transform:none}
+  textarea,input[type=number],input[type=text]{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-s);font:inherit;font-size:12px;background:var(--surface);color:var(--text)}
+  textarea{resize:vertical;line-height:1.55}
+  textarea:focus,input:focus{outline:none;border-color:var(--accent)}
+  .row{display:flex;gap:6px;align-items:center}
+  .row input{flex:1;min-width:0}
+  .unit{font-size:12px;color:var(--text-secondary);white-space:nowrap}
+  .lbl{font-size:11px;color:var(--text-secondary);margin:10px 0 5px;font-weight:600}
+  .lbl:first-of-type{margin-top:0}
+  .hint{font-size:10.5px;color:var(--text-tertiary);margin-top:6px;line-height:1.5}
+  .check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-secondary);cursor:pointer;margin-top:9px}
+  .check input{accent-color:var(--accent);width:15px;height:15px}
+
+  .main{flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0;overflow:auto}
+  .stage{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-l);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;gap:22px;min-height:340px;position:relative;overflow:hidden}
+  .stage .label{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:600}
+  .balls{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;align-items:flex-start}
+  .ball{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .num{--s:220px;width:var(--s);height:var(--s);border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:calc(var(--s) * .42);letter-spacing:-.04em;border:3px solid #C7CFFB;transition:background .3s,color .3s,border-color .3s}
+  .balls.m .num{--s:150px}
+  .balls.l .num{--s:104px}
+  .num.done{background:var(--accent);color:#fff;border-color:var(--accent);animation:pop .55s var(--ease)}
+  @keyframes pop{0%{transform:scale(.8)}55%{transform:scale(1.08)}100%{transform:none}}
+  .nm{font-size:22px;font-weight:700;min-height:28px;opacity:0;transition:opacity .3s}
+  .balls.l .nm{font-size:15px}
+  .nm.show{opacity:1}
+  .idle{font-size:15px;color:var(--text-tertiary)}
+  .remain{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary)}
+  .controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+  .drawBtn{padding:14px 40px;font-size:16px;font-weight:700}
+  .keys{text-align:center;font-family:var(--font-mono);font-size:10.5px;color:var(--text-tertiary)}
+
+  .history{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-m);padding:14px}
+  .history-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .history-head h3{font-family:var(--font-mono);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary)}
+  .history-head .btns{display:flex;gap:6px}
+  .history-head .btn{padding:5px 11px;font-size:11px}
+  .hlist{display:flex;flex-wrap:wrap;gap:6px}
+  .hchip{padding:5px 11px;border-radius:999px;background:var(--bg-alt);font-family:var(--font-mono);font-size:12.5px;font-weight:600}
+  .hchip small{font-family:var(--font-body);color:var(--text-secondary);font-weight:500;margin-left:4px}
+  .hchip.last{background:var(--accent);color:#fff}
+  .hchip.last small{color:rgba(255,255,255,.8)}
+  .hempty{font-size:12px;color:var(--text-tertiary)}
+
+  .confetti{position:absolute;width:8px;height:12px;top:-14px;border-radius:2px;pointer-events:none;animation:fall 1.6s ease-in forwards}
+  @keyframes fall{to{transform:translateY(560px) rotate(540deg);opacity:0}}
+
+  body.present .sidebar,body.present .subtitle,body.present .keys{display:none}
+  body.present .num{--s:280px}
+  body.present .balls.m .num{--s:190px}
+  body.present .balls.l .num{--s:130px}
+
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:999px;font-family:var(--font-mono);font-size:11.5px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+  #toast.show{opacity:1}
+  @media (max-width:860px){body{height:auto;min-height:100vh}.app{flex-direction:column}.sidebar{width:100%;min-width:0;border-right:none;border-bottom:1px solid var(--border)}.num{--s:160px}}
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>번호 추첨</h1>
+    <div class="subtitle">RANDOM NUMBER DRAW · NO REPEATS</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" id="soundBtn" onclick="toggleSound()">🔊 소리 켜짐</button>
+    <button class="btn btn-primary" id="presentBtn" onclick="togglePresent()">⛶ 크게 보기</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="section">
+      <h3>추첨 범위</h3>
+      <div class="row">
+        <input type="number" id="from" value="1" min="0">
+        <span class="unit">번 ~</span>
+        <input type="number" id="to" value="30" min="0">
+        <span class="unit">번</span>
+      </div>
+      <div class="lbl">제외할 번호</div>
+      <input type="text" id="exclude" placeholder="예: 3, 7, 10-12">
+      <div class="hint">결석자 번호 등. 쉼표와 범위(10-12)를 쓸 수 있어요.</div>
+    </div>
+    <div class="section">
+      <h3>뽑는 방법</h3>
+      <div class="row">
+        <input type="number" id="howMany" value="1" min="1" max="12">
+        <span class="unit">개씩 한 번에</span>
+      </div>
+      <label class="check"><input type="checkbox" id="noDup" checked> 이미 뽑힌 번호는 다시 안 나오게</label>
+      <label class="check"><input type="checkbox" id="showName"> 번호 아래에 학생 이름 표시</label>
+    </div>
+    <div class="section">
+      <h3>학생 명단 <span class="cnt" id="count">0명</span></h3>
+      <textarea id="studentInput" rows="8" placeholder="1번 학생부터 순서대로 한 줄에 한 명"></textarea>
+      <div class="hint">'이름 표시'를 켜면 n번째 줄의 이름을 n번에 보여 줘요. 명단은 모둠 편성 · 발표 순서 페이지와 함께 쓰여요.</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="stage" id="stage">
+      <div class="label" id="label">READY</div>
+      <div class="balls" id="balls"><div class="idle">추첨 버튼을 누르거나 스페이스바를 눌러 주세요</div></div>
+      <div class="remain" id="remain"></div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-accent drawBtn" id="drawBtn" onclick="draw()">🎲 추첨하기</button>
+    </div>
+    <div class="keys">SPACE / ENTER 추첨 · Z 마지막 취소 · ESC 크게 보기 끄기</div>
+    <div class="history">
+      <div class="history-head">
+        <h3>뽑힌 번호 <span id="hcount"></span></h3>
+        <div class="btns">
+          <button class="btn btn-outline" onclick="undo()">↩️ 마지막 취소</button>
+          <button class="btn btn-danger" id="resetBtn" onclick="resetAll()">전체 초기화</button>
+        </div>
+      </div>
+      <div class="hlist" id="hlist"><span class="hempty">아직 뽑힌 번호가 없어요</span></div>
+    </div>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+const KEY = 'htro_students_v1';
+const DKEY = 'htro_draw_v1';
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let students = [], drawn = [], lastBatch = 0, rolling = false, soundOn = true;
+
+function store(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function read(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+// 이 페이지는 번호↔줄 대응이 중요하므로 중복 제거 없이 순서 유지
+function parseLines(t){ return t.split(/[\n,，\t]+/).map(s => s.trim()).filter(Boolean); }
+
+function settings(){
+  return {
+    from: parseInt($('#from').value), to: parseInt($('#to').value),
+    exclude: $('#exclude').value, howMany: parseInt($('#howMany').value) || 1,
+    noDup: $('#noDup').checked, showName: $('#showName').checked
+  };
+}
+function saveState(){ store(DKEY, { s: settings(), drawn, lastBatch, soundOn }); }
+['from','to','exclude','howMany','noDup','showName'].forEach(id => $('#' + id).addEventListener('change', () => { saveState(); updateRemain(); renderHistory(); }));
+
+const listEl = $('#studentInput');
+listEl.addEventListener('input', () => { students = parseLines(listEl.value); store(KEY, students); $('#count').textContent = students.length + '명'; renderHistory(); });
+
+function parseExclude(t){
+  const set = new Set();
+  t.split(/[,，\s]+/).filter(Boolean).forEach(p => {
+    const m = p.match(/^(\d+)\s*[-~]\s*(\d+)$/);
+    if (m) { let a = +m[1], b = +m[2]; if (a > b) [a, b] = [b, a]; for (let i = a; i <= b && i - a < 1000; i++) set.add(i); }
+    else if (/^\d+$/.test(p)) set.add(+p);
+  });
+  return set;
+}
+function pool(){
+  const s = settings();
+  if (isNaN(s.from) || isNaN(s.to)) return [];
+  let a = Math.min(s.from, s.to), b = Math.max(s.from, s.to);
+  if (b - a > 9999) b = a + 9999;
+  const ex = parseExclude(s.exclude), used = s.noDup ? new Set(drawn) : new Set();
+  const p = [];
+  for (let i = a; i <= b; i++) if (!ex.has(i) && !used.has(i)) p.push(i);
+  return p;
+}
+function nameOf(n){ return settings().showName && students[n - 1] ? students[n - 1] : ''; }
+function updateRemain(){
+  const p = pool();
+  $('#remain').textContent = settings().noDup ? `남은 번호 ${p.length}개` : `추첨 대상 ${p.length}개`;
+}
+
+// ── 추첨 ──
+async function draw(){
+  if (rolling) return;
+  const s = settings(), p = pool();
+  if (!p.length) return toast(s.noDup ? '모든 번호를 뽑았어요. 초기화해 주세요' : '추첨할 번호가 없어요');
+  let k = Math.max(1, Math.min(s.howMany, 12));
+  if (k > p.length) { k = p.length; toast(`남은 번호가 ${k}개라 ${k}개만 뽑아요`); }
+  const picks = [];
+  const tmp = [...p];
+  for (let i = 0; i < k; i++) picks.push(tmp.splice(Math.floor(Math.random() * tmp.length), 1)[0]);
+
+  rolling = true; $('#drawBtn').disabled = true;
+  $('#label').textContent = 'DRAWING…';
+  const balls = $('#balls');
+  balls.className = 'balls' + (k >= 5 ? ' l' : k >= 2 ? ' m' : '');
+  balls.innerHTML = picks.map(() => `<div class="ball"><div class="num">?</div><div class="nm"></div></div>`).join('');
+  const els = [...balls.querySelectorAll('.ball')];
+  const lo = Math.min(s.from, s.to), hi = Math.max(s.from, s.to);
+  await Promise.all(picks.map((n, i) => roll(els[i], n, 1700 + i * 450, lo, hi)));
+
+  drawn.push(...picks); lastBatch = picks.length;
+  $('#label').textContent = k > 1 ? `${k} NUMBERS DRAWN` : 'NUMBER DRAWN';
+  confetti(); saveState(); renderHistory(); updateRemain();
+  rolling = false; $('#drawBtn').disabled = false;
+}
+function roll(ball, target, dur, lo, hi){
+  return new Promise(res => {
+    const numEl = ball.querySelector('.num'), nmEl = ball.querySelector('.nm');
+    const start = performance.now();
+    (function tick(){
+      const t = performance.now() - start;
+      if (t >= dur) {
+        numEl.textContent = target; numEl.classList.add('done');
+        const nm = nameOf(target); nmEl.textContent = nm; if (nm) nmEl.classList.add('show');
+        tone(880, .18, .1); res(); return;
+      }
+      numEl.textContent = lo + Math.floor(Math.random() * (hi - lo + 1));
+      tone(320 + Math.random() * 220, .03, .03);
+      setTimeout(tick, 45 + (t / dur) ** 2.2 * 240);
+    })();
+  });
+}
+
+// ── 기록 ──
+function renderHistory(){
+  const el = $('#hlist');
+  $('#hcount').textContent = drawn.length ? `· ${drawn.length}개` : '';
+  if (!drawn.length) { el.innerHTML = '<span class="hempty">아직 뽑힌 번호가 없어요</span>'; return; }
+  const lastStart = drawn.length - lastBatch;
+  el.innerHTML = drawn.map((n, i) => {
+    const nm = nameOf(n);
+    return `<span class="hchip ${i >= lastStart ? 'last' : ''}">${n}${nm ? `<small>${esc(nm)}</small>` : ''}</span>`;
+  }).join('');
+}
+function undo(){
+  if (rolling || !drawn.length) return;
+  const n = Math.max(1, lastBatch);
+  const removed = drawn.splice(drawn.length - n, n);
+  lastBatch = 0;
+  idle(); saveState(); renderHistory(); updateRemain();
+  toast(`↩️ ${removed.join(', ')}번 취소`);
+}
+let resetPending = false;
+function resetAll(){
+  if (rolling) return;
+  const btn = $('#resetBtn');
+  if (!resetPending) {
+    resetPending = true; btn.textContent = '정말 초기화?';
+    setTimeout(() => { resetPending = false; btn.textContent = '전체 초기화'; }, 2500);
+    return;
+  }
+  resetPending = false; btn.textContent = '전체 초기화';
+  drawn = []; lastBatch = 0; idle(); saveState(); renderHistory(); updateRemain();
+  toast('🗑️ 기록을 초기화했어요');
+}
+function idle(){
+  $('#label').textContent = 'READY';
+  $('#balls').className = 'balls';
+  $('#balls').innerHTML = '<div class="idle">추첨 버튼을 누르거나 스페이스바를 눌러 주세요</div>';
+}
+
+// ── 효과 ──
+let actx;
+function tone(f, d, v){
+  if (!soundOn) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(v, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime + d);
+    o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + d);
+  } catch(e) {}
+}
+function toggleSound(){ soundOn = !soundOn; $('#soundBtn').textContent = soundOn ? '🔊 소리 켜짐' : '🔇 소리 꺼짐'; saveState(); }
+function confetti(){
+  const st = $('#stage'), cols = ['#3654F4','#10A25E','#E08A00','#E8384F','#6366F1'];
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + '%';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDelay = Math.random() * .3 + 's';
+    c.style.animationDuration = 1.2 + Math.random() * .8 + 's';
+    st.appendChild(c);
+    setTimeout(() => c.remove(), 2400);
+  }
+}
+function togglePresent(){
+  const on = document.body.classList.toggle('present');
+  $('#presentBtn').textContent = on ? '✕ 크게 보기 끄기' : '⛶ 크게 보기';
+}
+document.addEventListener('keydown', e => {
+  if (['TEXTAREA', 'INPUT'].includes(document.activeElement.tagName)) return;
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); draw(); }
+  else if (e.key.toLowerCase() === 'z') undo();
+  else if (e.key === 'Escape' && document.body.classList.contains('present')) togglePresent();
+});
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2400); }
+
+(function init(){
+  const s = read(KEY); if (Array.isArray(s)) students = s;
+  listEl.value = students.join('\n'); $('#count').textContent = students.length + '명';
+  const d = read(DKEY);
+  if (d) {
+    if (d.s) {
+      if (!isNaN(d.s.from)) $('#from').value = d.s.from;
+      if (!isNaN(d.s.to)) $('#to').value = d.s.to;
+      $('#exclude').value = d.s.exclude || '';
+      $('#howMany').value = d.s.howMany || 1;
+      $('#noDup').checked = d.s.noDup !== false;
+      $('#showName').checked = !!d.s.showName;
+    }
+    if (Array.isArray(d.drawn)) drawn = d.drawn;
+    lastBatch = d.lastBatch || 0;
+    if (d.soundOn === false) { soundOn = false; $('#soundBtn').textContent = '🔇 소리 꺼짐'; }
+  } else if (students.length) {
+    $('#to').value = students.length;
+  }
+  renderHistory(); updateRemain();
+})();
+</script>
+</body>
+</html>
