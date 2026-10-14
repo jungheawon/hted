@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -132,6 +131,8 @@
   .seat.occupied-back:hover  { background: var(--green-dark); }
   .seat.fixed-seat { background: var(--amber); border-color: var(--amber); border-style: solid; color: #fff; }
   .seat.fixed-seat:hover { background: #C67900; }
+  .seat.seat-add { border-style: dashed; border-color: var(--border-strong); background: transparent; color: var(--text-tertiary); font-size: 22px; font-weight: 400; }
+  .seat.seat-add:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
   .seat.drag-over  { border-color: var(--indigo); background: #E7E7FE; border-style: solid; }
 
   #zoneModeBtn.mode-active { box-shadow: 0 0 0 3px rgba(224,138,0,.35); }
@@ -165,6 +166,7 @@
     .main { overflow: visible; }
     .classroom-wrap { padding: 8px; }
     .seat { border-width: 1.5px; }
+    .seat.seat-add { display: none; }
   }
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
@@ -175,7 +177,7 @@
 <header>
   <div>
     <h1>자리배치 프로그램</h1>
-    <div class="subtitle">32 SEATS · FRONT / BACK REQUEST GROUPS</div>
+    <div class="subtitle"><span id="seatCountLabel">32</span> SEATS · FRONT / BACK REQUEST GROUPS</div>
   </div>
   <div class="header-actions">
     <button class="btn btn-outline" onclick="saveNames()">💾 저장</button>
@@ -274,19 +276,25 @@
 // ── 자리 순서 (index, 0-based) ──────────────────
 // 기본 앞자리 구역: 1~6번 (첫째 줄) → index [0..5]
 // 앞자리 신청 인원이 6명보다 많으면 7, 8, 9... 순서로 확장
-const SEAT_ORDER = Array.from({length: 32}, (_, i) => i);
-const TOTAL_SEATS = 32;
+// 기본 32석, 33번 자리의 + 버튼으로 한 자리씩 추가
+const DEFAULT_SEATS = 32;
+let TOTAL_SEATS = DEFAULT_SEATS;
+try { const t = parseInt(localStorage.getItem('seating_total_v1')); if (t >= DEFAULT_SEATS) TOTAL_SEATS = t; } catch(e) {}
 const DEFAULT_FRONT_COUNT = 6;
+function seatOrder() { return Array.from({length: TOTAL_SEATS}, (_, i) => i); }
+function saveTotalSeats() { try { localStorage.setItem('seating_total_v1', String(TOTAL_SEATS)); } catch(e) {} }
 
 // 앞자리 신청 인원 수에 따라 동적으로 FRONT_IDX / BACK_IDX 계산
 // (단, manualZones에 수동 지정된 좌석이 있으면 그 값이 우선 적용됨)
 function computeGroups() {
   const frontCount = Math.max(DEFAULT_FRONT_COUNT, names.filter(n => n.grp === 'front').length);
-  const frontIdxSet = new Set(SEAT_ORDER.slice(0, frontCount));
-  const backIdxSet  = new Set(SEAT_ORDER.slice(frontCount));
+  const order = seatOrder();
+  const frontIdxSet = new Set(order.slice(0, frontCount));
+  const backIdxSet  = new Set(order.slice(frontCount));
   // 수동 지정 오버라이드 적용
   Object.entries(manualZones).forEach(([idxStr, zone]) => {
     const idx = parseInt(idxStr);
+    if (idx >= TOTAL_SEATS) return;
     if (zone === 'front') { frontIdxSet.add(idx); backIdxSet.delete(idx); }
     else if (zone === 'back') { backIdxSet.add(idx); frontIdxSet.delete(idx); }
   });
@@ -297,7 +305,7 @@ function computeGroups() {
 // seats: [{name|null, grp|null, fixed}]
 let names = [];
 let seats = Array.from({length: TOTAL_SEATS}, (_, i) => ({name: null, grp: null, fixed: false}));
-let rows = 6, cols = 6; // display grid (36 cells, only 32 used)
+let cols = 6; // 한 줄 6자리
 let manualZones = {};   // { seatIdx: 'front' | 'back' }  — 사용자가 직접 지정한 구역
 let zoneEditMode = false; // 구역 지정 모드 on/off
 
@@ -310,12 +318,7 @@ window.onload = () => {
   if (!names.length) {
     // 앞자리 신청: 2,3,5,6,8,9번 (1-based) → index 1,2,4,5,7,8  (6명)
     const frontSet = new Set([1,2,4,5,7,8]);
-    const nameList = [
-      '학생1','학생2','학생3','학생4','학생5','학생6','학생7','학생8',
-      '학생9','학생10','학생11','학생12','학생13','학생14','학생15','학생16',
-      '학생17','학생18','학생19','학생20','학생21','학생22','학생23','학생24',
-      '학생25','학생26','학생27','학생28','학생29','학생30','학생31','학생32'
-    ];
+    const nameList = Array.from({length: DEFAULT_SEATS}, (_, i) => `학생${i+1}`);
     names = nameList.map((name, i) => ({name, grp: frontSet.has(i) ? 'front' : 'back'}));
   }
   renderNameList();
@@ -329,15 +332,17 @@ function renderGrid() {
   grid.innerHTML = '';
   document.querySelector('.classroom-wrap').classList.toggle('zone-edit-mode', zoneEditMode);
 
-  // We show 36 cells (6×6) but only 32 are real seats
-  for (let cell = 0; cell < rows * cols; cell++) {
+  document.getElementById('seatCountLabel').textContent = TOTAL_SEATS;
+  // 실제 자리 + 마지막 칸에 자리 추가(+) 버튼
+  for (let cell = 0; cell <= TOTAL_SEATS; cell++) {
     const el = document.createElement('div');
     const seatIdx = cell; // 0-based
 
-    if (seatIdx >= TOTAL_SEATS) {
-      // ghost cell to fill grid
-      el.className = 'seat';
-      el.style.visibility = 'hidden';
+    if (seatIdx === TOTAL_SEATS) {
+      el.className = 'seat seat-add';
+      el.textContent = '+';
+      el.title = `${TOTAL_SEATS+1}번 자리 추가`;
+      el.addEventListener('click', addSeat);
       grid.appendChild(el);
       continue;
     }
@@ -380,6 +385,27 @@ function renderGrid() {
     grid.appendChild(el);
   }
   updateBadges();
+}
+
+// ── 자리 추가 / 삭제 ───────────────────────
+function addSeat() {
+  TOTAL_SEATS++;
+  seats.push({name: null, grp: null, fixed: false});
+  saveTotalSeats();
+  renderGrid();
+  showToast(`➕ ${TOTAL_SEATS}번 자리 추가`);
+}
+
+function removeLastSeat() {
+  if (TOTAL_SEATS <= DEFAULT_SEATS) return;
+  const removed = TOTAL_SEATS;
+  seats.pop();
+  delete manualZones[TOTAL_SEATS - 1];
+  try { localStorage.setItem('seating_zones_v1', JSON.stringify(manualZones)); } catch(e) {}
+  TOTAL_SEATS--;
+  saveTotalSeats();
+  renderGrid();
+  showToast(`➖ ${removed}번 자리 삭제`);
 }
 
 // ── 구역 수동 지정 ─────────────────────────
@@ -457,7 +483,7 @@ function updateBadges() {
     ranges.push(s===e?`${s}`:`${s}~${e}`);
     return ranges.join(', ');
   }
-  const allNums = Array.from({length:32},(_,i)=>i+1);
+  const allNums = Array.from({length:TOTAL_SEATS},(_,i)=>i+1);
   const backNums = allNums.filter(n=>!frontNums.includes(n));
   const legendFront = document.getElementById('legendFront');
   const legendBack  = document.getElementById('legendBack');
@@ -617,6 +643,12 @@ function openSeatModal(idx) {
     acts.appendChild(cBtn);
   }
 
+  if (idx === TOTAL_SEATS - 1 && TOTAL_SEATS > DEFAULT_SEATS) {
+    const rBtn = document.createElement('button'); rBtn.className='btn btn-outline'; rBtn.textContent='➖ 자리 삭제';
+    rBtn.onclick = () => { closeModal(); removeLastSeat(); };
+    acts.appendChild(rBtn);
+  }
+
   const xBtn = document.createElement('button'); xBtn.className='btn btn-gray'; xBtn.textContent='취소';
   xBtn.onclick = closeModal;
   acts.appendChild(xBtn);
@@ -667,5 +699,3 @@ function showToast(msg) {
 </script>
 </body>
 </html>
-
-</body></html>
