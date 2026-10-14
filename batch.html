@@ -181,7 +181,6 @@
     <button class="btn btn-outline" onclick="saveNames()">💾 저장</button>
     <button class="btn btn-outline" onclick="loadNames()">📂 불러오기</button>
     <button class="btn btn-print" onclick="window.print()">🖨️ 인쇄</button>
-    <button class="btn btn-outline" onclick="saveImage()">🖼️ HTML 저장</button>
   </div>
 </header>
 
@@ -651,33 +650,6 @@ function handleFileLoad(e) {
     names = lines; renderNameList(); showToast('✅ 불러오기 완료');
   };
   reader.readAsText(file); e.target.value='';
-}
-
-function saveImage() {
-  let html = `<html><head><meta charset="UTF-8"><style>
-    body{font-family:sans-serif;background:#f0f4f8;padding:20px;text-align:center;}
-    .bb{background:#2d4a3e;color:#c8f7c5;padding:8px 30px;border-radius:6px;font-size:13px;letter-spacing:3px;display:inline-block;margin-bottom:20px;}
-    .grid{display:inline-grid;grid-template-columns:repeat(${cols},78px);gap:8px;}
-    .seat{width:76px;height:58px;border-radius:7px;border:2px solid #cbd5e1;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:600;position:relative;}
-    .num{font-size:9px;color:#94a3b8;position:absolute;top:3px;right:4px;}
-    .fz{background:#f0f7ff;border-color:#93c5fd;border-style:dashed;}
-    .bz{background:#f0fdf8;border-color:#6ee7b7;border-style:dashed;}
-    .fo{background:#dbeafe;border-color:#3b82f6;}
-    .bo{background:#d1fae5;border-color:#10b981;}
-    .fx{background:#fef3c7;border-color:#f59e0b;}
-  </style></head><body><div class="bb">칠판 / 앞</div><br><div class="grid">`;
-  for (let i=0; i<rows*cols; i++) {
-    if (i>=TOTAL_SEATS) { html+=`<div class="seat" style="visibility:hidden"></div>`; continue; }
-    const s=seats[i], zone=computeGroups().frontIdxSet.has(i)?'front':'back';
-    let cls = s.fixed&&s.name?'fx': s.name?(s.grp==='front'?'fo':'bo'):(zone==='front'?'fz':'bz');
-    html+=`<div class="seat ${cls}"><span class="num">${i+1}</span>${s.name||''}</div>`;
-  }
-  html+=`</div></body></html>`;
-  const blob=new Blob([html],{type:'text/html'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='자리배치.html'; a.click();
-  URL.revokeObjectURL(url);
-  showToast('🖼️ HTML 저장 완료');
 }
 
 function dlFile(name, text) {
