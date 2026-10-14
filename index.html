@@ -173,6 +173,7 @@
   .mm-sub{max-height:0;overflow:hidden;transition:max-height .35s var(--ease);}
   .mm-accordion.open .mm-sub{max-height:560px;}
   .mm-sub a{
+    display:block;
     padding:14px 4px 14px 14px !important;font-size:16px !important;font-weight:500 !important;
     color:var(--text-secondary);border-bottom:1px solid var(--border);
   }
@@ -191,7 +192,8 @@
     font-size:clamp(28px,4vw,42px);letter-spacing:-0.02em;margin-bottom:14px;
   }
   .page-view-inner p{color:var(--text-secondary);font-size:15.5px;line-height:1.7;margin-bottom:32px;}
-  .page-view-inner .btn-outline{padding:13px 26px;}
+  .page-view-inner .btn-outline, .page-view-inner .btn-primary{padding:13px 26px;}
+  .pv-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
   /* Resource list pages (수업 자료실 / 프로그램 자료실) */
   .res-view{display:none;min-height:100svh;padding:140px 32px 100px;}
@@ -259,11 +261,14 @@
   @media (max-width:1160px){.burger{display:flex;}}
   .mobile-menu{
     position:fixed;inset:0;top:64px;background:var(--bg);z-index:999;
-    display:flex;flex-direction:column;padding:28px 24px;gap:4px;
+    display:flex;flex-direction:column;padding:20px 24px 40px;gap:4px;
+    overflow-y:auto;overscroll-behavior:contain;
     transform:translateY(-12px);opacity:0;pointer-events:none;
     transition:transform .3s var(--ease), opacity .3s var(--ease);
   }
   .mobile-menu.open{transform:translateY(0);opacity:1;pointer-events:auto;}
+  @media (min-width:1161px){.mobile-menu{display:none;}}
+  body.menu-open{overflow:hidden;}
   .mobile-menu a{padding:16px 4px;font-size:19px;font-weight:600;border-bottom:1px solid var(--border);}
   .mobile-menu .btn{margin-top:20px;width:100%;padding:16px;}
 
@@ -564,7 +569,7 @@
           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="dropdown-panel">
-          <a href="#/class-seating" data-route="class-seating"><b>자리배치</b><small>AVAILABLE</small></a>
+          <a href="/batch.html"><b>자리배치</b><small>AVAILABLE</small></a>
           <a href="#/class-group" data-route="class-group"><b>모둠 편성</b><small>CLASSROOM TOOL</small></a>
           <a href="#/class-presentation" data-route="class-presentation"><b>발표 순서</b><small>CLASSROOM TOOL</small></a>
           <a href="#/class-lottery" data-route="class-lottery"><b>번호 추첨</b><small>CLASSROOM TOOL</small></a>
@@ -648,6 +653,8 @@
       </button>
     </div>
   </div>
+</header>
+
   <div class="mobile-menu" id="mobileMenu">
     <a href="#/features" data-route="features">기능</a>
 
@@ -657,7 +664,7 @@
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="mm-sub">
-        <a href="#/class-seating" data-route="class-seating">자리배치</a>
+        <a href="/batch.html">자리배치</a>
         <a href="#/class-group" data-route="class-group">모둠 편성</a>
         <a href="#/class-presentation" data-route="class-presentation">발표 순서</a>
         <a href="#/class-lottery" data-route="class-lottery">번호 추첨</a>
@@ -735,7 +742,7 @@
       <button data-google-logout>로그아웃</button>
     </div>
   </div>
-</header>
+
 
 <main id="top">
 
@@ -767,7 +774,7 @@
             <h4>오늘의 수업</h4>
             <p>12정보 · 3교시</p>
           </a>
-          <a href="#/class-seating" data-route="class-seating" class="dash-card">
+          <a href="/batch.html" class="dash-card">
             <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
             <h4>자리배치</h4>
             <p>AVAILABLE</p>
@@ -812,7 +819,7 @@
           <span class="status-tag avail"><i></i>Available</span>
         </a>
 
-        <a href="#/class-seating" data-route="class-seating" class="feat-card reveal">
+        <a href="/batch.html" class="feat-card reveal">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
           <h3>자리배치</h3>
           <p>학생 정보를 기반으로 원하는 조건에 맞는 최적의 자리배치를 만들어줍니다.</p>
@@ -1037,7 +1044,10 @@
     <div class="eyebrow" id="pvEyebrow" style="justify-content:center;">PAGE</div>
     <h1 id="pvTitle">기능</h1>
     <p id="pvDesc">준비 중입니다.</p>
-    <a href="#top" class="btn btn-outline" data-route="home">홈으로 돌아가기</a>
+    <div class="pv-actions">
+      <a href="#" id="pvLogin" data-google-login class="btn btn-primary" hidden>Google로 로그인</a>
+      <a href="#top" class="btn btn-outline" data-route="home">홈으로 돌아가기</a>
+    </div>
   </div>
 </div>
 
@@ -1065,9 +1075,13 @@
   const burger = document.getElementById('burger');
   const mobileMenu = document.getElementById('mobileMenu');
   burger.addEventListener('click', () => {
-    mobileMenu.classList.toggle('open');
+    const open = mobileMenu.classList.toggle('open');
+    document.body.classList.toggle('menu-open', open);
   });
-  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.remove('open')));
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    mobileMenu.classList.remove('open');
+    document.body.classList.remove('menu-open');
+  }));
 
   // scroll reveal
   const revealEls = document.querySelectorAll('.reveal');
@@ -1149,7 +1163,6 @@
   // ============ Router: nav links go to blank pages, header stays ============
   const routeMeta = {
     'features':           { eyebrow: 'FEATURES',    title: '기능' },
-    'class-seating':       { eyebrow: 'CLASS AI',    title: '자리배치' },
     'class-group':         { eyebrow: 'CLASS AI',    title: '모둠 편성' },
     'class-presentation':  { eyebrow: 'CLASS AI',    title: '발표 순서' },
     'class-lottery':       { eyebrow: 'CLASS AI',    title: '번호 추첨' },
@@ -1207,6 +1220,12 @@
   const pvEyebrow = document.getElementById('pvEyebrow');
   const pvTitle = document.getElementById('pvTitle');
   const pvDesc = document.getElementById('pvDesc');
+  const pvLogin = document.getElementById('pvLogin');
+
+  // 로그인해야 들어갈 수 있는 페이지 (Teacher AI, AI Tutor)
+  const isProtected = (r) => /^(teacher|tutor)-/.test(r || '');
+  let currentRoute = 'home';
+  let pendingRoute = null;
   const resView = document.getElementById('resView');
   const resEyebrow = document.getElementById('resEyebrow');
   const resTitle = document.getElementById('resTitle');
@@ -1305,6 +1324,7 @@
 
   function closeMenus(){
     mobileMenu.classList.remove('open');
+    document.body.classList.remove('menu-open');
     document.querySelectorAll('.nav-dropdown.open').forEach(dd => {
       dd.classList.remove('open');
       dd.querySelector(':scope > button').setAttribute('aria-expanded', 'false');
@@ -1333,22 +1353,38 @@
       resView.classList.add('active');
       return;
     }
-    pvEyebrow.textContent = meta.eyebrow;
-    pvTitle.textContent = meta.title;
-    pvDesc.textContent = meta.title + ' 페이지는 준비 중입니다. 곧 이 자리에서 만나보실 수 있어요.';
+    if(isProtected(route) && !currentUser){
+      pvEyebrow.textContent = 'LOGIN REQUIRED';
+      pvTitle.textContent = '로그인이 필요한 페이지예요';
+      pvDesc.textContent = 'Teacher AI와 AI Tutor는 로그인 후 이용할 수 있어요. Google 계정으로 간단히 로그인해 주세요.';
+      pvLogin.hidden = false;
+    } else {
+      pvEyebrow.textContent = meta.eyebrow;
+      pvTitle.textContent = meta.title;
+      pvDesc.textContent = meta.title + ' 페이지는 준비 중입니다. 곧 이 자리에서 만나보실 수 있어요.';
+      pvLogin.hidden = true;
+    }
     resView.classList.remove('active');
     pageView.classList.add('active');
   }
 
-  function navigate(route, pushHash){
+  function navigate(route, pushHash, fromClick){
+    currentRoute = route || 'home';
     if(!route || route === 'home'){
+      pendingRoute = null;
       goHome();
       if(pushHash !== false) history.pushState(null, '', '#top');
       window.scrollTo(0, 0);
     } else {
+      const gated = isProtected(route) && !currentUser;
+      pendingRoute = gated ? route : null;
       goToPage(route);
       if(pushHash !== false) history.pushState(null, '', '#/' + route);
       window.scrollTo(0, 0);
+      closeMenus();
+      // 메뉴를 직접 눌러서 온 경우에만 로그인 창을 바로 띄움 (팝업 차단 방지)
+      if(gated && fromClick) startGoogleLogin();
+      return;
     }
     closeMenus();
   }
@@ -1356,7 +1392,7 @@
   document.querySelectorAll('a[data-route]').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      navigate(a.dataset.route);
+      navigate(a.dataset.route, true, true);
     });
   });
 
@@ -1368,14 +1404,6 @@
       navigate('home', false);
     }
   });
-
-  // initial load: honor a direct #/route link
-  (function initRoute(){
-    const hash = location.hash;
-    if(hash.startsWith('#/') && routeMeta[hash.slice(2)]){
-      navigate(hash.slice(2), false);
-    }
-  })();
 
   // ============ Google 로그인 (새 창 팝업) ============
   // 1) https://console.cloud.google.com → API 및 서비스 → 사용자 인증 정보 → OAuth 클라이언트 ID(웹 애플리케이션) 생성
@@ -1448,6 +1476,12 @@
           renderAuth();
           closeMenus();
           showToast((currentUser.name || '사용자') + '님, 환영합니다!');
+          // 로그인 때문에 막혀 있던 페이지가 있으면 바로 이동
+          if(pendingRoute){
+            const r = pendingRoute;
+            pendingRoute = null;
+            navigate(r, false);
+          }
         } catch(err){
           showToast('로그인 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
         }
@@ -1484,6 +1518,8 @@
     saveUser(null);
     renderAuth();
     closeMenus();
+    // 로그인 필요한 페이지에서 로그아웃하면 안내 화면으로
+    if(isProtected(currentRoute)) navigate(currentRoute, false);
     showToast('로그아웃되었어요.');
   }
 
@@ -1504,6 +1540,14 @@
   document.querySelectorAll('[data-google-logout]').forEach(el => el.addEventListener('click', logout));
 
   renderAuth();
+
+  // initial load: honor a direct #/route link (로그인 상태 확인 후 실행)
+  (function initRoute(){
+    const hash = location.hash;
+    if(hash.startsWith('#/') && routeMeta[hash.slice(2)]){
+      navigate(hash.slice(2), false);
+    }
+  })();
 </script>
 
 </body>
