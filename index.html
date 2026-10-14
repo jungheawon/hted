@@ -195,6 +195,12 @@
   .page-view-inner .btn-outline, .page-view-inner .btn-primary{padding:13px 26px;}
   .pv-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
+  /* Embedded tool pages (상단바 유지한 채 별도 HTML 도구를 아래에 표시) */
+  .embed-view{display:none;padding-top:72px;}
+  .embed-view.active{display:block;}
+  .embed-view iframe{display:block;width:100%;height:calc(100svh - 72px);border:0;background:var(--bg);}
+  @media (max-width:720px){.embed-view{padding-top:64px;} .embed-view iframe{height:calc(100svh - 64px);}}
+
   /* Resource list pages (수업 자료실 / 프로그램 자료실) */
   .res-view{display:none;min-height:100svh;padding:140px 32px 100px;}
   .res-view.active{display:block;}
@@ -569,7 +575,7 @@
           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="dropdown-panel">
-          <a href="/batch.html"><b>자리배치</b><small>AVAILABLE</small></a>
+          <a href="#/class-seating" data-route="class-seating"><b>자리배치</b><small>AVAILABLE</small></a>
           <a href="#/class-group" data-route="class-group"><b>모둠 편성</b><small>CLASSROOM TOOL</small></a>
           <a href="#/class-presentation" data-route="class-presentation"><b>발표 순서</b><small>CLASSROOM TOOL</small></a>
           <a href="#/class-lottery" data-route="class-lottery"><b>번호 추첨</b><small>CLASSROOM TOOL</small></a>
@@ -664,7 +670,7 @@
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="mm-sub">
-        <a href="/batch.html">자리배치</a>
+        <a href="#/class-seating" data-route="class-seating">자리배치</a>
         <a href="#/class-group" data-route="class-group">모둠 편성</a>
         <a href="#/class-presentation" data-route="class-presentation">발표 순서</a>
         <a href="#/class-lottery" data-route="class-lottery">번호 추첨</a>
@@ -774,7 +780,7 @@
             <h4>오늘의 수업</h4>
             <p>12정보 · 3교시</p>
           </a>
-          <a href="/batch.html" class="dash-card">
+          <a href="#/class-seating" data-route="class-seating" class="dash-card">
             <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
             <h4>자리배치</h4>
             <p>AVAILABLE</p>
@@ -819,7 +825,7 @@
           <span class="status-tag avail"><i></i>Available</span>
         </a>
 
-        <a href="/batch.html" class="feat-card reveal">
+        <a href="#/class-seating" data-route="class-seating" class="feat-card reveal">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
           <h3>자리배치</h3>
           <p>학생 정보를 기반으로 원하는 조건에 맞는 최적의 자리배치를 만들어줍니다.</p>
@@ -1051,6 +1057,10 @@
   </div>
 </div>
 
+<div class="embed-view" id="embedView">
+  <iframe id="embedFrame" title="자리배치"></iframe>
+</div>
+
 <div class="res-view" id="resView">
   <div class="res-inner">
     <div class="eyebrow" id="resEyebrow">DOWNLOAD</div>
@@ -1163,6 +1173,7 @@
   // ============ Router: nav links go to blank pages, header stays ============
   const routeMeta = {
     'features':           { eyebrow: 'FEATURES',    title: '기능' },
+    'class-seating':       { eyebrow: 'CLASS AI',    title: '자리배치' },
     'class-group':         { eyebrow: 'CLASS AI',    title: '모둠 편성' },
     'class-presentation':  { eyebrow: 'CLASS AI',    title: '발표 순서' },
     'class-lottery':       { eyebrow: 'CLASS AI',    title: '번호 추첨' },
@@ -1212,6 +1223,11 @@
     }
   };
 
+  // 상단바를 유지한 채 같은 사이트 안의 별도 HTML 도구를 아래에 띄우는 페이지
+  const EMBEDS = {
+    'class-seating': 'batch.html'   // 자리배치 프로그램 (index.html과 같은 폴더)
+  };
+
   const FILE_EXT = ['pdf','hwp','hwpx','doc','docx','ppt','pptx','xls','xlsx','csv','txt','zip','7z','exe','msi','dmg','png','jpg','jpeg','mp4'];
 
   const mainEl = document.getElementById('top');
@@ -1232,6 +1248,14 @@
   const resDesc = document.getElementById('resDesc');
   const resCount = document.getElementById('resCount');
   const resList = document.getElementById('resList');
+  const embedView = document.getElementById('embedView');
+  const embedFrame = document.getElementById('embedFrame');
+
+  function clearEmbed(){
+    embedView.classList.remove('active');
+    const cur = embedFrame.getAttribute('src');
+    if(cur && cur !== 'about:blank') embedFrame.setAttribute('src', 'about:blank');
+  }
 
   function resInfo(item){
     const url = item.url || '';
@@ -1340,6 +1364,7 @@
     footerEl.style.display = '';
     pageView.classList.remove('active');
     resView.classList.remove('active');
+    clearEmbed();
   }
 
   function goToPage(route){
@@ -1347,6 +1372,15 @@
     if(!meta) return goHome();
     mainEl.style.display = 'none';
     footerEl.style.display = 'none';
+    if(EMBEDS[route]){
+      pageView.classList.remove('active');
+      resView.classList.remove('active');
+      embedFrame.title = meta.title;
+      if(embedFrame.getAttribute('src') !== EMBEDS[route]) embedFrame.setAttribute('src', EMBEDS[route]);
+      embedView.classList.add('active');
+      return;
+    }
+    clearEmbed();
     if(RESOURCES[route]){
       renderResources(route);
       pageView.classList.remove('active');
