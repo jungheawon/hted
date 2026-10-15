@@ -30,7 +30,7 @@
     --ease:cubic-bezier(.22,1,.36,1);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  html{scroll-behavior:smooth;}
+  html{scroll-behavior:smooth;overflow-y:scroll;overflow-anchor:none;}
   body{
     font-family:var(--font-body);
     background:var(--bg);
@@ -1125,7 +1125,7 @@
   }
   randomSeats();
   renderSeats();
-  setInterval(() => { randomSeats(); renderSeats(); }, 2600);
+  setInterval(() => { if(document.hidden || mainEl.style.display==='none') return; randomSeats(); renderSeats(); }, 2600);
 
   // toolbar buttons (visual only)
   document.querySelectorAll('.seat-toolbar button').forEach(btn => {
@@ -1238,10 +1238,10 @@
   // 상단바를 유지한 채 같은 사이트 안의 별도 HTML 도구를 아래에 띄우는 페이지
   const EMBEDS = {
     // 자리배치 프로그램. 도메인을 옮기면 이 주소만 바꾸면 됩니다.
-    'class-seating':      'https://jungheawon.github.io/hted/batch.html',   // 자리배치
-    'class-group':        'https://jungheawon.github.io/hted/modum.html',   // 모둠 편성
-    'class-presentation': 'https://jungheawon.github.io/hted/turn.html',    // 발표 순서
-    'class-lottery':      'https://jungheawon.github.io/hted/number.html'   // 번호 추첨
+    'class-seating':      'https://hted.kr/batch.html',   // 자리배치
+    'class-group':        'https://hted.kr/modum.html',   // 모둠 편성
+    'class-presentation': 'https://hted.kr/turn.html',    // 발표 순서
+    'class-lottery':      'https://hted.kr/number.html'   // 번호 추첨
   };
 
   // 별도 사이트로 연결되는 프로그램 (새 탭에서 열림, 로그인 필요한 메뉴는 로그인 후에만 열림)
