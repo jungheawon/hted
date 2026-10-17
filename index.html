@@ -201,6 +201,99 @@
   .embed-view iframe{display:block;width:100%;height:calc(100svh - 72px);border:0;background:var(--bg);}
   @media (max-width:720px){.embed-view{padding-top:64px;} .embed-view iframe{height:calc(100svh - 64px);}}
 
+
+  /* ===== Features page (기능) ===== */
+  .feat-view{display:none;position:relative;min-height:100svh;padding:132px 0 0;overflow:hidden;
+    --violet:#7C5CFC;--cyan:#22B8E6;--green:#16B36B;
+    background:
+      radial-gradient(900px 520px at 12% -8%, rgba(54,84,244,.16), transparent 60%),
+      radial-gradient(760px 480px at 92% 4%, rgba(124,92,252,.15), transparent 60%),
+      radial-gradient(700px 420px at 50% 108%, rgba(34,184,230,.10), transparent 60%),
+      var(--bg);}
+  .feat-view.active{display:block;}
+  .feat-view::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(rgba(54,84,244,.16) 1px, transparent 1.4px);background-size:26px 26px;
+    -webkit-mask-image:linear-gradient(180deg,#000 0,transparent 520px);mask-image:linear-gradient(180deg,#000 0,transparent 520px);}
+  .fv-inner{position:relative;max-width:1184px;margin:0 auto;padding:0 32px 96px;}
+  .fv-extra{position:relative;}
+  .fv-extra section:first-child{padding-top:96px;}
+  .fv-hero{text-align:center;max-width:760px;margin:0 auto 64px;}
+  .fv-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;
+    background:rgba(255,255,255,.85);border:1px solid var(--border);box-shadow:0 6px 20px -10px rgba(54,84,244,.4);
+    font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent);}
+  .fv-pill i{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
+  .fv-hero h1{font-family:var(--font-display);font-weight:800;letter-spacing:-0.03em;line-height:1.12;
+    font-size:clamp(34px,6vw,60px);margin:22px 0 16px;}
+  .fv-grad{background:linear-gradient(100deg,var(--accent) 0%,var(--violet) 55%,var(--cyan) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;}
+  .fv-hero p{color:var(--text-secondary);font-size:clamp(15px,2vw,18px);line-height:1.7;}
+  .fv-stats{display:flex;justify-content:center;gap:14px;margin-top:30px;flex-wrap:wrap;}
+  .fv-stat{min-width:150px;padding:14px 22px;border-radius:16px;background:rgba(255,255,255,.9);
+    border:1px solid var(--border);box-shadow:0 14px 34px -22px rgba(30,47,176,.55);text-align:left;}
+  .fv-stat b{display:block;font-family:var(--font-display);font-size:32px;line-height:1.1;letter-spacing:-0.02em;}
+  .fv-stat.live b{background:linear-gradient(100deg,var(--accent),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;}
+  .fv-stat span{font-size:12.5px;color:var(--text-tertiary);font-weight:600;}
+
+  .fv-head{display:flex;align-items:center;gap:14px;margin:0 0 22px;}
+  .fv-head h2{font-family:var(--font-display);font-size:clamp(20px,2.6vw,26px);letter-spacing:-0.02em;}
+  .fv-head .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+  .fv-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font-family:var(--font-mono);
+    font-size:11px;font-weight:700;letter-spacing:.06em;}
+  .fv-badge.live{background:rgba(22,179,107,.12);color:#0C8A50;}
+  .fv-badge.live i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:fvPulse 1.8s ease-in-out infinite;}
+  .fv-badge.soon{background:#F0F1F5;color:var(--text-tertiary);}
+  @keyframes fvPulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .fv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:76px;}
+  .fv-card{position:relative;display:flex;flex-direction:column;padding:26px;border-radius:var(--radius-l);
+    background:linear-gradient(180deg,#fff,#FBFBFE);border:1px solid var(--border);overflow:hidden;
+    box-shadow:0 18px 40px -30px rgba(30,47,176,.45);
+    transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .35s;
+    animation:fvIn .7s var(--ease) both;animation-delay:calc(var(--i,0)*70ms);}
+  .fv-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;
+    background:linear-gradient(90deg,var(--accent),var(--violet),var(--cyan));transform:scaleX(0);transform-origin:left;transition:transform .5s var(--ease);}
+  .fv-card::after{content:"";position:absolute;right:-60px;top:-60px;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle,rgba(124,92,252,.16),transparent 65%);opacity:0;transition:opacity .4s;}
+  .fv-card:hover{transform:translateY(-6px);border-color:rgba(54,84,244,.45);box-shadow:0 34px 60px -28px rgba(54,84,244,.5);}
+  .fv-card:hover::before{transform:scaleX(1);}
+  .fv-card:hover::after{opacity:1;}
+  .fv-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;position:relative;z-index:1;}
+  .fv-ico{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;
+    background:linear-gradient(135deg,var(--accent),var(--violet));box-shadow:0 14px 26px -12px rgba(54,84,244,.8);}
+  .fv-ico svg{width:26px;height:26px;}
+  .fv-num{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);letter-spacing:.08em;}
+  .fv-card h3{font-family:var(--font-display);font-size:21px;letter-spacing:-0.02em;margin-bottom:8px;position:relative;z-index:1;}
+  .fv-card p{color:var(--text-secondary);font-size:14.5px;line-height:1.65;flex:1;position:relative;z-index:1;}
+  .fv-go{display:flex;align-items:center;gap:14px;margin-top:24px;position:relative;z-index:1;}
+  .fv-go .bar{flex:1;height:2px;border-radius:2px;background:var(--border);position:relative;overflow:hidden;}
+  .fv-go .bar::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--accent),var(--violet),var(--cyan));
+    transform:scaleX(.18);transform-origin:left;transition:transform .6s var(--ease);}
+  .fv-card:hover .fv-go .bar::after{transform:scaleX(1);}
+  .fv-go .btn-round{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:var(--accent);background:#fff;border:1.5px solid rgba(54,84,244,.28);
+    transition:background .35s var(--ease),color .35s,transform .35s var(--ease),box-shadow .35s,border-color .35s;}
+  .fv-go svg{width:20px;height:20px;transition:transform .35s var(--ease);}
+  .fv-card:hover .fv-go .btn-round{color:#fff;border-color:transparent;transform:scale(1.08);
+    background:linear-gradient(135deg,var(--accent),var(--violet));box-shadow:0 14px 26px -10px rgba(54,84,244,.8);}
+  .fv-card:hover .fv-go svg{transform:translateX(2px) rotate(-45deg);}
+
+  .fv-soon{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .fv-mini{position:relative;display:flex;flex-direction:column;padding:20px;border-radius:18px;
+    background:rgba(255,255,255,.65);border:1.5px dashed #CDD1DE;
+    transition:transform .3s var(--ease),border-color .3s,background .3s,box-shadow .3s;
+    animation:fvIn .7s var(--ease) both;animation-delay:calc(var(--i,0)*60ms);}
+  .fv-mini:hover{transform:translateY(-4px);border-color:var(--accent);background:#fff;box-shadow:0 22px 40px -26px rgba(54,84,244,.5);}
+  .fv-mini .fv-ico{width:42px;height:42px;border-radius:12px;background:#EEF0F6;color:var(--text-tertiary);box-shadow:none;margin-bottom:14px;transition:background .3s,color .3s;}
+  .fv-mini .fv-ico svg{width:21px;height:21px;}
+  .fv-mini:hover .fv-ico{background:linear-gradient(135deg,var(--accent),var(--violet));color:#fff;}
+  .fv-mini h4{font-size:15.5px;font-weight:700;margin-bottom:6px;letter-spacing:-0.01em;}
+  .fv-mini p{font-size:13px;line-height:1.55;color:var(--text-tertiary);flex:1;margin-bottom:14px;}
+  .fv-mini .fv-badge{align-self:flex-start;}
+  @keyframes fvIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @media (max-width:1000px){.fv-grid{grid-template-columns:repeat(2,1fr);}.fv-soon{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:600px){.feat-view{padding:104px 0 0;}.fv-inner{padding:0 18px 56px;}.fv-grid,.fv-soon{grid-template-columns:1fr;}
+    .fv-stat{flex:1;min-width:0;}.fv-hero{margin-bottom:44px;}}
+
   /* Resource list pages (수업 자료실 / 프로그램 자료실) */
   .res-view{display:none;min-height:100svh;padding:140px 32px 100px;}
   .res-view.active{display:block;}
@@ -606,13 +699,8 @@
           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="dropdown-panel">
-          <a href="#/tutor-korean" data-route="tutor-korean"><b>국어</b><small>COMING SOON</small></a>
-          <a href="#/tutor-english" data-route="tutor-english"><b>영어</b><small>COMING SOON</small></a>
-          <a href="#/tutor-math" data-route="tutor-math"><b>수학</b><small>COMING SOON</small></a>
-          <a href="#/tutor-social" data-route="tutor-social"><b>사탐</b><small>COMING SOON</small></a>
-          <a href="#/tutor-science" data-route="tutor-science"><b>과탐</b><small>COMING SOON</small></a>
-          <a href="#/tutor-info" data-route="tutor-info"><b>정보</b><small>COMING SOON</small></a>
           <a href="#/tutor-plan" data-route="tutor-plan"><b>AI 학습 플랜</b><small>COMING SOON</small></a>
+          <a href="#/ai-interview" data-route="ai-interview"><b>AI면접</b><small>COMING SOON</small></a>
         </div>
       </div>
 
@@ -629,16 +717,6 @@
 
       <div class="nav-dropdown">
         <button aria-haspopup="true" aria-expanded="false">
-          고객센터
-          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="dropdown-panel">
-          <a href="#/support-inquiry" data-route="support-inquiry"><b>문의 게시판</b><small>SUPPORT</small></a>
-        </div>
-      </div>
-
-      <div class="nav-dropdown">
-        <button aria-haspopup="true" aria-expanded="false">
           대입정보
           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
@@ -647,9 +725,10 @@
           <a href="https://ipsinaban.kr/" target="_blank" rel="noopener"><b>입시나침반</b><small>수시 내신 진단</small></a>
           <a href="https://www.nesin.com/" target="_blank" rel="noopener"><b>내신닷컴</b><small>대입정보</small></a>
           <a href="https://www.ebsi.co.kr/ebs/ent/enta/retrieveEntInfo2019Mn.ebs" target="_blank" rel="noopener"><b>EBSi</b><small>입시정보</small></a>
-          <a href="#/admissions-gradecut" data-route="admissions-gradecut"><b>등급컷 게시판</b><small>대입정보</small></a>
+          <a href="#/admissions-gradecut" data-route="admissions-gradecut"><b>고교학점제</b><small>대입정보</small></a>
         </div>
       </div>
+
     </nav>
     <div class="nav-right">
       <a href="#" data-google-login id="navLogin" class="btn btn-ghost nav-login">로그인</a>
@@ -701,13 +780,8 @@
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="mm-sub">
-        <a href="#/tutor-korean" data-route="tutor-korean">국어</a>
-        <a href="#/tutor-english" data-route="tutor-english">영어</a>
-        <a href="#/tutor-math" data-route="tutor-math">수학</a>
-        <a href="#/tutor-social" data-route="tutor-social">사탐</a>
-        <a href="#/tutor-science" data-route="tutor-science">과탐</a>
-        <a href="#/tutor-info" data-route="tutor-info">정보</a>
         <a href="#/tutor-plan" data-route="tutor-plan">AI 학습 플랜</a>
+        <a href="#/ai-interview" data-route="ai-interview">AI면접</a>
       </div>
     </div>
 
@@ -724,16 +798,6 @@
 
     <div class="mm-accordion">
       <button aria-expanded="false">
-        고객센터
-        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="mm-sub">
-        <a href="#/support-inquiry" data-route="support-inquiry">문의 게시판</a>
-      </div>
-    </div>
-
-    <div class="mm-accordion">
-      <button aria-expanded="false">
         대입정보
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
@@ -742,7 +806,7 @@
         <a href="https://ipsinaban.kr/" target="_blank" rel="noopener">입시나침반</a>
         <a href="https://www.nesin.com/" target="_blank" rel="noopener">내신닷컴</a>
         <a href="https://www.ebsi.co.kr/ebs/ent/enta/retrieveEntInfo2019Mn.ebs" target="_blank" rel="noopener">EBSi</a>
-        <a href="#/admissions-gradecut" data-route="admissions-gradecut">등급컷 게시판</a>
+        <a href="#/admissions-gradecut" data-route="admissions-gradecut">고교학점제</a>
       </div>
     </div>
 
@@ -858,7 +922,7 @@
           <span class="status-tag soon"><i></i>Coming Soon</span>
         </a>
 
-        <a href="#/tutor-korean" data-route="tutor-korean" class="feat-card reveal">
+        <a href="#/tutor-plan" data-route="tutor-plan" class="feat-card reveal">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10s.75-1.5 3-1.5 3 1.5 3 1.5-1 2-3 2-3-2-3-2z"/><path d="M9 16h6"/></svg></div>
           <h3>AI Tutor</h3>
           <p>학생의 질문에 답하고 학습 수준에 맞춰 문제와 설명을 제공합니다.</p>
@@ -869,6 +933,13 @@
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/></svg></div>
           <h3>AI 학습 플랜</h3>
           <p>시험 점수를 입력하면 과목별 취약점을 분석해 앞으로의 학습 플랜을 짜줍니다.</p>
+          <span class="status-tag soon"><i></i>Coming Soon</span>
+        </a>
+
+        <a href="#/ai-interview" data-route="ai-interview" class="feat-card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0"/><path d="M12 18v4"/><path d="M8 22h8"/></svg></div>
+          <h3>AI 면접</h3>
+          <p>면접 질문에 답하면 AI가 답변을 분석하고 피드백을 제공합니다.</p>
           <span class="status-tag soon"><i></i>Coming Soon</span>
         </a>
 
@@ -988,26 +1059,6 @@
     </div>
   </section>
 
-  <!-- FUTURE -->
-  <section class="alt-bg">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div class="eyebrow">Roadmap</div>
-        <h2>교육의 미래를<br>만들어갑니다.</h2>
-        <p>앞으로 교사 AI와 AI 튜터까지 확장됩니다.</p>
-      </div>
-      <div class="future-grid reveal">
-        <a href="#/teacher-material" data-route="teacher-material" class="future-card"><h4>AI 수업 설계</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
-        <a href="#/teacher-assessment" data-route="teacher-assessment" class="future-card"><h4>AI 수행평가</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
-        <a href="#/tutor-plan" data-route="tutor-plan" class="future-card"><h4>학생 학습 분석</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
-        <a href="#/tutor-korean" data-route="tutor-korean" class="future-card"><h4>개인화 학습</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
-        <a href="#/teacher-material" data-route="teacher-material" class="future-card"><h4>교사 AI Assistant</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
-        <a href="#/teacher-record" data-route="teacher-record" class="future-card"><h4>학교 데이터 분석</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
-        <a href="#/teacher-record" data-route="teacher-record" class="future-card"><h4>교육용 AI Agent</h4><span class="status-tag soon"><i></i>Coming Soon</span></a>
-      </div>
-    </div>
-  </section>
-
   <!-- CTA -->
   <section id="cta">
     <div class="cta-section reveal">
@@ -1067,6 +1118,11 @@
   <iframe id="embedFrame" title="자리배치"></iframe>
 </div>
 
+<div class="feat-view" id="featView">
+  <div class="fv-inner" id="fvInner"></div>
+  <div class="fv-extra" id="fvExtra"></div>
+</div>
+
 <div class="res-view" id="resView">
   <div class="res-inner">
     <div class="eyebrow" id="resEyebrow">DOWNLOAD</div>
@@ -1115,17 +1171,20 @@
     while(activeSeats.size < 6){ activeSeats.add(Math.floor(Math.random()*total)); }
   }
   function renderSeats(){
-    seatBoard.innerHTML = '';
-    for(let i=0;i<total;i++){
-      const s = document.createElement('div');
-      s.className = 'seat' + (activeSeats.has(i) ? ' active' : '');
-      s.textContent = String(i+1).padStart(2,'0');
-      seatBoard.appendChild(s);
-    }
+    // 메인 + 기능 페이지에 복사된 자리판을 모두 갱신합니다
+    document.querySelectorAll('.seat-board').forEach(board => {
+      board.innerHTML = '';
+      for(let i=0;i<total;i++){
+        const s = document.createElement('div');
+        s.className = 'seat' + (activeSeats.has(i) ? ' active' : '');
+        s.textContent = String(i+1).padStart(2,'0');
+        board.appendChild(s);
+      }
+    });
   }
   randomSeats();
   renderSeats();
-  setInterval(() => { if(document.hidden || mainEl.style.display==='none') return; randomSeats(); renderSeats(); }, 2600);
+  setInterval(() => { if(document.hidden) return; randomSeats(); renderSeats(); }, 2600);
 
   // toolbar buttons (visual only)
   document.querySelectorAll('.seat-toolbar button').forEach(btn => {
@@ -1187,17 +1246,11 @@
     'teacher-material':    { eyebrow: 'TEACHER AI',  title: '수업자료' },
     'teacher-assessment':  { eyebrow: 'TEACHER AI',  title: '수행평가' },
     'teacher-record':      { eyebrow: 'TEACHER AI',  title: '생기부 AI' },
-    'tutor-korean':        { eyebrow: 'AI TUTOR',    title: '국어' },
-    'tutor-english':       { eyebrow: 'AI TUTOR',    title: '영어' },
-    'tutor-math':          { eyebrow: 'AI TUTOR',    title: '수학' },
-    'tutor-social':        { eyebrow: 'AI TUTOR',    title: '사탐' },
-    'tutor-science':       { eyebrow: 'AI TUTOR',    title: '과탐' },
-    'tutor-info':          { eyebrow: 'AI TUTOR',    title: '정보' },
     'tutor-plan':          { eyebrow: 'AI TUTOR',    title: 'AI 학습 플랜' },
     'download-classroom':  { eyebrow: 'DOWNLOAD',    title: '수업 자료실' },
     'download-program':    { eyebrow: 'DOWNLOAD',    title: '프로그램 자료실' },
-    'support-inquiry':     { eyebrow: '고객센터',     title: '문의 게시판' },
-    'admissions-gradecut': { eyebrow: '대입정보',     title: '등급컷 게시판' }
+    'ai-interview':        { eyebrow: 'AI TUTOR',    title: 'AI면접' },
+    'admissions-gradecut': { eyebrow: '대입정보',     title: '고교학점제' }
   };
 
   // ============ 자료실 데이터 — 여기에 파일/링크를 직접 적어 넣으세요 ============
@@ -1213,6 +1266,24 @@
   //   label    : 왼쪽 배지 글자 직접 지정 (선택, 생략하면 확장자로 자동 표시)
   // 항목을 모두 지우면 "등록된 자료가 없습니다"가 표시됩니다.
   const RESOURCES = {
+    'features': {
+      desc: '지금 사용할 수 있는 기능과, 앞으로 추가될 기능을 한눈에 확인하세요.',
+      items: [
+        { title: '자리배치', icon: 'seat', desc: '조건에 맞는 최적의 자리배치를 만들어줍니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'class-seating', primary: true } ] },
+        { title: '모둠 편성', icon: 'group', desc: '학생 모둠을 빠르게 편성합니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'class-group', primary: true } ] },
+        { title: '발표 순서', icon: 'present', desc: '발표 순서를 무작위로 정합니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'class-presentation', primary: true } ] },
+        { title: '번호 추첨', icon: 'dice', desc: '번호를 공정하게 추첨합니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'class-lottery', primary: true } ] },
+        { title: 'AI Quiz', icon: 'quiz', desc: '교과와 단원을 입력하면 AI가 다양한 형태의 퀴즈를 생성합니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'teacher-quiz', primary: true } ] },
+        { title: 'AI 수업 설계', icon: 'lesson', desc: '수업 목표에 맞춘 수업안과 활동 아이디어를 설계합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-material' } ] },
+        { title: 'AI 수행평가', icon: 'assess', desc: '평가 기준과 루브릭을 빠르게 만들어 줍니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-assessment' } ] },
+        { title: '학생 학습 분석', icon: 'chart', desc: '시험 점수로 취약점을 분석하고 학습 플랜을 제안합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'tutor-plan' } ] },
+        { title: '개인화 학습', icon: 'person', desc: '학생 수준에 맞춘 문제와 설명을 제공합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'tutor-plan' } ] },
+        { title: '교사 AI Assistant', icon: 'spark', desc: '반복 업무를 덜어 주는 교사 전용 AI 비서입니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-material' } ] },
+        { title: '학교 데이터 분석', icon: 'bars', desc: '학교 데이터를 모아 한눈에 분석합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-record' } ] },
+        { title: '교육용 AI Agent', icon: 'bolt', desc: '여러 작업을 스스로 처리하는 교육용 에이전트입니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-record' } ] },
+        { title: 'AI 면접', icon: 'mic', desc: '면접 질문에 답하면 AI가 답변을 분석하고 피드백을 제공합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'ai-interview' } ] }
+      ]
+    },
     'download-classroom': {
       desc: '수업에 바로 쓸 수 있는 PPT, 활동지, 학습지를 모았습니다.',
       items: [
@@ -1230,7 +1301,7 @@
         { title: '리로스쿨 (전체) 프로그램', desc: '리로스쿨 전체 기능 프로그램입니다. 설치 후 시험 시작 버튼으로 실행하세요.', category: '프로그램', date: '2026-10-14', label: '2',
           actions: [ { label: '설치', url: '', primary: true }, { label: '시험 시작', url: '' } ] },
         { title: '데이터과학 수행평가 프로그램', desc: '데이터과학 수행평가 전용 프로그램입니다. 처음 한 번만 설치하고, 이후에는 시험 시작 버튼만 누르세요.', category: '프로그램', date: '2026-10-15', label: '3',
-          actions: [ { label: '설치', url: '', primary: true }, { label: '시험 시작', url: '' } ] }
+          actions: [ { label: '설치', url: 'https://github.com/jungheawon/colab-browser/releases/download/colab/ColabExamBrowser-Setup.exe', primary: true }, { label: '시험 시작', url: 'colabexam://start' } ] }
       ]
     }
   };
@@ -1261,7 +1332,7 @@
   const pvOpen = document.getElementById('pvOpen');
 
   // 로그인해야 들어갈 수 있는 페이지 (Teacher AI, AI Tutor)
-  const isProtected = (r) => /^(teacher|tutor)-/.test(r || '');
+  const isProtected = (r) => /^(teacher|tutor)-/.test(r || '') || r === 'ai-interview';
   let currentRoute = 'home';
   let pendingRoute = null;
   const resView = document.getElementById('resView');
@@ -1298,7 +1369,7 @@
     resTitle.textContent = routeMeta[route].title;
     resDesc.textContent = data.desc || '';
     resList.textContent = '';
-    resCount.textContent = data.items.length ? ('총 ' + data.items.length + '개 자료') : '';
+    resCount.textContent = data.items.length ? ((route === 'features' ? '운영 중 ' + data.items.filter(i => i.label === 'LIVE').length + '개 · 준비 중 ' + data.items.filter(i => i.label !== 'LIVE').length + '개' : '총 ' + data.items.length + '개 자료')) : '';
 
     if(!data.items.length){
       const empty = document.createElement('div');
@@ -1354,9 +1425,12 @@
         body.appendChild(meta);
       }
 
-      const mk = (label, url, primary) => {
+      const mk = (label, url, primary, route) => {
         const el = document.createElement('a');
-        if(url){
+        if(route){
+          el.className = 'btn res-action ' + (primary ? 'btn-primary' : 'btn-outline');
+          el.href = '#/' + route; el.dataset.route = route; el.textContent = label;
+        } else if(url){
           const ext = /^https?:\/\//i.test(url);
           el.className = 'btn res-action ' + (primary ? 'btn-primary' : 'btn-outline');
           el.href = url; el.textContent = label;
@@ -1373,7 +1447,7 @@
       if(item.actions){
         act = document.createElement('div');
         act.className = 'res-actions';
-        item.actions.forEach(x => act.appendChild(mk(x.label, x.url, x.primary)));
+        item.actions.forEach(x => act.appendChild(mk(x.label, x.url, x.primary, x.route)));
       } else {
         act = mk(info.url ? info.action : '준비 중', info.url, info.action === '다운로드');
         if(!info.url) act.textContent = '준비 중';
@@ -1399,11 +1473,90 @@
     });
   }
 
+  // ============ 기능 페이지 (화려한 카드 레이아웃) ============
+  const featView = document.getElementById('featView');
+  const fvInner = document.getElementById('fvInner');
+  const FV_ICONS = {
+    quiz:'<path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/>',
+    seat:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    group:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16.5 14.3c2.7.2 4.5 2.4 4.5 5.2"/>',
+    present:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M10 8.5l4.5 2.5-4.5 2.5z"/><path d="M8 21l4-5 4 5"/>',
+    dice:'<rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><circle cx="8.5" cy="8.5" r="1.2"/><circle cx="15.5" cy="8.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="8.5" cy="15.5" r="1.2"/><circle cx="15.5" cy="15.5" r="1.2"/>',
+    lesson:'<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',
+    assess:'<path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h11"/>',
+    chart:'<path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/>',
+    person:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
+    spark:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
+    bars:'<path d="M5 21V10"/><path d="M12 21V4"/><path d="M19 21v-7"/>',
+    bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+    mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0"/><path d="M12 18v4"/><path d="M8 22h8"/>'
+  };
+  const FV_ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>';
+  const fvIcon = (k) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (FV_ICONS[k] || FV_ICONS.spark) + '</svg>';
+  const esc = (t) => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function renderFeatures(){
+    const items = RESOURCES['features'].items;
+    const live = items.filter(i => i.label === 'LIVE');
+    const soon = items.filter(i => i.label !== 'LIVE');
+    const routeOf = (i) => (i.actions && i.actions[0] && i.actions[0].route) || '';
+    let h = '';
+    h += '<div class="fv-hero">'
+      + '<span class="fv-pill"><i></i>FEATURES</span>'
+      + '<h1>선생님의 하루를 바꾸는<br><span class="fv-grad">모든 기능</span>을 한눈에</h1>'
+      + '<p>지금 바로 쓸 수 있는 도구와, 곧 만나게 될 AI 기능까지.<br>HTRO EDU가 만들어 가는 교육의 미래를 확인하세요.</p>'
+      + '<div class="fv-stats">'
+      +   '<div class="fv-stat live"><b>' + live.length + '</b><span>지금 사용 가능</span></div>'
+      +   '<div class="fv-stat"><b>' + soon.length + '</b><span>곧 출시 예정</span></div>'
+      + '</div></div>';
+
+    h += '<div class="fv-head"><span class="fv-badge live"><i></i>LIVE</span><h2>지금 사용할 수 있어요</h2><span class="line"></span></div>';
+    h += '<div class="fv-grid">';
+    live.forEach((it, n) => {
+      h += '<a class="fv-card" aria-label="' + esc(it.title) + ' 바로가기" style="--i:' + n + '" href="#/' + routeOf(it) + '" data-route="' + routeOf(it) + '">'
+        + '<div class="fv-top"><div class="fv-ico">' + fvIcon(it.icon) + '</div><span class="fv-num">' + String(n + 1).padStart(2, '0') + '</span></div>'
+        + '<h3>' + esc(it.title) + '</h3><p>' + esc(it.desc) + '</p>'
+        + '<div class="fv-go" aria-hidden="true"><span class="bar"></span><span class="btn-round">' + FV_ARROW + '</span></div></a>';
+    });
+    h += '</div>';
+
+    h += '<div class="fv-head"><span class="fv-badge soon">COMING SOON</span><h2>곧 만나요</h2><span class="line"></span></div>';
+    h += '<div class="fv-soon">';
+    soon.forEach((it, n) => {
+      h += '<a class="fv-mini" style="--i:' + n + '" href="#/' + routeOf(it) + '" data-route="' + routeOf(it) + '">'
+        + '<div class="fv-ico">' + fvIcon(it.icon) + '</div>'
+        + '<h4>' + esc(it.title) + '</h4><p>' + esc(it.desc || '') + '</p>'
+        + '<span class="fv-badge soon">COMING SOON</span></a>';
+    });
+    h += '</div>';
+    h += '<div class="fv-head" style="margin-top:76px"><span class="fv-badge live"><i></i>PREVIEW</span><h2>이렇게 사용해요</h2><span class="line"></span></div>';
+    fvInner.innerHTML = h;
+
+    // 메인 페이지의 상세 구역(Teacher AI · 교실 도구 · AI Tutor)을 복사해서 보여줍니다
+    const extra = document.getElementById('fvExtra');
+    extra.textContent = '';
+    ['teacher-ai', 'classroom-tools', 'tutor'].forEach(id => {
+      const src = document.getElementById(id);
+      if(!src) return;
+      const c = src.cloneNode(true);
+      c.removeAttribute('id');
+      c.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+      c.querySelectorAll('.reveal').forEach(e => e.classList.add('in'));
+      c.querySelectorAll('.seat-toolbar button').forEach(btn => btn.addEventListener('click', () => {
+        c.querySelectorAll('.seat-toolbar button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        randomSeats(); renderSeats();
+      }));
+      extra.appendChild(c);
+    });
+  }
+
   function goHome(){
     mainEl.style.display = '';
     footerEl.style.display = '';
     pageView.classList.remove('active');
     resView.classList.remove('active');
+    featView.classList.remove('active');
     clearEmbed();
   }
 
@@ -1412,7 +1565,16 @@
     if(!meta) return goHome();
     mainEl.style.display = 'none';
     footerEl.style.display = 'none';
+    featView.classList.remove('active');
     const gated = isProtected(route) && !currentUser;
+    if(route === 'features'){
+      clearEmbed();
+      renderFeatures();
+      pageView.classList.remove('active');
+      resView.classList.remove('active');
+      featView.classList.add('active');
+      return;
+    }
     if(EMBEDS[route] && !gated){
       pageView.classList.remove('active');
       resView.classList.remove('active');
