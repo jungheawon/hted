@@ -686,7 +686,7 @@
           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="dropdown-panel">
-          <a href="#/teacher-quiz" data-route="teacher-quiz"><b>AI Quiz</b><small>AVAILABLE</small></a>
+          <a href="#/teacher-quiz" data-route="teacher-quiz"><b>AI Quiz Teacher</b><small>AVAILABLE</small></a>
           <a href="#/teacher-material" data-route="teacher-material"><b>수업자료</b><small>COMING SOON</small></a>
           <a href="#/teacher-assessment" data-route="teacher-assessment"><b>수행평가</b><small>COMING SOON</small></a>
           <a href="#/teacher-record" data-route="teacher-record"><b>생기부 AI</b><small>COMING SOON</small></a>
@@ -699,7 +699,7 @@
           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="dropdown-panel">
-          <a href="#/tutor-quiz" data-route="tutor-quiz"><b>AI Quiz</b><small>AVAILABLE</small></a>
+          <a href="#/tutor-quiz" data-route="tutor-quiz"><b>AI Quiz Student</b><small>AVAILABLE</small></a>
           <a href="#/tutor-teacher" data-route="tutor-teacher"><b>AI 튜터</b><small>COMING SOON</small></a>
           <a href="#/tutor-plan" data-route="tutor-plan"><b>AI 학습 플랜</b><small>COMING SOON</small></a>
           <a href="#/ai-interview" data-route="ai-interview"><b>AI 면접</b><small>COMING SOON</small></a>
@@ -769,7 +769,7 @@
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="mm-sub">
-        <a href="#/teacher-quiz" data-route="teacher-quiz">AI Quiz</a>
+        <a href="#/teacher-quiz" data-route="teacher-quiz">AI Quiz Teacher</a>
         <a href="#/teacher-material" data-route="teacher-material">수업자료</a>
         <a href="#/teacher-assessment" data-route="teacher-assessment">수행평가</a>
         <a href="#/teacher-record" data-route="teacher-record">생기부 AI</a>
@@ -782,7 +782,7 @@
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="mm-sub">
-        <a href="#/tutor-quiz" data-route="tutor-quiz">AI Quiz</a>
+        <a href="#/tutor-quiz" data-route="tutor-quiz">AI Quiz Student</a>
         <a href="#/tutor-teacher" data-route="tutor-teacher">AI 튜터</a>
         <a href="#/tutor-plan" data-route="tutor-plan">AI 학습 플랜</a>
         <a href="#/ai-interview" data-route="ai-interview">AI 면접</a>
@@ -1246,8 +1246,8 @@
     'class-group':         { eyebrow: 'CLASS AI',    title: '모둠 편성' },
     'class-presentation':  { eyebrow: 'CLASS AI',    title: '발표 순서' },
     'class-lottery':       { eyebrow: 'CLASS AI',    title: '번호 추첨' },
-    'teacher-quiz':        { eyebrow: 'TEACHER AI',  title: 'AI Quiz' },
-    'tutor-quiz':          { eyebrow: 'AI TUTOR',    title: 'AI Quiz' },
+    'teacher-quiz':        { eyebrow: 'TEACHER AI',  title: 'AI Quiz Teacher' },
+    'tutor-quiz':          { eyebrow: 'AI TUTOR',    title: 'AI Quiz Student' },
     'tutor-teacher':       { eyebrow: 'AI TUTOR',    title: 'AI 튜터' },
     'teacher-material':    { eyebrow: 'TEACHER AI',  title: '수업자료' },
     'teacher-assessment':  { eyebrow: 'TEACHER AI',  title: '수행평가' },
@@ -1318,13 +1318,14 @@
     'class-seating':      'https://hted.kr/batch.html',   // 자리배치
     'class-group':        'https://hted.kr/modum.html',   // 모둠 편성
     'class-presentation': 'https://hted.kr/turn.html',    // 발표 순서
-    'class-lottery':      'https://hted.kr/number.html'   // 번호 추첨
+    'class-lottery':      'https://hted.kr/number.html',  // 번호 추첨
+    'teacher-quiz':       'https://hted.kr/ai-quiz-teacher.html',  // AI Quiz Teacher (로그인 필요)
+    'tutor-quiz':         'https://hted.kr/ai-quiz-student.html'   // AI Quiz Student (로그인 필요)
   };
 
   // 별도 사이트로 연결되는 프로그램 (새 탭에서 열림, 로그인 필요한 메뉴는 로그인 후에만 열림)
   const EXTERNALS = {
-    'teacher-quiz': 'https://hfz.onrender.com/',   // AI Quiz (Teacher AI)
-    'tutor-quiz':   'https://hfz.onrender.com/'    // AI Quiz (AI Tutor)
+    // 새 탭으로 열 외부 프로그램을 여기에 적습니다. 예) 'route-name': 'https://...'
   };
 
   const FILE_EXT = ['pdf','hwp','hwpx','doc','docx','ppt','pptx','xls','xlsx','csv','txt','zip','7z','exe','msi','dmg','png','jpg','jpeg','mp4'];
