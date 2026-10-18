@@ -44,9 +44,50 @@ body { min-height: 100vh; display: flex; justify-content: center; align-items: f
 
 /* 페이지 전환 탭 */
 .t-tabs { display: flex; gap: 4px; background: var(--bg-alt); padding: 4px; border-radius: 12px; margin: 0 0 22px; }
-.t-tabs a { flex: 1; text-align: center; padding: 9px; border-radius: 9px; font-size: 14px; font-weight: 700; color: var(--text-secondary); text-decoration: none; }
-.t-tabs a:hover { color: var(--text); }
-.t-tabs a.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(11,12,16,.08); }
+.t-tabs button { flex: 1; text-align: center; padding: 10px; border: none; background: none; border-radius: 9px; font: inherit; font-size: 14px; font-weight: 700; color: var(--text-secondary); cursor: pointer; }
+.t-tabs button:hover { color: var(--text); }
+.t-tabs button.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(11,12,16,.08); }
+.t-panel { text-align: left; animation: panelIn .25s ease; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* AI로 만들기: 단계별 선택 */
+.a-step { display: none; position: relative; padding: 0 0 18px 40px; }
+.a-step.show { display: block; animation: stepIn .35s ease; }
+@keyframes stepIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+.a-step::before { content: ''; position: absolute; left: 13px; top: 30px; bottom: 2px; width: 2px; background: var(--border); }
+.a-step:last-of-type::before, .a-step.last::before { display: none; }
+.a-n { position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--bg-alt); color: var(--text-tertiary); font-family: var(--font-mono); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.a-step.done .a-n { background: var(--accent); color: #fff; }
+.a-h { font-size: 15px; font-weight: 800; margin: 3px 0 10px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.a-h .hint { font-weight: 500; }
+.a-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.a-chip { padding: 9px 15px; border-radius: 999px; border: 1.5px solid var(--border-strong); background: var(--surface); font: inherit; font-size: 14px; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all .12s; }
+.a-chip:hover { border-color: var(--accent); color: var(--accent); }
+.a-chip.on { background: var(--text); border-color: var(--text); color: #fff; }
+.a-chip small { font-family: var(--font-mono); font-size: 11px; opacity: .6; margin-left: 4px; font-weight: 500; }
+.a-chip.ghost { border-style: dashed; }
+.a-grade .a-chip { min-width: 92px; padding: 14px 18px; font-size: 16px; border-radius: 14px; }
+.t-btn.big { padding: 12px 20px; font-size: 15px; border-radius: 11px; }
+.a-item { display: grid; grid-template-columns: 30px 1fr 150px 30px 30px; gap: 6px; align-items: center; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.a-item:last-child { border-bottom: none; }
+.a-item .num { font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); text-align: center; }
+.a-item input { width: 100%; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg); font: inherit; font-size: 14px; color: var(--text); outline: none; }
+.a-item input:focus { border-color: var(--accent); }
+.a-item input.bad { border-color: var(--danger); background: var(--danger-soft); }
+.a-item button { border: none; background: none; color: var(--text-tertiary); font-size: 16px; cursor: pointer; padding: 0; }
+.a-item button:hover:not(:disabled) { color: var(--accent); }
+.a-item button.del:hover { color: var(--danger); }
+.a-item button:disabled { opacity: .3; cursor: default; }
+.a-head { display: grid; grid-template-columns: 30px 1fr 150px 60px; gap: 6px; padding: 0 8px 4px; font-size: 12px; color: var(--text-tertiary); font-weight: 700; }
+.a-review { font-size: 12px; color: var(--warn-text); background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 9px; padding: 8px 11px; margin: 0 0 10px; }
+.a-saved { background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; margin-top: 12px; font-size: 14px; }
+.a-saved b { color: var(--accent-dark); }
+.a-saved .t-row { margin: 10px 0 0; }
+@media (max-width: 560px) {
+  .a-step { padding-left: 34px; }
+  .a-item { grid-template-columns: 22px 1fr 80px 24px 24px; }
+  .a-head { grid-template-columns: 22px 1fr 80px 48px; }
+}
 
 /* 백업 안내 배너 */
 .t-banner { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn-text); border-radius: 10px; padding: 9px 12px; font-size: 13px; margin-bottom: 12px; }
@@ -119,9 +160,12 @@ details.t-bulk summary { cursor: pointer; font-size: 13px; font-weight: 700; col
     <h1>AI 퀴즈 · 선생님용</h1>
     <p class="page-sub">문제 세트를 만들어 학생들에게 보내세요 · <a href="ai-quiz-student.html" target="_blank">학생용 화면 열기 ↗</a></p>
     <nav class="t-tabs">
-      <a href="ai-quiz-teacher.html" class="on">✏️ 직접 만들기</a>
-      <a href="ai-quiz-ai.html">✨ AI로 만들기</a>
+      <button data-tab="manual" class="on">✏️ 직접 만들기</button>
+      <button data-tab="ai">✨ AI로 만들기</button>
     </nav>
+
+    <!-- ============ 탭 1: 직접 만들기 ============ -->
+    <div id="tab-manual" class="t-panel">
     <div id="teacher-panel">
 
       <div id="t-banner" class="t-banner hidden">
@@ -186,6 +230,66 @@ details.t-bulk summary { cursor: pointer; font-size: 13px; font-weight: 700; col
       · '섞어서 보내기'는 링크를 만들 때마다 순서가 새로 섞여요. 같은 링크를 받은 학생들은 모두 같은 순서로 풉니다.<br>
       · 정답이 여러 개면 쉼표(,)로 구분하세요. 띄어쓰기는 채점에서 무시됩니다. 빨간 칸이 있는 문제는 보낼 때 빠집니다.
     </p>
+    </div>
+
+    <!-- ============ 탭 2: AI로 만들기 (내장 문제은행) ============ -->
+    <div id="tab-ai" class="t-panel hidden">
+      <div class="a-step show" id="a-s1">
+        <span class="a-n">1</span>
+        <div class="a-h">학년을 고르세요</div>
+        <div class="a-chips a-grade" id="a-grade"></div>
+      </div>
+      <div class="a-step" id="a-s2">
+        <span class="a-n">2</span>
+        <div class="a-h">과목을 고르세요</div>
+        <div class="a-chips" id="a-subject"></div>
+      </div>
+      <div class="a-step" id="a-s3">
+        <span class="a-n">3</span>
+        <div class="a-h">단원을 고르세요 <span class="hint">여러 개 고를 수 있어요 · 숫자는 문제 수</span></div>
+        <div class="a-chips" id="a-unit"></div>
+      </div>
+      <div class="a-step" id="a-s4">
+        <span class="a-n">4</span>
+        <div class="a-h">몇 문제를 낼까요? <span class="hint" id="a-pool"></span></div>
+        <div class="t-row">
+          <div class="a-chips" id="a-count"></div>
+          <label for="a-time" style="margin-left:6px">제한시간</label>
+          <input id="a-time" class="t-in" type="number" min="3" max="60" value="15" style="width:70px">
+          <span class="hint">초</span>
+        </div>
+        <button id="a-make" class="t-btn primary big">✨ 문제 만들기</button>
+      </div>
+      <div class="a-step last" id="a-s5">
+        <span class="a-n">5</span>
+        <div class="a-h">확인하고 저장하세요</div>
+        <p class="a-review">⚠ 문제은행은 AI가 미리 만든 문제예요. 학생에게 보내기 전에 한 번 읽어보고, 이상한 문제는 고치거나 ↻로 바꿔주세요.</p>
+        <div class="a-head"><span>#</span><span>문제</span><span>정답 (여러 개는 , 로)</span><span></span></div>
+        <div id="a-list" class="t-list"></div>
+        <div class="t-row">
+          <button id="a-reroll" class="t-btn">↻ 전부 다시 뽑기</button>
+          <button id="a-addone" class="t-btn">＋ 1문제 더</button>
+        </div>
+        <div class="t-row">
+          <input id="a-name" class="t-in" maxlength="20" style="flex:1;min-width:200px" placeholder="세트 이름">
+          <button id="a-save" class="t-btn primary">💾 세트로 저장</button>
+        </div>
+        <div id="a-saved" class="a-saved hidden">
+          <div><b id="a-saved-name"></b> 세트를 저장했어요. 학생용 화면의 <b>✏️ 선생님 문제</b>에도 나타납니다.</div>
+          <div class="t-row">
+            <button id="a-play" class="t-btn primary">▶ 학생용 화면에서 시작</button>
+            <button id="a-link" class="t-btn">🔗 학생용 링크 복사</button>
+            <button id="a-edit" class="t-btn">✏️ 직접 만들기에서 열기 (QR·순서·백업)</button>
+          </div>
+        </div>
+      </div>
+      <div id="a-msg" class="t-msg"></div>
+      <p class="t-guide">
+        · 문제는 이 파일과 같은 폴더의 <b>ai-quiz-bank.js</b>(문제은행)에서 뽑아요. 인터넷이나 API 키가 필요 없어요.<br>
+        · 단원명은 출판사마다 달라서 교육과정 영역 기준으로 묶었어요. 문제은행 파일을 열어 단원·문제를 직접 추가할 수 있어요.<br>
+        · 저장한 세트는 '직접 만들기'와 같은 곳에 저장돼요. QR, 순서 변경, 백업은 그쪽에서 하면 됩니다.
+      </p>
+    </div>
   </div>
 
   <div id="t-modal" class="t-modal hidden">
@@ -200,6 +304,8 @@ details.t-bulk summary { cursor: pointer; font-size: 13px; font-weight: 700; col
     </div>
   </div>
 
+<!-- 문제은행 (같은 폴더에 있어야 합니다) -->
+<script src="ai-quiz-bank.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 // =========================================================
@@ -498,8 +604,8 @@ function decodeSet(str) {
   const o = JSON.parse(decodeURIComponent(escape(atob(b64))));
   return { srcId: o.i || null, name: String(o.n || '공유된 문제').slice(0, 20), time: o.t || 10, questions: (o.q || []).map(x => ({ q: String(x[0]), a: String(x[1]) })) };
 }
-function copyText(url, okMsg) {
-  const done = () => tMsg(okMsg);
+function copyText(url, okMsg, say) {
+  const done = () => (say || tMsg)(okMsg);
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt('아래 링크를 복사하세요', url));
   else prompt('아래 링크를 복사하세요', url);
 }
@@ -604,14 +710,224 @@ $('t-file').addEventListener('change', e => {
   e.target.value = '';
 });
 
+// =========================================================
+// 탭 전환 (아래 영역만 바뀝니다)
+// =========================================================
+function switchTab(t) {
+  document.querySelectorAll('.t-tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $('tab-manual').classList.toggle('hidden', t !== 'manual');
+  $('tab-ai').classList.toggle('hidden', t !== 'ai');
+  try { history.replaceState(null, '', t === 'ai' ? '#ai' : location.pathname + location.search); } catch (e) {}
+}
+document.querySelectorAll('.t-tabs button').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+// =========================================================
+// AI로 만들기 — 문제은행(ai-quiz-bank.js)에서 학년 → 과목 → 단원 순으로 골라 뽑기
+// =========================================================
+const BANK = window.QUIZ_BANK || null;
+const A = { grade: null, subject: null, units: [], count: 10, picked: [], rest: [], savedId: null };
+
+function aMsg(text) {
+  $('a-msg').textContent = text;
+  clearTimeout(aMsg._t); aMsg._t = setTimeout(() => $('a-msg').textContent = '', 3500);
+}
+function aChip(label, on, small, extra) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'a-chip' + (on ? ' on' : '') + (extra ? ' ' + extra : '');
+  b.textContent = label;
+  if (small !== undefined) { const s = document.createElement('small'); s.textContent = small; b.appendChild(s); }
+  return b;
+}
+// n단계까지 보이기 (앞 단계는 완료 표시)
+function aShow(n) {
+  for (let i = 1; i <= 5; i++) {
+    $('a-s' + i).classList.toggle('show', i <= n);
+    $('a-s' + i).classList.toggle('done', i < n);
+  }
+}
+function aScroll(n) { setTimeout(() => $('a-s' + n).scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60); }
+function aSubjectData() { return BANK[A.grade][A.subject]; }
+function aPool() {
+  const sub = aSubjectData();
+  return A.units.flatMap(u => (sub[u] || []).map(x => ({ q: String(x[0]), a: String(x[1]) })));
+}
+function aResetResult() {
+  A.picked = []; A.rest = []; A.savedId = null;
+  $('a-saved').classList.add('hidden');
+  $('a-save').textContent = '💾 세트로 저장';
+}
+
+// 1단계: 학년
+function aRenderGrades() {
+  const box = $('a-grade'); box.innerHTML = '';
+  Object.keys(BANK).forEach(g => {
+    const b = aChip(g, g === A.grade);
+    b.addEventListener('click', () => {
+      if (A.grade === g) return;
+      A.grade = g; A.subject = null; A.units = [];
+      aResetResult(); aRenderGrades(); aRenderSubjects(); aShow(2); aScroll(2);
+    });
+    box.appendChild(b);
+  });
+}
+// 2단계: 과목
+function aRenderSubjects() {
+  const box = $('a-subject'); box.innerHTML = '';
+  if (!A.grade) return;
+  Object.keys(BANK[A.grade]).forEach(s => {
+    const n = Object.values(BANK[A.grade][s]).reduce((t, u) => t + u.length, 0);
+    const b = aChip(s, s === A.subject, n);
+    b.addEventListener('click', () => {
+      if (A.subject === s) return;
+      A.subject = s; A.units = [];
+      aResetResult(); aRenderSubjects(); aRenderUnits(); aShow(3); aScroll(3);
+    });
+    box.appendChild(b);
+  });
+}
+// 3단계: 단원 (여러 개 선택)
+function aRenderUnits() {
+  const box = $('a-unit'); box.innerHTML = '';
+  if (!A.subject) return;
+  const sub = aSubjectData(), units = Object.keys(sub);
+  units.forEach(u => {
+    const b = aChip(u, A.units.includes(u), sub[u].length);
+    b.addEventListener('click', () => {
+      const on = A.units.includes(u);
+      A.units = units.filter(x => x === u ? !on : A.units.includes(x));   // 단원 순서 유지
+      aAfterUnits();
+    });
+    box.appendChild(b);
+  });
+  const all = A.units.length === units.length;
+  const b = aChip(all ? '선택 해제' : '전체 선택', false, undefined, 'ghost');
+  b.addEventListener('click', () => { A.units = all ? [] : units.slice(); aAfterUnits(); });
+  box.appendChild(b);
+}
+function aAfterUnits() {
+  const first = !$('a-s4').classList.contains('show');
+  aResetResult(); aRenderUnits(); aRenderCount();
+  aShow(A.units.length ? 4 : 3);
+  if (A.units.length && first) aScroll(4);
+}
+// 4단계: 문제 수
+function aRenderCount() {
+  const pool = A.units.length ? aPool().length : 0;
+  $('a-pool').textContent = pool ? '선택한 단원에 ' + pool + '문제가 있어요' : '';
+  const opts = [5, 10, 15, 20].filter(c => c < pool);
+  opts.push(0);                                   // 0 = 전부
+  const want = A.wantCount === undefined ? 10 : A.wantCount;   // 선생님이 고른 문제 수를 기억
+  A.count = opts.includes(want) ? want : 0;
+  const box = $('a-count'); box.innerHTML = '';
+  opts.forEach(c => {
+    const b = aChip(c ? c + '문제' : '전부 (' + pool + ')', c === A.count);
+    b.addEventListener('click', () => { A.wantCount = c; aRenderCount(); });
+    box.appendChild(b);
+  });
+}
+$('a-time').addEventListener('change', e => { e.target.value = clampTime(e.target.value); });
+
+// 5단계: 뽑기 → 확인 → 저장
+function aDefaultName() {
+  const units = Object.keys(aSubjectData());
+  const tail = A.units.length === 1 ? ' · ' + A.units[0]
+    : A.units.length === units.length ? ' 종합'
+    : ' (' + A.units.length + '단원)';
+  return (A.grade + ' ' + A.subject + tail).slice(0, 20);
+}
+function aMake() {
+  const pool = shuffled(aPool());
+  const n = A.count ? Math.min(A.count, pool.length) : pool.length;
+  aResetResult();
+  A.picked = pool.slice(0, n);
+  A.rest = pool.slice(n);
+  $('a-name').value = aDefaultName();
+  aRenderList(); aShow(5); aScroll(5);
+}
+$('a-make').addEventListener('click', aMake);
+$('a-reroll').addEventListener('click', () => { aMake(); aMsg('새로 뽑았어요.'); });
+
+function aDirty() { if (A.savedId) $('a-save').textContent = '💾 변경 내용 저장'; }
+function aRenderList() {
+  const list = $('a-list'); list.innerHTML = '';
+  A.picked.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'a-item';
+    row.innerHTML = '<span class="num">' + (i + 1) + '</span><input placeholder="문제"><input placeholder="정답">' +
+      '<button class="swap" title="다른 문제로 바꾸기">↻</button><button class="del" title="빼기">×</button>';
+    const [qi, ai] = row.querySelectorAll('input');
+    qi.value = item.q; ai.value = item.a;
+    const mark = () => { qi.classList.toggle('bad', !item.q.trim()); ai.classList.toggle('bad', !splitAnswers(item.a).length); };
+    mark();
+    qi.addEventListener('input', () => { item.q = qi.value; mark(); aDirty(); });
+    ai.addEventListener('input', () => { item.a = ai.value; mark(); aDirty(); });
+    const swap = row.querySelector('.swap');
+    swap.disabled = !A.rest.length;
+    swap.addEventListener('click', () => {
+      if (!A.rest.length) return;
+      A.rest.push(A.picked[i]);
+      A.picked[i] = A.rest.shift();
+      aRenderList(); aDirty();
+    });
+    row.querySelector('.del').addEventListener('click', () => {
+      A.rest.push(A.picked.splice(i, 1)[0]);
+      aRenderList(); aDirty();
+    });
+    list.appendChild(row);
+  });
+  if (!A.picked.length) list.innerHTML = '<div class="t-empty">문제가 없어요. ＋ 1문제 더를 눌러보세요.</div>';
+  $('a-addone').disabled = !A.rest.length;
+}
+$('a-addone').addEventListener('click', () => {
+  if (!A.rest.length) { aMsg('이 단원에서 더 뽑을 문제가 없어요.'); return; }
+  A.picked.push(A.rest.shift());
+  aRenderList(); aDirty();
+  $('a-list').scrollTop = 1e9;
+});
+$('a-name').addEventListener('input', aDirty);
+
+$('a-save').addEventListener('click', () => {
+  const qs = A.picked.filter(isValid).map(x => ({ q: x.q.trim(), a: x.a.trim() }));
+  if (!qs.length) { aMsg('저장할 문제가 없어요.'); return; }
+  const name = ($('a-name').value.trim() || aDefaultName()).slice(0, 20);
+  const time = clampTime($('a-time').value);
+  let set = A.savedId && tFind(A.savedId);
+  if (set) { set.name = name; set.time = time; set.questions = qs; }
+  else {
+    set = normSet({ id: tId(), name, time, shuffle: false, questions: qs });
+    customSets.push(set);
+  }
+  A.savedId = set.id;
+  tCurrent = set.id;
+  tSave(); tRenderSets();
+  $('a-saved-name').textContent = '"' + set.name + '" (' + qs.length + '문제)';
+  $('a-saved').classList.remove('hidden');
+  $('a-save').textContent = '💾 다시 저장 (덮어쓰기)';
+});
+function aSavedSet() { return A.savedId && tFind(A.savedId); }
+$('a-play').addEventListener('click', () => {
+  const set = aSavedSet(); if (!set) return;
+  window.open(studentLink(set, set.questions.filter(isValid)), '_blank');
+});
+$('a-link').addEventListener('click', () => {
+  const set = aSavedSet(); if (!set) return;
+  copyText(studentLink(set, set.questions.filter(isValid)), '링크를 복사했어요. 학생들이 열면 이 문제 방이 바로 선택됩니다.', aMsg);
+});
+$('a-edit').addEventListener('click', () => {
+  const set = aSavedSet(); if (!set) return;
+  tCurrent = set.id; tRenderSets();
+  switchTab('manual');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+if (BANK && Object.keys(BANK).length) aRenderGrades();
+else $('a-grade').innerHTML = '<p class="hint" style="margin:0">문제은행 파일(<b>ai-quiz-bank.js</b>)을 이 파일과 같은 폴더에 두세요.</p>';
+
 // 시작
 tLoad();
-// AI 페이지에서 '편집하기'로 넘어오면 그 세트를 바로 연다 (#set=ID)
-(function () {
-  const m = location.hash.match(/set=([\w-]+)/);
-  if (m && tFind(m[1])) tCurrent = m[1];
-})();
 tRenderSets();
+if (location.hash === '#ai') switchTab('ai');
 window.addEventListener('storage', e => {
   if (e.key === T_KEY) { tLoad(); tRenderSets(); }
   if (e.key === B_KEY || e.key === C_KEY) tRenderBanner();
