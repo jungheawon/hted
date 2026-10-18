@@ -686,7 +686,7 @@
           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="dropdown-panel">
-          <a href="#/teacher-quiz" data-route="teacher-quiz"><b>AI Quiz 프로그램</b><small>AVAILABLE</small></a>
+          <a href="#/teacher-quiz" data-route="teacher-quiz"><b>AI Quiz</b><small>AVAILABLE</small></a>
           <a href="#/teacher-material" data-route="teacher-material"><b>수업자료</b><small>COMING SOON</small></a>
           <a href="#/teacher-assessment" data-route="teacher-assessment"><b>수행평가</b><small>COMING SOON</small></a>
           <a href="#/teacher-record" data-route="teacher-record"><b>생기부 AI</b><small>COMING SOON</small></a>
@@ -699,8 +699,10 @@
           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="dropdown-panel">
+          <a href="#/tutor-quiz" data-route="tutor-quiz"><b>AI Quiz</b><small>AVAILABLE</small></a>
+          <a href="#/tutor-teacher" data-route="tutor-teacher"><b>AI 튜터</b><small>COMING SOON</small></a>
           <a href="#/tutor-plan" data-route="tutor-plan"><b>AI 학습 플랜</b><small>COMING SOON</small></a>
-          <a href="#/ai-interview" data-route="ai-interview"><b>AI면접</b><small>COMING SOON</small></a>
+          <a href="#/ai-interview" data-route="ai-interview"><b>AI 면접</b><small>COMING SOON</small></a>
         </div>
       </div>
 
@@ -767,7 +769,7 @@
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="mm-sub">
-        <a href="#/teacher-quiz" data-route="teacher-quiz">AI Quiz 프로그램</a>
+        <a href="#/teacher-quiz" data-route="teacher-quiz">AI Quiz</a>
         <a href="#/teacher-material" data-route="teacher-material">수업자료</a>
         <a href="#/teacher-assessment" data-route="teacher-assessment">수행평가</a>
         <a href="#/teacher-record" data-route="teacher-record">생기부 AI</a>
@@ -780,8 +782,10 @@
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="mm-sub">
+        <a href="#/tutor-quiz" data-route="tutor-quiz">AI Quiz</a>
+        <a href="#/tutor-teacher" data-route="tutor-teacher">AI 튜터</a>
         <a href="#/tutor-plan" data-route="tutor-plan">AI 학습 플랜</a>
-        <a href="#/ai-interview" data-route="ai-interview">AI면접</a>
+        <a href="#/ai-interview" data-route="ai-interview">AI 면접</a>
       </div>
     </div>
 
@@ -833,7 +837,7 @@
           <a href="#features" class="btn btn-outline">기능 살펴보기</a>
         </div>
         <div class="hero-meta">
-          <span><b>초·중·고</b> 전 과정 지원</span>
+          <span><b>초·중·고</b> 전 과정 지원 예정</span>
         </div>
       </div>
 
@@ -1242,14 +1246,16 @@
     'class-group':         { eyebrow: 'CLASS AI',    title: '모둠 편성' },
     'class-presentation':  { eyebrow: 'CLASS AI',    title: '발표 순서' },
     'class-lottery':       { eyebrow: 'CLASS AI',    title: '번호 추첨' },
-    'teacher-quiz':        { eyebrow: 'TEACHER AI',  title: 'AI Quiz 프로그램' },
+    'teacher-quiz':        { eyebrow: 'TEACHER AI',  title: 'AI Quiz' },
+    'tutor-quiz':          { eyebrow: 'AI TUTOR',    title: 'AI Quiz' },
+    'tutor-teacher':       { eyebrow: 'AI TUTOR',    title: 'AI 튜터' },
     'teacher-material':    { eyebrow: 'TEACHER AI',  title: '수업자료' },
     'teacher-assessment':  { eyebrow: 'TEACHER AI',  title: '수행평가' },
     'teacher-record':      { eyebrow: 'TEACHER AI',  title: '생기부 AI' },
     'tutor-plan':          { eyebrow: 'AI TUTOR',    title: 'AI 학습 플랜' },
     'download-classroom':  { eyebrow: 'DOWNLOAD',    title: '수업 자료실' },
     'download-program':    { eyebrow: 'DOWNLOAD',    title: '프로그램 자료실' },
-    'ai-interview':        { eyebrow: 'AI TUTOR',    title: 'AI면접' },
+    'ai-interview':        { eyebrow: 'AI TUTOR',    title: 'AI 면접' },
     'admissions-gradecut': { eyebrow: '대입정보',     title: '고교학점제' }
   };
 
@@ -1317,7 +1323,8 @@
 
   // 별도 사이트로 연결되는 프로그램 (새 탭에서 열림, 로그인 필요한 메뉴는 로그인 후에만 열림)
   const EXTERNALS = {
-    'teacher-quiz': 'https://hfz.onrender.com/'   // AI Quiz 프로그램
+    'teacher-quiz': 'https://hfz.onrender.com/',   // AI Quiz (Teacher AI)
+    'tutor-quiz':   'https://hfz.onrender.com/'    // AI Quiz (AI Tutor)
   };
 
   const FILE_EXT = ['pdf','hwp','hwpx','doc','docx','ppt','pptx','xls','xlsx','csv','txt','zip','7z','exe','msi','dmg','png','jpg','jpeg','mp4'];
