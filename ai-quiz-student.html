@@ -1,0 +1,4044 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 퀴즈</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAFB;
+  --bg-alt: #F1F2F6;
+  --surface: #FFFFFF;
+  --text: #0B0C10;
+  --text-secondary: #5B5F6B;
+  --text-tertiary: #9498A3;
+  --accent: #3654F4;
+  --accent-dark: #1E2FB0;
+  --accent-soft: #EAEDFE;
+  --border: #E4E6ED;
+  --border-strong: #D3D6E0;
+  --font-display: 'Pretendard Variable','Pretendard',-apple-system,sans-serif;
+  --font-mono: 'JetBrains Mono',monospace;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  font-family: var(--font-display);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.screen { display: none; width: 100%; height: 100vh; align-items: center; justify-content: center; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* 로그인 */
+.login-box { background: var(--surface); border: 1px solid var(--border); box-shadow: 0 12px 32px -12px rgba(11,12,16,0.12); border-radius: 20px; padding: 40px 50px; text-align: center; max-width: 720px; }
+.login-box h1 { margin: 0 0 6px; font-size: 32px; font-weight: 800; letter-spacing: -0.01em; }
+.subtitle { opacity: 0.7; color: var(--text-secondary); margin-bottom: 24px; }
+#nickname-input { width: 260px; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--border-strong); background: var(--bg); color: var(--text); font-size: 16px; margin-bottom: 12px; outline: none; }
+#nickname-input:focus { border-color: var(--accent); }
+
+.room-select { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+@media (max-width: 560px) {
+  .room-select { grid-template-columns: repeat(2, 1fr); }
+}
+.room-btn {
+  flex: 1; min-width: 130px; background: var(--bg-alt); border: 2px solid var(--border);
+  border-radius: 14px; padding: 14px 10px; cursor: pointer; color: var(--text); text-align: center;
+  display: flex; flex-direction: column; gap: 4px; transition: all 0.15s ease;
+}
+.room-btn:hover { border-color: var(--border-strong); background: var(--surface); }
+.room-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+.room-btn .room-emoji { font-size: 26px; }
+.room-btn .room-name { font-weight: 700; font-size: 15px; }
+.room-btn .room-desc { font-size: 11px; opacity: 0.65; color: var(--text-secondary); }
+#btn-join, #btn-start, #btn-restart { padding: 12px 28px; border-radius: 999px; border: none; background: var(--text); color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; transition: transform 0.25s cubic-bezier(.22,1,.36,1), box-shadow 0.25s, background 0.25s; }
+#btn-join:hover, #btn-start:hover:not(:disabled), #btn-restart:hover:not(:disabled) { background: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 24px -8px rgba(54,84,244,.45); }
+.error-msg { color: #E1483D; min-height: 20px; margin-top: 10px; font-size: 14px; }
+
+/* 대기실 */
+#screen-waiting { align-items: center; }
+.waiting-header { text-align: center; margin-bottom: 10px; }
+.waiting-header h2 { margin: 6px 0; font-weight: 800; }
+.hidden { display: none !important; }
+.hint { opacity: 0.65; color: var(--text-secondary); font-size: 13px; }
+.lang-select { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 8px 0 4px; font-size: 13px; }
+.lang-select-label { opacity: 0.65; color: var(--text-secondary); }
+.lang-btn { background: var(--bg-alt); color: var(--text); border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
+.lang-btn.selected { background: var(--accent); color: #fff; font-weight: 700; border-color: var(--accent); }
+.lang-btn:disabled { cursor: default; opacity: 0.7; }
+.waiting-grid { width: 90%; max-width: 1400px; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; max-height: 70vh; overflow-y: auto; padding: 10px; }
+.waiting-card { background: var(--surface); border-radius: 12px; padding: 10px 4px; text-align: center; border: 1px solid var(--border); }
+.waiting-card .emoji { font-size: 30px; }
+.waiting-card .name { font-size: 12px; margin-top: 4px; word-break: break-all; }
+.waiting-card .host-badge { font-size: 10px; color: var(--accent); font-weight: 700; margin-top: 2px; }
+
+/* 게임 화면 */
+#screen-game { flex-direction: column; padding: 10px 0 0; position: relative; }
+.ranking-toggle { position: fixed; top: 12px; left: 14px; z-index: 30; background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); border-radius: 10px; padding: 8px 14px; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px -6px rgba(11,12,16,0.15); }
+.ranking-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.give-up-btn { position: fixed; top: 12px; right: 14px; z-index: 30; background: #FFF0EE; color: #C7382C; border: 1px solid #F3C3BC; border-radius: 10px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+.give-up-btn:hover { background: #FFE3DF; }
+.back-button { position: fixed; top: 12px; left: 14px; z-index: 30; background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); border-radius: 10px; padding: 8px 14px; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px -6px rgba(11,12,16,0.15); }
+.back-button:hover { border-color: var(--accent); color: var(--accent); }
+.stage { position: relative; width: 96%; max-width: 1700px; height: 62vh; margin: 0 auto; background: linear-gradient(180deg, #EEF2FF 0%, #DCE4FB 100%); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.water-line { position: absolute; left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(180deg, #6E8CFA 0%, var(--accent-dark) 100%); border-top: 3px solid var(--accent); }
+.players-layer { position: absolute; inset: 0; }
+.player-token { position: absolute; width: 60px; text-align: center; transition: top 0.7s cubic-bezier(.4,1.4,.6,1), opacity 0.6s ease, transform 0.6s ease; transform: translate(-50%, 0); }
+.player-token .emoji { font-size: 28px; filter: drop-shadow(0 2px 2px rgba(11,12,16,0.25)); }
+.player-token .name { font-size: 10px; background: rgba(11,12,16,0.75); color: #fff; border-radius: 6px; padding: 1px 4px; margin-top: 2px; display: inline-block; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-token.me .name { background: var(--accent); color: #fff; font-weight: 700; }
+.player-token.wrong-flash .emoji { animation: shake 0.4s; }
+.player-token.correct-flash .emoji { animation: pop 0.4s; }
+.player-token.eliminated { opacity: 0.25; transform: translate(-50%, 20px) scale(0.8); }
+.player-token.first-bonus .emoji { animation: bonusGlow 0.7s ease; }
+@keyframes bonusGlow {
+  0% { filter: drop-shadow(0 2px 2px rgba(11,12,16,0.25)); transform: scale(1); }
+  40% { filter: drop-shadow(0 0 14px var(--accent)); transform: scale(1.5); }
+  100% { filter: drop-shadow(0 2px 2px rgba(11,12,16,0.25)); transform: scale(1); }
+}
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+
+/* 카운트다운 */
+.countdown-overlay { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; background: rgba(11,12,16,0.35); z-index: 50; }
+.countdown-overlay.hidden { display: none; }
+#countdown-number { font-family: var(--font-mono); font-size: 120px; font-weight: 900; color: #fff; text-shadow: 0 4px 14px rgba(11,12,16,0.4); }
+#countdown-number.pop { animation: countdownPop 0.7s ease; }
+@keyframes countdownPop { 0% { transform: scale(0.4); opacity:0; } 30% { transform: scale(1.15); opacity:1; } 100% { transform: scale(1); opacity:1; } }
+
+.quiz-panel { width: 96%; max-width: 900px; margin: 14px auto 0; background: var(--surface); border-radius: 16px; padding: 16px 28px 22px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 24px -14px rgba(11,12,16,0.15); }
+.quiz-top { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
+#timer-bar-wrap { width: 100%; height: 8px; background: var(--bg-alt); border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
+#timer-bar { height: 100%; width: 100%; background: var(--accent); transition: width 0.15s linear, background 0.3s; }
+#word-display { font-family: var(--font-mono); font-size: 40px; font-weight: 800; letter-spacing: 2px; margin-bottom: 14px; min-height: 50px; line-height: 1.3; word-break: keep-all; color: var(--text); }
+#word-display.quiz-mode { font-family: var(--font-display); font-size: 26px; letter-spacing: 0; font-weight: 700; }
+.chain-hint { font-size: 14px; color: var(--text-secondary); margin: -6px 0 10px; }
+.chain-hint b { color: var(--accent); font-size: 18px; }
+#answer-input { width: 90%; max-width: 400px; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--border-strong); background: var(--bg); color: var(--text); font-size: 18px; text-align: center; outline: none; }
+#answer-input:focus { border-color: var(--accent); }
+#answer-feedback { min-height: 20px; margin-top: 8px; font-size: 14px; }
+#answer-feedback.correct { color: #1FA24A; }
+#answer-feedback.wrong { color: #E1483D; }
+
+/* 결과 */
+.result-box { text-align: center; max-height: 92vh; overflow-y: auto; padding: 0 12px; }
+.result-sub { font-size: 20px; color: var(--text-secondary); margin-bottom: 8px; }
+.winner-animal { font-size: 90px; margin-bottom: 6px; }
+#winner-name { font-size: 56px; margin: 0 0 24px; color: var(--accent); font-weight: 800; }
+#btn-restart:disabled { opacity: 0.4; cursor: not-allowed; }
+.back-to-waiting-btn { display: block; margin: 14px auto 0; padding: 10px 22px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 14px; cursor: pointer; }
+.back-to-waiting-btn:hover { border-color: var(--accent); color: var(--accent); }
+.result-ranking-wrap { margin: 6px 0 20px; }
+.result-ranking-wrap h3 { font-size: 15px; color: var(--text-secondary); margin-bottom: 8px; }
+
+/* 일시정지 / 순위 오버레이 */
+.pause-overlay { position: fixed; inset: 0; background: rgba(11,12,16,0.5); display:flex; align-items:center; justify-content:center; z-index: 999; }
+.pause-overlay.hidden { display: none; }
+.pause-box { background: var(--surface); border: 1px solid var(--border); box-shadow: 0 20px 48px -16px rgba(11,12,16,0.35); border-radius: 18px; padding: 34px 46px; text-align: center; }
+.pause-box h2 { margin: 0 0 18px; font-size: 26px; color: var(--text); }
+.pause-box button { display: block; width: 220px; margin: 10px auto 0; padding: 13px; border-radius: 999px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.25s cubic-bezier(.22,1,.36,1); }
+.pause-box button:hover { transform: translateY(-2px); }
+.pause-box .exit-main { background: #E1483D; color: #fff; }
+.pause-box .exit-sub { background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); }
+#btn-resume { background: #1FA24A; color: #fff; }
+#btn-restart-mid { background: #E1483D; color: #fff; }
+
+.ranking-box { max-width: 420px; }
+.ranking-list { max-height: 46vh; overflow-y: auto; width: 320px; max-width: 80vw; margin: 0 auto; text-align: left; padding-right: 4px; }
+.ranking-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px; margin-bottom: 5px; background: var(--bg-alt); border: 1px solid var(--border); font-size: 14px; }
+.ranking-row .rank-num { width: 26px; font-weight: 800; text-align: center; flex-shrink: 0; color: var(--text); }
+.ranking-row .rank-emoji { font-size: 20px; flex-shrink: 0; }
+.ranking-row .rank-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.ranking-row .rank-correct { font-size: 11px; color: #1FA24A; flex-shrink: 0; }
+.ranking-row .rank-status { font-size: 11px; color: var(--text-tertiary); flex-shrink: 0; }
+.ranking-row.me { border: 1.5px solid var(--accent); }
+.ranking-row.rank-1 { background: var(--accent-soft); }
+
+/* 채팅창 (우측 하단, 작게) */
+.chat-box {
+  position: fixed; right: 14px; bottom: 14px; width: 260px; z-index: 200;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 12px 32px -14px rgba(11,12,16,0.25);
+}
+.chat-box.hidden { display: none !important; }
+.chat-header {
+  display: flex; justify-content: space-between; align-items: center; padding: 8px 12px;
+  background: var(--bg-alt); color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.chat-header button { background: none; border: none; color: var(--text); font-size: 14px; cursor: pointer; padding: 0 4px; }
+.chat-messages { height: 160px; overflow-y: auto; padding: 8px 10px; font-size: 12px; color: var(--text); display: flex; flex-direction: column; gap: 4px; }
+.chat-messages.collapsed { display: none; }
+.chat-input-row.collapsed { display: none; }
+.chat-msg { line-height: 1.4; word-break: break-word; }
+.chat-msg .chat-name { font-weight: 700; color: var(--accent); margin-right: 4px; }
+.chat-msg.me .chat-name { color: #1FA24A; }
+.chat-input-row { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--border); }
+#chat-input { flex: 1; min-width: 0; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); font-size: 12px; outline: none; }
+#chat-input:focus { border-color: var(--accent); }
+#chat-send { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+/* 1920x1080 등 넓은 화면 최적화 */
+@media (min-width: 1600px) {
+  .stage { max-width: 1800px; height: 64vh; }
+  .quiz-panel { max-width: 960px; }
+  .waiting-grid { max-width: 1600px; }
+  .login-box { padding: 48px 64px; }
+  #word-display { font-size: 46px; }
+  #word-display.quiz-mode { font-size: 30px; }
+  #answer-input { font-size: 20px; padding: 14px 16px; }
+  .player-token { width: 76px; }
+  .player-token .emoji { font-size: 34px; }
+  .player-token .name { font-size: 11px; max-width: 76px; padding: 2px 5px; }
+  .winner-animal { font-size: 110px; }
+  #winner-name { font-size: 60px; }
+}
+
+.subject-title { text-align: left; font-size: 13px; font-weight: 700; color: var(--text-secondary); margin: 4px 0 8px; }
+.subject-select { grid-template-columns: repeat(5, 1fr); }
+.subject-btn .room-name { word-break: keep-all; }
+.unit-picker { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: -6px 0 18px; text-align: left; }
+.grade-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+.grade-tabs button { flex: 1; border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--text-secondary); font: inherit; font-size: 14px; font-weight: 700; padding: 8px 0; border-radius: 10px; cursor: pointer; }
+.grade-tabs.top { margin-bottom: 16px; }
+.grade-tabs.top button { font-size: 16px; padding: 12px 0; border-radius: 12px; }
+.subject-btn .room-desc { font-size: 10.5px; word-break: keep-all; }
+.grade-tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.unit-course { margin: 2px 0 8px; font-size: 13px; color: var(--text-secondary); }
+.unit-course b { color: var(--text); }
+.unit-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.unit-chips button { border: 1.5px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 13px; padding: 7px 12px; border-radius: 999px; cursor: pointer; }
+.unit-chips button small { color: var(--text-tertiary); margin-left: 4px; font-family: var(--font-mono); font-size: 11px; }
+.unit-chips button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.subject-btn { min-width: 0; padding: 12px 6px; }
+.subject-btn .room-emoji { font-size: 22px; }
+.subject-btn .room-name { font-size: 14px; }
+@media (max-width: 560px) { .subject-select { grid-template-columns: repeat(3, 1fr); } }
+.login-box { max-height: 96vh; overflow-y: auto; }
+.custom-btn { border-style: dashed; }
+/* 선생님용 편집기 */
+.login-box { width: min(720px, calc(100vw - 32px)); }
+@media (max-width: 560px) { .login-box { padding: 28px 18px; } }
+.join-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+#login-error { margin: 6px 0 14px; min-height: 18px; }
+#btn-multi { padding: 12px 24px; border-radius: 999px; border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--text); font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; transition: transform 0.25s cubic-bezier(.22,1,.36,1), border-color 0.25s, color 0.25s; }
+#btn-multi:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+.solo-note { font-size: 12px; color: var(--text-tertiary); margin: -12px 0 16px; }
+.bot-select { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 8px 0 4px; font-size: 13px; }
+.bot-select button { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 16px; font-weight: 700; cursor: pointer; }
+.bot-select button:hover { border-color: var(--accent); color: var(--accent); }
+.bot-select #bot-count { min-width: 28px; text-align: center; font-weight: 800; font-family: var(--font-mono); }
+.waiting-card.bot .name::after { content: ' 🤖'; font-size: 9px; }
+.reveal-answer { color: #5B5F6B !important; }
+</style>
+</head>
+<body>
+
+  <!-- 로그인 -->
+  <section id="screen-login" class="screen active">
+    <div class="login-box">
+      <h1>AI 퀴즈</h1>
+      <div id="student-panel">
+      <p class="subtitle">닉네임을 입력하고 퀴즈나 게임을 선택하세요</p>
+      <p class="solo-note">다른 참가자는 컴퓨터(봇)가 대신합니다</p>
+      <input id="nickname-input" maxlength="10" placeholder="닉네임 (최대 10자)" autocomplete="off" />
+
+      <p class="subject-title">🎓 교과 퀴즈 · 학년 선택</p>
+      <div id="grade-tabs" class="grade-tabs top"></div>
+      <p class="subject-title">📚 과목 선택</p>
+      <div id="subject-grid" class="room-select subject-select"></div>
+      <div id="unit-picker" class="unit-picker hidden">
+        <p id="unit-course" class="unit-course"></p>
+        <div id="unit-chips" class="unit-chips"></div>
+      </div>
+      <div class="join-row">
+        <button id="btn-join">🙋 혼자 입장하기</button>
+        <button id="btn-multi" title="친구들과 실시간으로 함께하기">👥 멀티플레이</button>
+      </div>
+      <p id="login-error" class="error-msg"></p>
+      <p class="subject-title">🎮 게임</p>
+      <div class="room-select">
+        <button class="room-btn" data-room="typing"><span class="room-emoji">⌨️</span><span class="room-name">타자연습</span><span class="room-desc">영어/한글 단어 타자 서바이벌</span></button>
+        <button class="room-btn" data-room="common"><span class="room-emoji">📚</span><span class="room-name">상식 퀴즈</span><span class="room-desc">일반 상식 문제 서바이벌</span></button>
+        <button class="room-btn" data-room="haewon"><span class="room-emoji">🏫</span><span class="room-name">해원고 퀴즈</span><span class="room-desc">우리 학교 문제 서바이벌</span></button>
+        <button class="room-btn" data-room="wordchain"><span class="room-emoji">🔤</span><span class="room-name">끝말잇기</span><span class="room-desc">먼저 잇는 사람이 승리! 자유경쟁</span></button>
+        <button class="room-btn" data-room="narak"><span class="room-emoji">🔥</span><span class="room-name">나락퀴즈</span><span class="room-desc">한국인이라면 모르면 안 되는 문제</span></button>
+        <button class="room-btn" data-room="chosung"><span class="room-emoji">🈂️</span><span class="room-name">초성퀴즈</span><span class="room-desc">초성 보고 단어 맞히기</span></button>
+      </div>
+      <div id="custom-wrap" class="hidden">
+        <p class="subject-title">✏️ 선생님 문제</p>
+        <div id="custom-select" class="room-select subject-select"></div>
+      </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 대기실 -->
+  <section id="screen-waiting" class="screen">
+    <button id="btn-back-to-login" class="back-button">← 처음으로</button>
+    <div class="waiting-header">
+      <h2><span id="waiting-room-label"></span> 대기실 <span id="waiting-count">(0/35)</span></h2>
+      <div id="lang-select" class="lang-select hidden">
+        <span class="lang-select-label">단어 언어:</span>
+        <button class="lang-btn selected" id="lang-btn-en">English</button>
+        <button class="lang-btn" id="lang-btn-kr">한글</button>
+      </div>
+      <div class="bot-select">
+        <span class="lang-select-label">함께할 봇:</span>
+        <button id="bot-minus">−</button><span id="bot-count">14</span>명<button id="bot-plus">＋</button>
+      </div>
+      <button id="btn-start">게임 시작</button>
+    </div>
+    <div id="waiting-grid" class="waiting-grid"></div>
+  </section>
+
+  <!-- 게임 화면 -->
+  <section id="screen-game" class="screen">
+    <button id="btn-ranking-toggle" class="ranking-toggle">🏆 순위</button>
+    <button id="btn-give-up" class="give-up-btn">🚪 나가기</button>
+    <div id="stage" class="stage">
+      <div id="water-line" class="water-line"></div>
+      <div id="players-layer" class="players-layer"></div>
+      <div id="countdown-overlay" class="countdown-overlay hidden">
+        <div id="countdown-number">3</div>
+      </div>
+    </div>
+    <div class="quiz-panel">
+      <div class="quiz-top">
+        <span id="round-label">라운드 1</span>
+        <span id="alive-label">생존 0명</span>
+      </div>
+      <div id="timer-bar-wrap"><div id="timer-bar"></div></div>
+      <div id="word-display"></div>
+      <p id="chain-hint" class="chain-hint hidden"></p>
+      <input id="answer-input" autocomplete="off" placeholder="여기에 정답을 입력하세요" />
+      <p id="answer-feedback"></p>
+    </div>
+  </section>
+
+  <!-- 결과 -->
+  <section id="screen-result" class="screen">
+    <div class="result-box">
+      <p class="result-sub">🏆 최후의 생존자 🏆</p>
+      <div id="winner-animal" class="winner-animal"></div>
+      <h1 id="winner-name">-</h1>
+      <div class="result-ranking-wrap">
+        <h3>전체 순위</h3>
+        <div id="result-ranking-list" class="ranking-list"></div>
+      </div>
+      <button id="btn-restart">다시 시작</button>
+      <button id="btn-result-to-waiting" class="back-to-waiting-btn">🏠 대기실로 나가기</button>
+    </div>
+  </section>
+
+  <!-- 일시정지 -->
+  <!-- 나가기 확인 (브라우저 confirm 대신 화면 안에서 묻기) -->
+  <div id="exit-overlay" class="pause-overlay hidden">
+    <div class="pause-box">
+      <h2>🚪 게임에서 나갈까요?</h2>
+      <button id="btn-exit-waiting" class="exit-main">대기실로 나가기</button>
+      <button id="btn-exit-home" class="exit-sub">처음 화면으로</button>
+      <button id="btn-exit-cancel" class="exit-sub">계속하기</button>
+    </div>
+  </div>
+
+  <div id="pause-overlay" class="pause-overlay hidden">
+    <div class="pause-box">
+      <h2>⏸️ 일시정지</h2>
+      <button id="btn-resume">▶ 다시 재개</button>
+      <button id="btn-restart-mid">🔄 재시작</button>
+    </div>
+  </div>
+
+  <!-- 순위 (열려 있는 동안 게임이 멈춤) -->
+  <div id="ranking-overlay" class="pause-overlay hidden">
+    <div class="pause-box ranking-box">
+      <h2>🏆 전체 순위</h2>
+      <div id="ranking-list" class="ranking-list"></div>
+      <button id="btn-ranking-close">닫기</button>
+    </div>
+  </div>
+
+<script>
+// ===== animals.js =====
+// 40종 동물 캐릭터 (이모지 기반이라 별도 이미지 리소스 없이 바로 동작합니다)
+const ANIMALS = [
+  { id: 1,  name: '사자',   emoji: '🦁' },
+  { id: 2,  name: '호랑이', emoji: '🐯' },
+  { id: 3,  name: '곰',     emoji: '🐻' },
+  { id: 4,  name: '판다',   emoji: '🐼' },
+  { id: 5,  name: '코알라', emoji: '🐨' },
+  { id: 6,  name: '여우',   emoji: '🦊' },
+  { id: 7,  name: '늑대',   emoji: '🐺' },
+  { id: 8,  name: '토끼',   emoji: '🐰' },
+  { id: 9,  name: '고양이', emoji: '🐱' },
+  { id: 10, name: '강아지', emoji: '🐶' },
+  { id: 11, name: '생쥐',   emoji: '🐭' },
+  { id: 12, name: '햄스터', emoji: '🐹' },
+  { id: 13, name: '소',     emoji: '🐮' },
+  { id: 14, name: '돼지',   emoji: '🐷' },
+  { id: 15, name: '원숭이', emoji: '🐵' },
+  { id: 16, name: '고릴라', emoji: '🦍' },
+  { id: 17, name: '코끼리', emoji: '🐘' },
+  { id: 18, name: '코뿔소', emoji: '🦏' },
+  { id: 19, name: '하마',   emoji: '🦛' },
+  { id: 20, name: '낙타',   emoji: '🐫' },
+  { id: 21, name: '기린',   emoji: '🦒' },
+  { id: 22, name: '얼룩말', emoji: '🦓' },
+  { id: 23, name: '사슴',   emoji: '🦌' },
+  { id: 24, name: '말',     emoji: '🐴' },
+  { id: 25, name: '유니콘', emoji: '🦄' },
+  { id: 26, name: '닭',     emoji: '🐔' },
+  { id: 27, name: '펭귄',   emoji: '🐧' },
+  { id: 28, name: '병아리', emoji: '🐤' },
+  { id: 29, name: '독수리', emoji: '🦅' },
+  { id: 30, name: '부엉이', emoji: '🦉' },
+  { id: 31, name: '박쥐',   emoji: '🦇' },
+  { id: 32, name: '개구리', emoji: '🐸' },
+  { id: 33, name: '거북이', emoji: '🐢' },
+  { id: 34, name: '뱀',     emoji: '🐍' },
+  { id: 35, name: '악어',   emoji: '🐊' },
+  { id: 36, name: '고래',   emoji: '🐳' },
+  { id: 37, name: '돌고래', emoji: '🐬' },
+  { id: 38, name: '문어',   emoji: '🐙' },
+  { id: 39, name: '상어',   emoji: '🦈' },
+  { id: 40, name: '나비',   emoji: '🦋' },
+];
+
+
+
+// ===== words.js =====
+// 영어 타자 게임용 단어 목록 (난이도 섞어서 구성)
+const WORDS = [
+  "apple","banana","orange","grape","melon","cherry","lemon","mango","peach","berry",
+  "table","chair","window","mirror","pillow","blanket","carpet","curtain","shelf","closet",
+  "river","mountain","forest","desert","island","valley","ocean","volcano","canyon","glacier",
+  "school","teacher","student","pencil","eraser","notebook","backpack","classroom","library","lecture",
+  "computer","keyboard","monitor","internet","software","hardware","printer","battery","charger","camera",
+  "morning","evening","weekend","holiday","calendar","schedule","meeting","deadline","project","report",
+  "hospital","doctor","nurse","medicine","patient","surgery","therapy","vaccine","clinic","ambulance",
+  "airport","airplane","passport","luggage","ticket","captain","runway","voyage","journey","traveler",
+  "kitchen","recipe","dinner","breakfast","sandwich","noodle","pancake","chicken","seafood","dessert",
+  "weather","sunshine","rainbow","thunder","lightning","blizzard","tornado","climate","tsunami","drizzle",
+  "science","physics","chemistry","biology","gravity","molecule","electron","universe","galaxy","planet",
+  "music","guitar","piano","violin","trumpet","concert","melody","rhythm","chorus","singer",
+  "garden","flower","sunflower","tulip","cactus","branch","meadow","harvest","seedling","orchard",
+  "friend","family","neighbor","stranger","partner","teammate","colleague","mentor","sibling","cousin",
+  "happy","sad","angry","excited","nervous","curious","brave","gentle","honest","clever",
+  "quick","slow","strong","weak","bright","dark","heavy","light","smooth","rough",
+  "yesterday","tomorrow","always","never","sometimes","often","already","suddenly","quietly","carefully",
+  "keyboard","monitor","notebook","umbrella","elephant","dinosaur","butterfly","waterfall","adventure","fireworks",
+  "language","culture","history","tradition","festival","ceremony","costume","legend","folktale","ancestor",
+  "bicycle","motorcycle","elevator","escalator","subway","highway","tunnel","bridge","harbor","station",
+  "narcissus","beautiful","young","boy","flower","forest","river","water","lake","mountain",
+  "nature","voice","echo","alone","dream","love","heart","face","image","mirror",
+  "reflection","shadow","spring","garden","tree","bird","animal","sun","moon","star",
+  "nymph","goddess","story","legend","greek","myth","ancient","world","life"
+];
+
+
+
+// ===== words-kr.js =====
+// 타자연습 방에서 "한글" 모드를 선택했을 때 사용하는 단어 목록입니다.
+// words.js(영어)와 동일한 방식으로, 이 배열만 수정하면 단어를 바꿀 수 있습니다.
+const WORDS_KR = [
+  "사과","바나나","오렌지","포도","참외","딸기","레몬","망고","복숭아","체리",
+  "책상","의자","창문","거울","베개","담요","카펫","커튼","선반","옷장",
+  "강물","산맥","숲속","사막","등대","계곡","바다","화산","협곡","빙하",
+  "학교","선생님","학생","연필","지우개","공책","가방","교실","도서관","강의",
+  "컴퓨터","키보드","모니터","인터넷","소프트웨어","하드웨어","프린터","배터리","충전기","카메라",
+  "아침","저녁","주말","휴일","달력","일정","회의","마감","프로젝트","보고서",
+  "병원","의사","간호사","환자","수술","치료","백신","진료소","구급차","약사",
+  "공항","비행기","여권","여행가방","항공권","선장","활주로","항해","여정","여행자",
+  "부엌","요리법","저녁식사","아침식사","샌드위치","국수","팬케이크","치킨","해산물","디저트",
+  "날씨","햇살","무지개","천둥","번개","눈보라","태풍","기후","해일","이슬비",
+  "과학","물리학","화학","생물학","중력","분자","전자","우주","은하수","행성",
+  "음악","기타","피아노","바이올린","트럼펫","콘서트","멜로디","리듬","합창","가수",
+  "정원","꽃","해바라기","튤립","선인장","나뭇가지","초원","수확","새싹","과수원",
+  "친구","가족","이웃","낯선사람","동반자","동료","직장동료","멘토","형제","사촌",
+  "무지개","하늘빛","노을빛","별자리","구름길",
+  "햇살","달빛","별빛","바람결","파도",
+  "연필꽂이","공책","지우개","가방","필통",
+  "칠판","책갈피","알람시계","휴지통","스탠드",
+  "강아지","고양이","토끼","햄스터","다람쥐",
+  "나비","잠자리","개미","무당벌레","반딧불",
+  "컴퓨터","키보드","마우스","모니터","프린터",
+  "인터넷","프로그램","데이터","알고리즘","코딩",
+  "봄바람","여름밤","가을빛","겨울눈","눈사람",
+  "얼음꽃","꽃잎","나뭇잎","은행잎","단풍잎",
+
+  "인공지능기술","데이터과학기술","소프트웨어개발","프로그래밍언어","컴퓨터프로그래밍",
+  "정보통신기술","디지털정보사회","인공지능시스템","데이터분석방법","빅데이터분석",
+  "기계학습알고리즘","자율주행자동차","스마트자동차기술","가상현실콘텐츠","증강현실기술",
+  "사물인터넷기술","클라우드컴퓨팅","네트워크보안기술","개인정보보호","사이버보안교육",
+  "디지털시민의식","온라인정보검색","미디어리터러시","컴퓨터과학원리","소프트웨어교육",
+  "디지털콘텐츠제작","데이터기반의사결정","문제해결능력향상","창의적문제해결","미래사회변화",
+  "인천해원고등학교"
+];
+
+
+
+// ===== wordchain-seed-words.js =====
+// =========================================================
+// "끝말잇기" 방의 첫 시작 단어 후보들입니다.
+// 게임이 시작될 때(또는 재시작될 때) 이 중 하나가 무작위로 선택되어
+// 첫 번째로 이어야 할 단어가 됩니다.
+//
+// 이 파일만 수정하면 시작 단어를 자유롭게 바꿀 수 있습니다.
+// (한 글자로 끝나는 단어보다는, 다음 사람이 이어가기 쉬운 흔한 글자로
+//  끝나는 단어를 넣는 게 게임이 잘 풀립니다)
+// =========================================================
+
+const WORDCHAIN_SEED_WORDS = [
+  "사과", "구름", "바다", "학교", "나무", "하늘", "여행", "음악", "고양이", "강아지",
+  "도서관", "컴퓨터", "축구공", "자전거", "무지개", "달력", "가방", "지도", "우산", "냉장고",
+];
+
+
+
+// ===== wordchain-dictionary.js =====
+// =========================================================
+// "끝말잇기" 대형 단어 사전
+// - 일반적으로 사용되는 단어 중심
+// - 고등학생 수준의 일상 어휘 및 교과 관련 어휘 포함
+// - 끝말잇기 연결성을 고려하여 다양한 첫소리의 단어 구성
+//
+// 여기 있는 단어만 정답으로 인정되고, 목록에 없는 단어는
+// (실제로 존재하는 단어라도) 규칙에 맞아도 오답 처리됩니다.
+// 참가자가 "이거 진짜 단어인데요!" 하는 단어가 있으면
+// 이 배열에 그 단어를 추가해주세요. (중복 걱정 없이 자유롭게 추가 가능 -
+// 아래에서 Set으로 자동 중복 제거됩니다)
+// =========================================================
+
+const WORDCHAIN_DICTIONARY_RAW = [
+
+// -----------------------------------------------------
+  // 가
+  // -----------------------------------------------------
+  "가게","가격","가구","가까이","가난","가나","가나디","가늠","가닥","가동","가로","가로등",
+  "가루","가면","가방","가사","가상","가수","가슴","가시","가식","가야금",
+  "가운데","가위","가을","가입","가장","가족","가지","가치","각도","각본",
+  "간격","간식","간장","간판","간호","갈비","갈색","갈증","감각","감기",
+  "감동","감사","감상","감자","감정","감탄","갑옷","강남","강당","강물",
+  "강아지","강변","강산","강의","강철","강풍","개구리","개나리","개미","개발",
+  "개방","개선","개수","개인","개념","개혁","객실","거미","거울","거짓말",
+  "건강","건물","건설","건전지","걸음","검사","검색","검정","검찰","게임",
+  "겨울","결과","결론","결심","결정","결혼","경기","경고","경기장","경력",
+  "경찰","경험","경제","계곡","계단","계산","계약","계절","계획","고기",
+  "고래","고릴라","고무","고민","고속도로","고양이","고구마","고추","고장","고향",
+  "공간","공기","공부","공식","공원","공장","공책","공항","공연","공포",
+  "과거","과목","과일","과자","과학","관계","관광","관리","관찰","광고",
+
+  // -----------------------------------------------------
+  // 나
+  // -----------------------------------------------------
+  "나라","나무","나비","나이","나침반","나뭇잎","나들이","나눔","나머지","나무늘보",
+  "나사","나팔","낙엽","낙지","낚시","난로","난방","날개","날씨","날짜",
+  "남녀","남매","남산","남자","남쪽","낭비","내기","내년","내부","내일",
+  "냄비","냄새","냉면","냉장고","너구리","너비","넥타이","노래","노력","노란색",
+  "노을","노트","노트북","농구","농부","농장","누나","눈물","눈사람","눈송이",
+  "눈썹","눈치","느낌","능력","늦잠","니트","니은",
+
+  // -----------------------------------------------------
+  // 다
+  // -----------------------------------------------------
+  "다리","다람쥐","다음","다이어트","다이어리","다툼","단계","단어","단추","단풍",
+  "달걀","달력","달리기","달빛","담요","답변","답안","당근","당장","대답",
+  "대기","대문","대부분","대상","대학","대학교","대통령","대회","더위","더하기",
+  "도구","도서관","도시","도장","도전","도서","도둑","독서","독수리","돈",
+  "동굴","동네","동물","동생","동아리","동전","동화","두부","두꺼비","두더지",
+  "두통","등산","등장","등대","디자인","디지털","디저트","디스크","디딤돌","디카",
+
+  // -----------------------------------------------------
+  // 라
+  // -----------------------------------------------------
+  "라면","라디오","라켓","라디오방송","라일락","라이터","라운드","라이벌","라이프","라인",
+  "러시아","러닝","레몬","레스토랑","레일","레코드","레슬링","레시피","로봇","로켓",
+  "로그인","로그아웃","로션","로고","로비","로터리","롯데","루머","루비","리본",
+  "리모컨","리더","리더십","리듬","리모델링","리터","리프트","리그","리스트","리뷰",
+
+  // -----------------------------------------------------
+  // 마
+  // -----------------------------------------------------
+  "마늘","마당","마라탕","마음","마을","마차","마스크","마이크","마우스","마지막",
+  "마중","마술","마법","마음가짐","막걸리","막대기","만남","만두","만화","말",
+  "말투","말씀","말풍선","맛","맛집","망원경","매미","매장","매점","매표소",
+  "머리","먹거리","메뉴","메모","메모장","메달","메일","멜론","멋","면",
+  "면접","명령","명절","명함","모기","모자","모래","모험","모니터","모바일",
+  "목걸이","목소리","목적","목표","몸","무게","무궁화","무릎","무지개","문",
+  "문구","문법","문서","문어","문장","문화","물","물고기","물결","물병",
+
+  // -----------------------------------------------------
+  // 바
+  // -----------------------------------------------------
+  "바나나","바다","바닥","바람","바위","바이올린","바지","바퀴","박물관","박수",
+  "박쥐","반달","반장","반찬","발","발견","발명","발표","발음","발자국",
+  "밤","방","방문","방송","방학","방울","배","배경","배구","배낭",
+  "배달","배터리","배추","백화점","버스","버섯","벌","벌레","법","벚꽃",
+  "벽","변화","병","병원","보관","보물","보석","보조","보통","복숭아",
+  "복습","볼","볼펜","봉사","부엌","부모","부산","부자","부채","북쪽",
+  "분노","분리","분수","불","불고기","불꽃","불안","비","비누","비밀",
+  "비빔밥","비상","비행기","비용","비타민","빗자루","빛",
+
+  // -----------------------------------------------------
+  // 사
+  // -----------------------------------------------------
+  "사과","사람","사랑","사슴","사진","사전","사탕","사자","사장","사촌",
+  "사이","사실","사건","사고","사냥","사회","산","산책","산소","산길",
+  "살","삼각형","삼겹살","상자","상상","상식","상어","상점","상품","생각",
+  "생일","생활","생선","생물","서랍","서점","서울","서쪽","석굴암","선물",
+  "선생님","선수","선택","설명","설탕","성공","성격","성적","세금","세탁기",
+  "소","소금","소나무","소리","소방관","소설","소풍","속도","손","손가락",
+  "손목","손톱","송아지","송편","수박","수업","수영","수건","수도","수학",
+  "숙제","숟가락","순대","숲","시계","시장","시민","시작","시험","신발",
+  "신문","신호등","실내","실수","실험","심장","심리",
+
+  // -----------------------------------------------------
+  // 아
+  // -----------------------------------------------------
+  "아기","아내","아버지","아침","아이","아이스크림","아파트","아저씨","아주머니","악기",
+  "악어","안경","안내","안전","안쪽","알","알림","암기","암석","앞",
+  "애기","애완동물","약","약국","약속","양","양말","양배추","양파","어깨",
+  "어머니","어른","어제","언덕","언어","얼굴","얼음","엄마","업무","에너지",
+  "여권","여름","여우","여행","역","역사","연극","연습","연필","열쇠",
+  "열차","영어","영화","예방","예술","오리","오전","오후","옥수수","온도",
+  "올해","올빼미","옷","요리","요금","요청","용기","용돈","우산","우유",
+  "우정","우주","운동","운동장","운전","울음","원숭이","원인","원장","월요일",
+  "위험","위치","유리","유자","유치원","육교","음식","음악","의자","이름",
+  "이야기","이유","인간","인공지능","인터넷","일기","일요일","입구","입술","입학",
+
+  // -----------------------------------------------------
+  // 자
+  // -----------------------------------------------------
+  "자동차","자두","자전거","자판","자판기","자연","자료","자신감","자유","작가",
+  "작년","작품","잔디","잔치","잠","잠자리","장갑","장난감","장미","장소",
+  "장식","재료","재미","재산","재활용","저녁","저금","저울","적금","전구",
+  "전기","전설","전시","전철","전화","절벽","점심","점수","정답","정보",
+  "정원","정장","정치","제비","제사","제일","제품","조각","조개","조금",
+  "조리","조명","조사","조선","조카","종이","종일","좋은말","주말","주머니",
+  "주변","주사","주스","주차","주차장","주전자","죽","준비","줄넘기","줄다리기",
+  "중간","중학교","중학생","지도","지갑","지구","지네","지하철","지식","지우개",
+  "지진","직업","진달래","진실","질문","질병",
+
+  // -----------------------------------------------------
+  // 차
+  // -----------------------------------------------------
+  "차","차량","차례","차림","차표","차도","차고","착한사람","참새","참외",
+  "참기름","참여","창문","창고","창문","책","책상","책장","처음","천국",
+  "천둥","천장","철","철도","철학","청소","청소기","청소년","체육","체육관",
+  "체험","초밥","초등학교","초대","초콜릿","초원","촬영","축구","축제","축하",
+  "출발","출입","충전","충전기","친구","친절","침대","침묵","침실","칫솔",
+
+  // -----------------------------------------------------
+  // 카 / 타 / 파
+  // -----------------------------------------------------
+  "카메라","카레","카드","카페","카카오","카약","카트","카운터","카펫","카센터",
+  "캐릭터","캐리어","캐나다","캠핑","캠퍼스","커피","커튼","컴퓨터","케이크","케이블",
+  "코끼리","코미디","코스","코스모스","코치","코트","코로나","콘서트","콘센트","콜라",
+  "쿠키","쿠폰","큐브","크기","크레파스","크림","키","키보드","키위","키즈",
+  "타이어","타조","타격","타박상","타이머","타이틀","타입","탁구","탁자","탈것",
+  "탑","태권도","태양","태풍","택시","테니스","테이블","텔레비전","토끼","토마토",
+  "토론","토요일","통장","통신","통역","통계","파도","파란색","파리","파스타",
+  "파인애플","파일","파출소","팔","팔꿈치","팥빙수","편지","편의점","평가","평일",
+  "포도","포스터","포크","폭포","표범","표현","푸딩","풍선","풍경","프로그램",
+  "프린터","피아노","피자","피크닉","필통","필요",
+
+  // -----------------------------------------------------
+  // 하
+  // -----------------------------------------------------
+  "하늘","하루","하마","하얀색","학교","학급","학생","학원","학습","한글",
+  "한국","한복","할머니","할아버지","함께","해","해바라기","해변","해수욕장","해외",
+  "햄버거","행복","행동","행사","허리","허수아비","현관","현재","현실","현장",
+  "형","형제","호랑이","호수","호텔","호박","화가","화면","화요일","화분",
+  "화산","화장실","화장품","환경","회사","회의","후배","후추","휴대폰","휴식",
+  "휴지","희망","희생","희망사항",
+
+// 기
+"기계","기차","기차역","기차표","기름","기름통","기능","기념","기념일","기록",
+"기록장","기린","기분","기쁨","기사","기상","기상청","기술","기술자","기억",
+"기억력","기회","기획","기획자","기타","기타리스트","기숙사","기준","기초","기초학력",
+"기온","기압","기어","기어봉","기호","기호식품","기둥","기왓장","기와","기와집",
+"기부","기부금","기부자","기독교","기독교인","기성품","기성세대","기성복","기체",
+
+// 니
+"니트","니은","니켈","니코틴","니코틴산","니트로글리세린","니트웨어","니혼","니글니글",
+"니글거리다","니나노","니켈합금","니켈도금","니트모자","니트조끼","니트원피스",
+"니트스웨터","니트바지","니트소재","니트제품",
+
+// 디
+"디자인","디자이너","디지털","디지털카메라","디지털시계","디지털기기","디지털화",
+"디스크","디스크판","디스크드라이브","디스플레이","디스코","디저트","디딤돌",
+"디딤판","디렉터","디렉터리","디바이스","디테일","디퓨저","디딜방아",
+"디카","디카페인","디스코드","디스켓","디버깅","디버거","디자인학과",
+"디자인작품","디자인회사","디지털화폐","디지털자료","디지털정보","디지털기술",
+"디지털교육","디지털미디어","디지털콘텐츠","디지털사회","디지털세상",
+
+// 리
+"리본","리모컨","리모델링","리더","리더십","리듬","리스트","리뷰","리그","리그전",
+"리터","리터당","리터급","리프트","리본끈","리어카","리어램프","리어미러",
+"리어스포일러","리어시트","리어휠","리모델링공사","리모컨조작","리모컨버튼",
+"리코더","리코타치즈","리튬","리튬전지","리튬배터리","리튬이온","리더기",
+"리더보드","리더스","리포트","리포터","리포터스","리허설","리스크","리조트",
+"리조또","리본꽃","리본장식",
+
+// 미
+"미국","미술","미술관","미술가","미술실","미술품","미역","미역국","미나리","미꾸라지",
+"미끄럼틀","미소","미소녀","미숙아","미성년자","미디어","미디어실","미디어아트",
+"미디어파일","미래","미래사회","미래형","미로","미로찾기","미리","미리보기",
+"미세먼지","미세먼지농도","미세먼지주의보","미터","미터법","미터기","미용실",
+"미용사","미용사자격증","미용","미용기구","미용품","미용실장","미풍","미풍양속",
+"미혼","미혼모","미혼자","미성년","미신","미신고",
+"미닫이문","미닫이","미끄럼","미끄럼방지","미안","미안함","미움",
+"미안하다","미소짓기",
+
+// 비
+"비","비누","비둘기","비빔밥","비상","비상구","비상벨","비상식량","비상약","비용",
+"비행기","비행장","비행사","비행운","비행기표","비행기역","비닐","비닐봉지",
+"비닐하우스","비닐장갑","비닐우산","비닐포장","비닐봉투","비밀번호","비밀번호표",
+"비교","비교표","비교문","비교과","비교적","비밀","비밀방","비밀문","비밀통로",
+"비타민","비타민C","비타민D","비타민제","비타민음료","비료","비료통",
+"비늘","비늘구름","비둘기집","비둘기알","비상등","비상식","비상사태","비상연락망",
+"비상용품","비상회의","비상전화","비상문","비상계단","비용표",
+"비용절감","비전","비전문가","비전공자","비중","비중계","비중량","비판","비판적",
+"비평","비평가","비평문","비극","비극적","비단","비단길","비단벌레","비닐끈",
+"비커","비커스","비커스경도","비커스시험",
+
+// 시
+"시계","시간","시작","시작점","시작일","시골","시내","시장","시민","시민권",
+"시민증","시상식","시상","시선","시설","시설물","시스템","시스템관리","시스템오류",
+"시스템파일","시청","시청각","시청자","시청률","시합","시합장","시험","시험지",
+"시험장","시험기간","시험문제","시험공부","시험성적","시험문제집","시나리오",
+"시소","시어머니","시어미","시외","시외버스","시외전화","시외곽","시인","시인성",
+"시작하기","시작버튼","시작화면","시작선","시작시간",
+"시골길","시골집","시골마을","시냇물","시냇가","시멘트","시멘트벽","시멘트길",
+"시금치","시금치무침","시금치국","시루","시루떡","시루팥떡","시럽","시럽병",
+"시리얼","시리얼번호","시리즈","시리즈물","시력","시력검사","시력표","시력보호",
+"시뮬레이션","시뮬레이터","시속","시속거리","시소놀이","시청각자료","시청각실",
+"시각","시각장애","시각자료","시각화","시각디자인","시각예술","시각효과",
+
+// 이
+"이것","이름","이야기","이유","이상","이상형","이상하다","이웃","이마","이불",
+"이불장","이불속","이빨","이빨자국","이사","이사짐","이사철","이사장","이상향",
+"이성","이성친구","이성적","이익","이익금","이자","이자율","이자소득","이전","이후",
+"이론","이론가","이론서","이론적","이력","이력서","이력사항","이름표","이름값","이름난",
+"이메일","이메일주소","이모","이모부","이모티콘","이미지","이미용","이미지파일","이미지검색","이벤트",
+"이벤트장","이벤트상품","이벤트성","이동","이동식","이동장","이동수단","이동통신","이동전화","이동차량",
+"이상기후","이상현상","이상주의","이상주의자","이상한나라","이슬","이슬비","이슬방울","이슬람",
+"이야기책","이야기꾼","이야기보따리","이야기거리","이용","이용권","이용료","이용자","이용방법","이용시간",
+"인간","인간관계","인간성","인간적","인구","인구수","인기","인기상품","인기순위","인도",
+"인도네시아","인사","인사말","인사법","인쇄","인쇄기","인쇄물","인쇄소","인쇄용지","인터넷",
+"인터넷망","인터넷방송","인터넷쇼핑","인터넷검색","인터넷주소","인터넷전화","인터넷게임","인터넷강의",
+"입구","입구문","입구쪽","입력","입력값","입력창","입력장치","입력란","입학","입학식",
+"입학생","입학원서","입장","입장권","입장료","입장객","입체","입체도형","입체영상",
+
+// 지
+"지구","지구본","지구촌","지갑","지갑끈","지게","지게차","지네","지능","지능형",
+"지도","지도자","지도책","지도교사","지름","지름길","지붕","지붕재","지방","지방도",
+"지방자치","지방세","지방공무원","지식","지식인","지식재산","지식재산권","지시","지시문",
+"지시사항","지우개","지우개똥","지우기","지진","지진계","지진파","지진해일","지진대피",
+"지하","지하도","지하철","지하철역","지하실","지하주차장","지하수","지하수면","지하통로",
+"지출","지출액","지출내역","지출계획","지원","지원금","지원자","지원서","지원사업","지원센터",
+"지방산","지방세포","지방정부","지점","지점장","지점토","지점표","지표","지표면",
+"지표면적","지표수","지표식물","지문","지문인식","지문검색","지문등록","지물","지물포",
+"지붕창","지붕재료","지붕공사","지름자","지름선","지름값",
+
+// 치
+"치과","치과의사","치과병원","치약","치약통","치약짜개","치즈","치킨","치킨집","치킨무",
+"치마","치마바지","치마저고리","치마폭","치마끈","치마단","치료","치료비","치료법","치료제",
+"치료실","치료사","치료과정","치료방법","치료효과","치매","치매환자","치매예방","치매검사",
+"치어리더","치어리딩","치어","치약칫솔","치약거품","치약냄새","치약튜브","치수",
+"치수표","치수재기","치수측정","치수선","치즈볼","치즈케이크","치즈버거","치즈피자",
+"치즈돈까스","치즈스틱","치즈떡","치킨너겟","치킨버거","치킨샐러드",
+"치솟음","치솟다","치열","치열하다","치욕","치욕감","치부","치부책","치부장","치안",
+"치안센터","치안유지","치과의원","치과위생사","치과치료",
+
+// 키
+"키","키보드","키보드게임","키보드자판","키보드커버","키보드키","키위","키위주스",
+"키위새","키높이","키높이구두","키높이신발","키높이깔창","키링","키링고리","키체인",
+"키워드","키워드검색","키워드광고","키워드분석","키워드목록","키즈","키즈카페","키즈존",
+"키즈룸","키즈영화","키즈프로그램","키네마틱","키네틱","키네틱아트","키네시스",
+"키네마틱스","키친","키친타월","키친타올","키친용품","키친테이블","키패드","키패드버튼",
+"키홀더","키홀더고리","키스","키스마크","키스신","키스하다","키포인트","키포인트장면",
+
+// 피
+"피아노","피아니스트","피자","피자집","피자헛","피자도우","피자치즈","피자토핑","피자빵",
+"피망","피망볶음","피망채","피부","피부과","피부관리","피부염","피부색","피부톤",
+"피부미용","피부세포","피부병","피부질환","피부관리실","피리","피리소리","피리부는사람",
+"피로","피로감","피로회복","피로도","피곤","피곤함","피난","피난민","피난처","피난길",
+"피해","피해자","피해액","피해복구","피해지역","피해보상","피해신고","피해사례","피서",
+"피서지","피서객","피서철","피크닉","피크닉장","피크닉매트","피크닉바구니",
+"피크타임","피크닉도시락","피클","피클병","피클통","피망씨","피망채소",
+"피아노곡","피아노건반","피아노학원","피아노연주","피아노교실","피아노의자","피아노선생님",
+"피자도우","피자박스","피자배달","피자메뉴","피자소스","피자토핑",
+
+// 티
+"티셔츠","티셔츠목","티셔츠소매","티셔츠원단","티셔츠디자인","티","티백","티백차",
+"티타임","티타늄","티스푼","티스푼세트","티켓","티켓값","티켓팅","티켓예매","티켓판매",
+"티켓박스","티켓부스","티켓번호","티비","티브이","티비장","티비방송","티비프로그램",
+"티끌","티끌모아","티끌세상","티셔츠가게","티셔츠매장","티셔츠브랜드",
+"티라미수","티라미수케이크","티라미수컵","티백상자","티백포장",
+"티포트","티포트세트","티스푼홀더","티테이블","티테이블세트",
+
+// 히
+"하늘","하마","하루","하숙","하숙집","하숙생","하수구","하수도","하수처리","하천",
+"하천물","하천변","하이킹","하이힐","하이웨이","하이패스","하이라이트","하이파이",
+"하모니","하모니카","하모니카연주","하품","하품소리","하품하다","하얀색","하얀눈",
+"하얀구름","하얀꽃","하얀말","하얀색연필","하드디스크","하드웨어","하드웨어장치",
+"하드케이스","하드렌즈","하드커버","하드코딩","하드웨어설계","하드웨어개발",
+"히터","히터기","히터장치","히터선","히터팬","히터코일","히어로","히어로물",
+"히어로영화","히말라야","히말라야산맥","히읗","히트","히트곡","히트상품","히트작",
+"히트박스","히트펌프","히트펌프냉난방","히트싱크","히트맨","히트곡모음",
+
+  // 구
+"구름","구두","구두쇠","구멍","구미","구별","구분","구석","구성","구조",
+"구조물","구역","구입","구장","구조대","구급차","구급약","구급대","구경","구경꾼",
+"구내","구름다리","구름층","구름사진","구름밭","구름산","구멍가게","구멍난",
+"구박","구상","구슬","구슬치기","구실","구어","구어체","구월","구인","구직",
+"구직자","구청","구청장","구토","구충제","구호","국가","국기","국민","국밥",
+"국어","국어사전","국자","국제","국회의원","군대","군인","궁궐","궁금증","궁전",
+
+// 누
+"누나","누룽지","누리","누리집","누리꾼","누에","누에고치","누적","누출","누수",
+"누설","누설전류","누전","누전차단기","누전사고","누각","누명","누설물",
+"누더기","누비","누비이불","누비옷","누에나방","누에실","누룩",
+"누룩곰팡이","누름","누름돌","누름쇠","누른밥","누리호","누리과정","누리공원",
+
+// 두
+"두부","두꺼비","두더지","두루미","두발","두통","두께","두뇌","두려움","두문불출",
+"두유","두유팩","두건","두루마리","두루마리휴지","두레박","두레","두레길","두레상",
+"두부김치","두부전","두부찌개","두부조림","두부과자","두부면","두부요리","두부피",
+"두산","두산베어스","두발자전거","두발머리","두손","두발로","두시","두시반",
+"두문","두문자","두음","두음법칙","두통약","두통증","두꺼운책","두꺼운옷",
+
+// 루
+"루비","루비콘","루머","루트","루프","루프탑","루프탑카페","루프백","루프박스",
+"루돌프","루마니아","루마니아어","루이보스","루테인","루틴","루틴화","루비색",
+"루비반지","루비보석","루비코딩","루터","루터교","루프문","루프문자열",
+"룰","룰렛","룰북","룰위반","룰게임","룰라","룰러","룰메이커",
+
+// 무
+"무","무게","무궁화","무기","무늬","무대","무덤","무릎","무리","무서움",
+"무역","무용","무인도","무지개","무지개떡","무조건","무더위","무더위쉼터","무말랭이",
+"무말랭이무침","무밭","무생채","무김치","무국","무국물","무침","무침요리","무전기",
+"무선","무선인터넷","무선통신","무선마우스","무선키보드","무선이어폰","무선충전",
+"무선충전기","무선랜","무선랜카드","무선전화","무선공유기","무인","무인기",
+"무인매장","무인카페","무인점포","무인자동차","무인비행기","무역회사",
+"무역항","무역선","무역업","무덤가","무덤자리","무궁화꽃","무궁화나무",
+"무릉도원","무명","무명배우","무명가수","무사","무사고","무상","무상교육",
+"무상급식","무성영화","무선신호","무엇","무언가","무언극","무언어",
+
+// 부
+"부모","부모님","부엌","부자","부장","부장님","부채","부채꼴","부츠","부품",
+"부서","부서장","부산","부산물","부동산","부동산업","부동산중개","부동산시장",
+"부담","부대","부대찌개","부드러움","부러움","부름","부리","부리새","부메랑",
+"부엉이","부엉이새","부자집","부자연","부작용","부족","부족함","부주의","부주의함",
+"부활","부활절","부활동","부처","부처님","부처상","부호","부호화","부호체계",
+"부기","부기장","부기능","부기재","부기표","부기하다","부동","부동산중개업",
+"부동산가격","부동산거래","부동산투자","부동산정보","부문","부문상","부문별",
+"부문장","부상","부상자","부상병","부속","부속품","부속물","부속기관","부업",
+"부업자","부업활동","부엌칼","부엌문","부엌일","부엌살림","부지","부지런함",
+"부지런쟁이","부채춤","부침개","부침개집","부침","부침가루",
+
+// 수
+"수건","수박","수영","수영장","수업","수학","수학자","수학문제","수학여행","수도",
+"수도꼭지","수도관","수도권","수도원","수도사","수도승","수리","수리공","수리점",
+"수리비","수리센터","수리기사","수리학","수사","수사관","수사대","수상","수상자",
+"수상작","수상식","수요일","수요일밤","수입","수입품","수입차","수출","수출품",
+"수출입","수단","수단방법","수단어","수레","수레바퀴","수박씨","수박주스",
+"수박화채","수박껍질","수박밭","수수","수수께끼","수수료","수수밭","수수깡",
+"수저","수저통","수제비","수제비집","수제화","수제작","수제작품","수족관",
+"수족냉증","수표","수표책","수첩","수필","수필가","수험생","수험표","수험번호",
+"수면","수면제","수면시간","수면양말","수면장애","수면운동","수명","수명주기",
+"수비","수비수","수비대","수비벽","수사법","수사학","수식","수식어",
+"수열","수열표","수치","수치심","수치표","수평","수평선","수평계","수직",
+"수직선","수직계","수집","수집가","수집품","수집물","수집함","수준","수준급",
+"수준별","수질","수질검사","수질오염","수초","수초밭","수풀","수풀길",
+
+// 우
+"우산","우유","우정","우주","우주선","우주복","우주인","우주비행사","우주정거장","우주과학",
+"우물","우물가","우물물","우체국","우체부","우편","우편물","우편함","우편번호","우표",
+"우동","우동집","우동면","우렁이","우렁이쌀","우럭","우박","우박비","우비","우비옷",
+"우산꽂이","우산대","우산살","우산집","우수","우수작","우승","우승자","우승컵","우승팀",
+"우연","우연히","우유곽","우유팩","우유병","우유빵","우유식빵","우유커피","우유차",
+"운동","운동장","운동복","운동화","운동선수","운동회","운전","운전자","운전기사","운전면허",
+"운전면허증","운전석","운명","운세","운영","운영자","운영체제","운영비","운하","운반",
+"운반차","울타리","울음","울보","울산","울산광역시","울림","울림통","울창","울창한숲",
+
+// 주
+"주머니","주말","주변","주사","주사기","주사위","주전자","주방","주방장","주방용품",
+"주차","주차장","주차료","주차선","주차위반","주차공간","주민","주민센터","주민등록",
+"주문","주문서","주문제작","주문식","주식","주식시장","주식회사","주식투자","주식값","주인",
+"주인공","주제","주제곡","주제문","주제어","주간","주간지","주간신문","주말여행","주말농장",
+"주말극장","주말드라마","주먹","주먹밥","주먹구구","주름","주름살","주름치마","주름종이",
+"주민등록번호","주민등록증","주사위놀이","주사바늘","주사약","주사실","주차관리",
+"주차권","주차요금","주차단속","주택","주택가","주택단지","주택시장","주택가구",
+"주황색","주황","주춧돌","주춧돌집","주파수","주파수대","주행","주행거리","주행차량",
+
+// 추
+"추석","추위","추억","추리","추리소설","추리게임","추리력","추가","추가점수","추가요금",
+"추가정보","추가자료","추가공사","추가시간","추가비용","추구","추구하다","추천","추천서","추천곡",
+"추천도서","추천영화","추천상품","추첨","추첨권","추첨식","추첨자","추락","추락사고","추락방지",
+"추수","추수감사","추수철","추수밭","추적","추적자","추적기","추적장치","추진","추진력",
+"추진자","추진계획","추운날","추위주의보","추억사진","추억거리","추억여행","추억담",
+"추리극","추리물","추리만화","추리영화","추리작가","추상","추상화","추상미술","추상적",
+"추세","추세선","추가시험","추가문제","추가학습","추가수업",
+
+// 쿠
+"쿠키","쿠키영상","쿠키틀","쿠키반죽","쿠폰","쿠폰북","쿠폰번호","쿠폰할인","쿠션","쿠션감",
+"쿠션커버","쿠킹","쿠킹클래스","쿠킹호일","쿠키런","쿠바","쿠바산","쿠바음악","쿠데타","쿠데타군",
+"쿠폰함","쿠폰제","쿠폰사용","쿠폰상품","쿠키가게","쿠키집","쿠키상자",
+"쿠키통","쿠키커터","쿠키장식",
+
+// 푸
+"푸딩","푸드","푸드코트","푸드트럭","푸른색","푸른하늘","푸른빛","푸른숲","푸른바다","푸른별",
+"푸줏간","푸줏간집","푸짐","푸짐한상","푸성귀","푸성귀밭","푸대","푸대접","푸념","푸념조",
+"푸른나무","푸른잎","푸른잔디","푸른초원","푸른산","푸른물결","푸른구름",
+"푸시","푸시버튼","푸시업","푸시알림","푸시핀","푸시맨","푸드뱅크","푸드스타일링","푸드프로세서",
+
+// 투
+"투구","투수","투수진","투수공","투명","투명인간","투명창","투명유리","투명테이프","투명파일",
+"투자","투자금","투자자","투자회사","투자상품","투자계획","투표","투표권","투표소","투표용지",
+"투표함","투표자","투표율","투표일","투쟁","투쟁심","투혼","투어","투어버스","투어가이드",
+"투어상품","투어코스","투입","투입구","투입량","투입물","투입구멍","투약","투약량","투약법",
+"투망","투망질","투명도","투명성","투명화","투명우산","투명비닐","투명필름","투명컵",
+"투피스","투피스옷","투피스정장","투잡","투잡러","투사","투사체","투사광","투시","투시도",
+
+// 후
+"후배","후배님","후문","후문쪽","후원","후원금","후원자","후원회","후보","후보자",
+"후보선수","후보작","후식","후식거리","후추","후추가루","후추통","후추냄새","후회","후회막심",
+"후드","후드티","후드집업","후드코트","후라이","후라이팬","후라이드치킨","후라이드","후기",
+"후기작","후기글","후기작성","후반","후반전","후반기","후반부","후속","후속작","후속편",
+"후퇴","후퇴선","후방","후방카메라","후방석","후방주차","후방주의","후보생","후보지",
+"후천성","후천적","후각","후각기관","후각신경","후두","후두부","후두염","후손","후손들",
+
+// 게
+"게","게살","게장","게맛살","게이트","게이트볼","게이머","게임","게임기","게임방",
+"게임장","게임센터","게임기획","게임개발","게임회사","게임속","게임판","게임캐릭터",
+"게시판","게시물","게시글","게시자","게시대","게시판글","게스트","게스트하우스",
+"게스트룸","게스트카드","게으름","게으름뱅이","게양","게양대","게양식","게걸음",
+"게살볶음","게살죽","게살스프","게장백반","게장집","게장비빔밥",
+
+// 네
+"네","네모","네모꼴","네모난","네모상자","네모칸","네모판","네모블록","네트",
+"네트워크","네트워크망","네트워크선","네트워크장비","네트워크보안","네트워크주소",
+"네트워크게임","네트워크카메라","네비게이션","네비","네비게이션앱","네덜란드",
+"네덜란드어","네일","네일아트","네일샵","네일숍","네일케어","네일아티스트",
+"네온","네온사인","네온등","네온색","네온빛","네잎클로버",
+
+// 데
+"데이터","데이터베이스","데이터센터","데이터과학","데이터분석","데이터처리","데이터통신",
+"데이터파일","데이터값","데이터표","데이터수집","데이터검색","데이터관리","데이터보안",
+"데이터전송","데이터복구","데이터압축","데이터형식","데이터시각화","데이터셋",
+"데스크","데스크톱","데스크탑","데스크톱컴퓨터","데스크매트","데스크램프",
+"데이트","데이트코스","데이트장소","데이트신청","데이트룩","데뷔","데뷔작","데뷔곡",
+"데뷔전","데뷔무대","데님","데님바지","데님재킷","데님셔츠","데자뷔","데자뷔현상",
+"데우기","데우다","데치기","데치다","데이터망","데이터요금",
+
+// 레
+"레몬","레몬차","레몬즙","레몬청","레몬에이드","레몬주스","레몬케이크","레몬사탕",
+"레스토랑","레스토랑가이드","레시피","레시피북","레시피카드","레코드","레코드판",
+"레코드샵","레코드플레이어","레일","레일바이크","레일카","레일건","레슬링","레슬링선수",
+"레고","레고블록","레고게임","레고집","레드","레드카드","레드벨벳","레드와인",
+"레드카펫","레드라인","레벨","레벨업","레벨표","레벨링","레벨디자인","레벨테스트",
+"레터링","레터링지","레터링케이크","레터링펜","레인","레인코트","레인부츠",
+"레이더","레이더망","레이더기지","레이싱","레이싱카","레이싱게임","레이저","레이저포인터",
+"레이저프린터","레이어","레이어드","레이어링","레몬나무","레몬향","레몬맛",
+
+// 메
+"메모","메모장","메모리","메모리카드","메모리칩","메모리용량","메모리반도체",
+"메뉴","메뉴판","메뉴얼","메뉴얼북","메달","메달리스트","메달수여","메달권",
+"메일","메일주소","메일함","메일계정","메일서버","메신저","메신저앱","메신저방",
+"메시지","메시지창","메시지함","메시지전송","메시지알림","메트로","메트로놈",
+"메트로역","메트로노선","메트릭스","메이크업","메이크업샵","메이크업아티스트",
+"메이크업브러시","메밀","메밀국수","메밀전병","메밀묵","메밀차","메밀밭",
+"메론","메론빵","메론소다","메추리","메추리알","메추리알장조림","메추리새",
+"메카","메카닉","메카닉스","메커니즘","메모리장치","메모리주소",
+
+// 베
+"베개","베개커버","베개솜","베개머리","베란다","베란다창","베란다화분","베란다정원",
+"베이글","베이글빵","베이커리","베이커리카페","베이킹","베이킹파우더","베이킹소다",
+"베이킹팬","베이비","베이비시터","베이비카","베트남","베트남어","베트남음식",
+"베스트","베스트셀러","베스트상품","베스트곡","베이스","베이스기타","베이스볼",
+"베이스캠프","베이스라인","베이스코트","베터리","베터리팩","베테랑","베테랑선수",
+"베이컨","베이컨햄","베이컨말이","베이컨칩","베이비룸",
+
+// 세
+"세상","세탁","세탁기","세탁소","세탁물","세탁세제","세탁망","세탁바구니","세탁실",
+"세면대","세면도구","세면장","세면기","세수","세수대야","세숫대야","세수비누",
+"세금","세금계산서","세금표","세금신고","세대","세대주","세대차이","세대교체",
+"세로","세로줄","세로선","세로길이","세모","세모꼴","세모난","세모판","세부",
+"세부사항","세부내용","세부계획","세부정보","세종대왕","세종시","세종문화회관",
+"세상살이","세상일","세상사","세상물정","세상보기","세상풍경","세일","세일기간",
+"세일상품","세일행사","세일가","세일품목","세트","세트상품","세트메뉴","세트장",
+
+// 에
+"에어컨","에어컨필터","에어컨바람","에어컨실외기","에어컨리모컨","에어컨청소",
+"에어백","에어백장치","에어프라이어","에어프라이어기","에어로빅","에어로빅복",
+"에너지","에너지절약","에너지음료","에너지효율","에너지정책","에너지소비",
+"에너지바","에너지드링크","에스컬레이터","에스프레소","에스프레소커피","에스키모",
+"에티켓","에티켓교육","에티켓문화","에펠탑","에피소드","에피소드1","에피소드2",
+"에코백","에코백가방","에코마크","에코제품","에코하우스","에코자동차","에어팟",
+"에어팟케이스","에어팟프로","에어컨설치","에어컨수리","에어컨냉방",
+
+// 제
+"제비","제비꽃","제비집","제비꼬리","제과","제과점","제빵","제빵사","제빵소",
+"제빵기","제빵기계","제목","제목표","제목줄","제목란","제안","제안서","제안사항",
+"제안자","제작","제작자","제작사","제작비","제작과정","제작물","제품","제품명",
+"제품설명","제품정보","제도","제도권","제도판","제도용품","제자리","제자리걸음",
+"제주","제주도","제주도민","제주공항","제주도여행","제주도관광","제주감귤",
+"제주말","제주바다","제주산","제철","제철음식","제철과일","제철채소","제한",
+"제한구역","제한속도","제한시간","제한선","제출","제출물","제출기한","제출서류",
+"제사","제사상","제사음식","제사날","제왕","제왕절개","제일","제일기획",
+
+// 체
+"체육","체육관","체육복","체육대회","체육시간","체험","체험학습","체험관","체험장",
+"체험활동","체험수업","체온","체온계","체온측정","체온조절","체력","체력검사",
+"체력장","체력단련","체격","체구","체중","체중계","체중조절","체중감량",
+"체조","체조선수","체조경기","체조복","체스","체스판","체스말","체스게임",
+"체크","체크카드","체크무늬","체크리스트","체크표","체크인","체크아웃","체크포인트",
+"체크셔츠","체면","체면치레","체질","체질검사","체질량","체질개선",
+"체액","체액량","체험판","체험판게임","체험부스","체험교실","체험행사",
+
+// 케
+"케이크","케이크집","케이크상자","케이크칼","케이크크림","케이크장식",
+"케이블","케이블카","케이블TV","케이블선","케이블타이","케이블방송","케이블채널",
+"케첩","케첩통","케첩소스","케이스","케이스커버","케이스팬","케이스백","케이스모서리",
+"케어","케어센터","케어용품","케어제품","케미컬","케미컬제품","케미스트리",
+"케이스쿨러","케이크가게","케이크빵","케이크시트",
+"케이팝","케이팝가수","케이팝스타","케이팝그룹","케이팝음악","케이팝공연",
+
+// 페
+"페인트","페인트칠","페인트통","페인트붓","페인트가게","페인트냄새","페인트공",
+"페달","페달밟기","페달보드","페달링","페달자전거","페스티벌","페스티벌장",
+"페스티벌티켓","페이스","페이스북","페이스북계정","페이스페인팅","페이스타월",
+"페이스팩","페이스마스크","페퍼민트","페퍼민트차","페퍼로니","페퍼로니피자",
+"페트병","페트병뚜껑","페트병수거","페트병물","페트병재활용","페트롤","페트롤엔진",
+"페인트롤러","페인트작업","페이퍼","페이퍼백","페이퍼타월","페이퍼컵",
+"페이퍼클립","페이퍼아트","페이퍼보드","페이퍼북",
+
+// 테
+"테니스","테니스공","테니스라켓","테니스장","테니스화","테니스복","테이블","테이블보",
+"테이블매트","테이블세팅","테이블게임","테이블야자","테이프","테이프커터","테이프클리너",
+"테이프녹음","테이프공","테이프붙이기","테크놀로지","테크놀로지산업","테크닉",
+"테크닉컬","테크웨어","테마","테마파크","테마곡","테마여행","테마거리","테마전시",
+"테스트","테스트지","테스트용","테스트게임","테스트서버","테스트결과","테스트파일",
+"테이블스푼","테이블웨어","테이블다리","테이블축구","테이핑","테이핑테이프",
+
+// 헤
+"헤드폰","헤드셋","헤드셋마이크","헤드라이트","헤드램프","헤드레스트","헤드기어",
+"헤어","헤어스타일","헤어드라이어","헤어샵","헤어숍","헤어컷","헤어컬러","헤어밴드",
+"헤어핀","헤어젤","헤어스프레이","헤어롤","헤어브러시","헤어오일","헤어팩",
+"헤엄","헤엄치기","헤엄치다","헤엄선수","헤엄장","헤비급","헤비메탈","헤비유저",
+"헤드라인","헤드라인뉴스","헤드폰케이스","헤드폰잭","헤드폰선",
+"헤이즐넛","헤이즐넛커피","헤이즐넛라떼","헤이즐넛향",
+
+  // 고
+"고기","고구마","고추","고추장","고추냉이","고등어","고래","고래밥","고래상어",
+"고양이","고슴도치","고무","고무줄","고무신","고무장갑","고무공","고무판",
+"고속","고속도로","고속버스","고속철도","고속열차","고속충전","고장","고장난",
+"고장수리","고장차","고장신고","고민","고민거리","고민상담","고민해결",
+"고등학교","고등학생","고등교육","고등수학","고등과학","고등법원","고급",
+"고급품","고급차","고급식당","고급정보","고리","고리대금","고리타분","고리짝",
+"고양이집","고양이밥","고양이털","고양이발","고양이눈","고양이사진",
+"고무나무","고무풍선","고무보트","고무호스","고무패킹","고무바퀴",
+"고추밭","고추가루","고추기름","고추튀김","고추장찌개",
+
+// 노
+"노래","노래방","노래자랑","노래가사","노래책","노래방기계","노트","노트북",
+"노트북컴퓨터","노트필기","노트장","노을","노을빛","노을사진","노을하늘",
+"노란색","노랑","노란꽃","노란불","노란색연필","노란우산","노인","노인복지",
+"노인정","노인회","노동","노동자","노동법","노동조합","노동시간","노동력",
+"노력","노력상","노력파","노하우","노하우집","노이즈","노이즈캔슬링","노이즈마이크",
+"노점","노점상","노점시장","노점음식","노트북가방","노트북거치대",
+"노출","노출사진","노출계","노출량","노출증","노후","노후대비","노후생활",
+
+// 도
+"도서관","도서","도서관책","도서대출","도서반납","도서관장","도시","도시락",
+"도시철도","도시계획","도시공원","도시생활","도시농업","도시락통","도시락가방",
+"도마","도마뱀","도마뱀붙이","도자기","도자기공예","도자기컵","도자기그릇",
+"도장","도장집","도장면","도장찍기","도둑","도둑질","도둑고양이","도둑놈",
+"도깨비","도깨비불","도깨비방망이","도깨비시장","도구","도구함","도구상자",
+"도로","도로변","도로교통","도로공사","도로표지판","도로표지","도로명","도로명주소",
+"도착","도착시간","도착지","도착역","도전","도전자","도전과제","도전정신",
+"도움","도움말","도움센터","도움요청","도장밥","도장공","도장재료",
+
+// 로
+"로봇","로봇청소기","로봇팔","로봇공학","로봇공학자","로봇축구","로봇대회",
+"로켓","로켓발사","로켓엔진","로켓배송","로켓포","로켓연료","로켓과학",
+"로션","로션통","로션크림","로션바르기","로마","로마제국","로마자","로마숫자",
+"로맨스","로맨스영화","로맨스소설","로맨틱","로맨틱코미디","로고","로고디자인",
+"로고송","로딩","로딩화면","로딩시간","로딩바","로터리","로터리교차로",
+"로터","로터리엔진","로터리문","로또","로또복권","로또번호","로또판매점",
+"로프","로프줄","로프웨이","로프코스","로켓발사대",
+
+// 모
+"모자","모자이크","모자이크사진","모자이크처리","모자이크타일","모래","모래사장",
+"모래성","모래시계","모래밭","모래알","모래놀이","모기","모기장","모기약",
+"모기향","모기퇴치","모기물림","모닥불","모닥불놀이","모델","모델하우스","모델링",
+"모델링팩","모델명","모델번호","모니터","모니터링","모니터암","모니터받침대",
+"모바일","모바일게임","모바일앱","모바일기기","모바일결제","모바일뱅킹",
+"모험","모험가","모험소설","모험영화","모험심","모양","모양새","모양자",
+"모집","모집공고","모집요강","모집인원","모집기간","모집단","모임","모임장소",
+"모임방","모임회비","모래주머니",
+
+// 보
+"보리","보리차","보리밥","보리밭","보리빵","보석","보석함","보석상","보석가게",
+"보물","보물상자","보물섬","보물찾기","보물지도","보도","보도자료","보도블록",
+"보도국","보도사진","보안","보안카메라","보안장치","보안검색","보안요원",
+"보건","보건소","보건실","보건복지","보건교육","보통","보통사람","보통명사",
+"보통주","보행","보행자","보행자도로","보행자신호","보행자용","보관","보관함",
+"보관소","보관방법","보관용기","보람","보람찬","보상","보상금","보상심리",
+"보온","보온병","보온도시락","보온재","보온효과","보조","보조금","보조배터리",
+"보조장치","보조석","보조개","보조개수술",
+
+// 소
+"소","소고기","소고기국","소고기볶음","소금","소금물","소금통","소금밭","소나무",
+"소나기","소나기비","소나기구름","소리","소리통","소리굽쇠","소리파일","소리바람",
+"소방","소방관","소방서","소방차","소방호스","소방시설","소방훈련","소방대",
+"소설","소설가","소설책","소설작품","소설영화","소식","소식통","소식지",
+"소문","소문난집","소문자","소문내기","소원","소원성취","소원빌기","소원카드",
+"소풍","소풍날","소풍도시락","소풍장소","소파","소파베드","소파쿠션",
+"소프트웨어","소프트웨어개발","소프트웨어공학","소프트웨어회사",
+"소프트볼","소프트아이스크림","소프트웨어업데이트","소프트웨어설치",
+"소형","소형차","소형가전","소형컴퓨터","소화기","소화전","소화불량","소화제",
+
+// 오
+"오리","오리발","오리배","오리알","오리구이","오징어","오징어볶음","오징어게임",
+"오이","오이김치","오이냉국","오이무침","오렌지","오렌지주스","오렌지색",
+"오토바이","오토바이헬멧","오토바이도로","오토캠핑","오토캠핑장","오디오",
+"오디오파일","오디오기기","오디오북","오디오잭","오후","오전","오늘","오늘날",
+"오답","오답노트","오답문제","오답률","오락","오락실","오락게임","오락프로그램",
+"오름","오름길","오름산","오르막","오르막길","오르골","오르골상자",
+"오리털","오리털이불","오리털점퍼","오리훈제","오리백숙",
+"오픈","오픈마켓","오픈소스","오픈월드","오픈카","오픈채팅","오픈채팅방",
+
+// 조
+"조개","조개껍데기","조개구이","조개탕","조개살","조개잡이","조각","조각상",
+"조각품","조각가","조각칼","조각조각","조명","조명등","조명기구","조명시설",
+"조리","조리법","조리사","조리기구","조리대","조리실","조리도구","조리시간",
+"조선","조선시대","조선왕조","조선업","조선소","조선왕","조선인","조수","조수간만",
+"조수석","조약","조약돌","조약서","조정","조정자","조정경기","조정석",
+"조종","조종사","조종석","조종간","조종기","조종실","조화","조화꽃","조화로운",
+"조립","조립식","조립품","조립공","조립컴퓨터","조립PC","조립장난감",
+"조기","조기교육","조기축구","조기졸업","조기입학","조개껍질",
+
+// 초
+"초","초밥","초밥집","초밥재료","초콜릿","초콜릿바","초콜릿케이크","초콜릿우유",
+"초등학교","초등학생","초등교육","초대","초대장","초대손님","초대권","초대하다",
+"초원","초원지대","초식","초식동물","초식남","초성","초성퀴즈","초성게임",
+"초보","초보자","초보운전","초보운전자","초상화","초상권","초능력","초능력자",
+"초침","초침바늘","초소","초소형","초소형카메라","초점","초점거리","초점렌즈",
+"초록","초록색","초록불","초록빛","초대형","초대형마트","초대형스크린",
+"초코","초코우유","초코파이","초코케이크","초코칩","초코쿠키","초코빵",
+
+// 코
+"코끼리","코끼리열차","코끼리상","코끼리코","코미디","코미디언","코미디영화",
+"코드","코드번호","코드표","코드작성","코딩","코딩교육","코딩수업","코딩게임",
+"코딩테스트","코딩언어","코딩컴퓨터","코드블록","코드에디터","코드파일",
+"코스","코스요리","코스모스","코스튬","코스프레","코스피","코스닥","코스웨어",
+"코너","코너킥","코너링","코너석","코끼리풀","코끼리상아",
+"코인","코인노래방","코인세탁방","코인세탁","코인게임","코인충전","코인락커",
+"코트","코트장","코트디부아르","코트걸","코피","코피휴지","코피나다","코로나",
+"코로나바이러스","코로나검사","코로나백신","코알라","코알라곰",
+
+// 포
+"포도","포도주","포도즙","포도밭","포도씨","포도송이","포도맛","포장","포장지",
+"포장지끈","포장박스","포장마차","포장음식","포장재","포장용기","포스터","포스터지",
+"포스터디자인","포토","포토샵","포토카드","포토북","포토존","포토앨범","포토그래퍼",
+"포토프린터","포토에세이","포크","포크레인","포크숟가락","포크볼","포크송",
+"포인트","포인트카드","포인트적립","포인트제","포인트상품","포켓","포켓몬","포켓볼",
+"포켓북","포켓사전","포켓와이파이","포켓에디션","포켓게임","포함","포함관계",
+"포함물","포함사항","포화","포화상태","포화도","포화수증기","포물선","포물선운동",
+"포장김밥","포장초밥","포장박스",
+
+// 토
+"토끼","토끼풀","토끼굴","토끼띠","토끼인형","토끼풀꽃","토마토","토마토주스",
+"토마토소스","토마토케첩","토마토파스타","토론","토론회","토론수업","토론주제",
+"토론자","토론문","토요일","토요일밤","토양","토양오염","토양검사","토양학",
+"토지","토지대장","토지거래","토지소유","토지이용","토굴","토굴집","토속음식",
+"토속문화","토종","토종닭","토종꿀","토종식물","토너","토너먼트","토너먼트대회",
+"토스트","토스트빵","토스트기","토스트기계","토피","토피넛","토피넛라떼",
+"토끼풀밭","토끼고기","토끼우리","토끼장",
+
+// 호
+"호랑이","호랑나비","호랑이굴","호랑이띠","호수","호수공원","호수물","호수변",
+"호텔","호텔방","호텔룸","호텔예약","호텔조식","호텔수영장","호박","호박죽",
+"호박전","호박씨","호박밭","호박꽃","호박엿","호떡","호떡집","호두","호두과자",
+"호두나무","호두껍질","호두파이","호기심","호기심천국","호감","호감도","호감형",
+"호흡","호흡기","호흡법","호흡곤란","호흡기질환","호흡운동",
+"호주","호주머니","호주여행","호주산","호주달러","호주영어","호신용품","호신술",
+"호출","호출기","호출벨","호출번호","호재","호재뉴스","호박고구마","호박씨앗",
+
+  // =====================================================
+  // 동물
+  // =====================================================
+  "강아지","고양이","개","소","말","돼지","닭","오리","거위","염소",
+  "양","토끼","사자","호랑이","표범","치타","하이에나","늑대","여우","너구리",
+  "오소리","족제비","수달","비버","곰","판다","코알라","캥거루","원숭이","고릴라",
+  "침팬지","오랑우탄","코끼리","기린","얼룩말","하마","코뿔소","낙타","사슴","고라니",
+  "노루","다람쥐","청설모","햄스터","기니피그","두더지","박쥐","고슴도치","뱀","도마뱀",
+  "악어","거북이","이구아나","카멜레온","개구리","두꺼비","도롱뇽","공룡","독수리",
+  "매","참새","까치","비둘기","까마귀","부엉이","올빼미","두루미","학","황새",
+  "제비","갈매기","펭귄","타조","공작","앵무새","백조","플라밍고",
+  "매미","잠자리","나비","벌","말벌","개미","모기","파리","나방",
+  "사마귀","메뚜기","여치","귀뚜라미","무당벌레","장수풍뎅이","사슴벌레","반딧불이","거미","전갈",
+  "지네","노래기","달팽이","지렁이","문어","오징어","낙지","해파리","새우","게",
+  "가재","소라","조개","전복","굴","홍합","멍게","해삼","성게","불가사리",
+  "고래","돌고래","상어","가오리","참치","연어","고등어","갈치","멸치","꽁치",
+  "청어","복어","붕어","잉어","메기","송사리","금붕어","장어","미꾸라지","거북",
+
+  // =====================================================
+  // 음식
+  // =====================================================
+  "김밥","라면","떡볶이","순대","만두","비빔밥","잡채","불고기","갈비","삼겹살",
+  "목살","곱창","대창","족발","보쌈","냉면","칼국수","수제비","잔치국수","비빔국수",
+  "우동","소바","라멘","초밥","회","돈까스","카레","오므라이스","볶음밥","김치볶음밥",
+  "주먹밥","유부초밥","덮밥","국밥","설렁탕","곰탕","갈비탕","삼계탕","감자탕","순두부",
+  "김치찌개","된장찌개","부대찌개","순대국","육개장","미역국","콩나물국","떡국","떡","송편",
+  "전","파전","김치전","부침개","호떡","붕어빵","어묵","계란","달걀","소시지",
+  "베이컨","스테이크","샐러드","샌드위치","토스트","햄버거","피자","치킨","핫도그","도넛",
+  "와플","팬케이크","케이크","쿠키","초콜릿","사탕","젤리","푸딩","아이스크림","빙수",
+  "팥빙수","약과","한과","강정","유과","과자","빵","식빵","바게트","크루아상",
+  "마카롱","머핀","타르트","파이","잼","버터","치즈","요거트","우유","두유",
+  "주스","콜라","사이다","탄산수","커피","녹차","홍차","보리차","식혜","수정과",
+  "소금","설탕","후추","간장","된장","고추장","식초","참기름","들기름","마요네즈",
+
+  // =====================================================
+  // 과일 / 채소
+  // =====================================================
+  "사과","배","포도","수박","참외","딸기","복숭아","자두","감","홍시",
+  "귤","오렌지","레몬","라임","자몽","유자","망고","파인애플","키위","체리",
+  "블루베리","라즈베리","석류","무화과","대추","밤","은행","코코넛","아보카도","두리안",
+  "멜론","바나나","토마토","오이","당근","양파","감자","고구마","무","마늘",
+  "생강","고추","옥수수","콩","완두콩","콩나물","배추","양배추","상추","시금치",
+  "부추","깻잎","대파","파","피망","파프리카","브로콜리","셀러리","연근","우엉",
+  "가지","호박","단호박","버섯","팽이버섯","표고버섯","느타리버섯","고사리","미나리","쑥",
+
+  // =====================================================
+  // 학교 / 교육
+  // =====================================================
+  "학교","교실","교무실","행정실","교장","교감","선생님","교사","학생","학급",
+  "반장","부반장","선배","후배","동급생","친구","짝꿍","동아리","수업","과목",
+  "국어","수학","영어","과학","사회","역사","정보","체육","음악","미술",
+  "도덕","기술","가정","시험","시험지","답안지","문제","정답","오답","점수",
+  "성적","평가","과제","숙제","공부","학습","복습","예습","연습","발표",
+  "토론","질문","대답","설명","교과서","참고서","문제집","공책","노트","연필",
+  "볼펜","지우개","자","필통","책상","의자","칠판","화이트보드","분필","사물함",
+  "급식","급식실","운동장","체육관","강당","도서관","방송실","과학실","음악실","미술실",
+  "컴퓨터실","상담실","보건실","매점","교복","체육복","운동화","졸업","입학","졸업식",
+  "입학식","방학","여름방학","겨울방학","학기","학년","학교생활","교내","교외",
+
+  // =====================================================
+  // 사람 / 가족 / 직업
+  // =====================================================
+  "사람","어른","아이","어린이","학생","청소년","성인","친구","가족","부모",
+  "아버지","어머니","아빠","엄마","할아버지","할머니","형","누나","언니","오빠",
+  "동생","남매","형제","자매","삼촌","이모","고모","조카","사촌","아들",
+  "딸","손자","손녀","남편","아내","부부","선생님","의사","간호사","약사",
+  "경찰관","경찰","소방관","군인","공무원","변호사","판사","검사","회계사","교수",
+  "과학자","연구원","개발자","프로그래머","엔지니어","건축가","디자이너","기자","작가","화가",
+  "배우","가수","감독","모델","사진작가","요리사","제빵사","바리스타","농부","어부",
+  "상인","사업가","운전기사","택배기사","우체부","조종사","승무원","미용사","목수","기술자",
+
+  // =====================================================
+  // 장소
+  // =====================================================
+  "집","아파트","주택","건물","회사","사무실","가게","식당","카페",
+  "편의점","마트","시장","백화점","서점","도서관","병원","약국","은행","우체국",
+  "경찰서","소방서","공항","항구","역","기차역","터미널","버스터미널","주차장","주유소",
+  "세차장","호텔","모텔","극장","영화관","공연장","경기장","수영장","헬스장","공원",
+  "놀이터","광장","동물원","식물원","수족관","박물관","미술관","놀이공원","해수욕장",
+  "해변","바닷가","산","계곡","폭포","동굴","섬","마을","도시","나라",
+  "거리","도로","골목","육교","다리","터널","공장","농장","목장","정원",
+  "궁궐","성","사찰","교회","성당","학원","연구소","공사장",
+
+  // =====================================================
+  // 자연 / 날씨
+  // =====================================================
+  "하늘","태양","달","별","구름","비","눈","바람","천둥","번개",
+  "무지개","안개","이슬","서리","얼음","햇빛","달빛","별빛","공기","물",
+  "파도","물결","강","강물","시냇물","호수","연못","바다","해안",
+  "언덕","봉우리","절벽","숲","나무","풀",
+  "꽃","잎","줄기","뿌리","가지","열매","씨앗","흙","땅","돌",
+  "바위","모래","사막","초원","습지","화산","지진","태풍","홍수","가뭄",
+  "폭풍","소나기","장마","한파","더위","추위","기온","습도","날씨","계절",
+  "봄","여름","가을","겨울","봄날","여름날","가을날","겨울날",
+
+  // =====================================================
+  // 신체
+  // =====================================================
+  "머리","얼굴","이마","눈","눈썹","눈꺼풀","코","귀","입","입술",
+  "혀","치아","이","턱","목","어깨","팔","팔꿈치","손","손목",
+  "손가락","손톱","손바닥","손등","가슴","배","등","허리","엉덩이","다리",
+  "허벅지","무릎","종아리","발목","발","발가락","발톱","발바닥","피부","뼈",
+  "근육","혈액","심장","폐","간","위","신장","뇌","신경","혈관",
+  "몸","몸통","목소리","숨","땀","눈물","침","피",
+
+  // =====================================================
+  // 물건 / 생활용품
+  // =====================================================
+  "책","잡지","신문","종이","파일","폴더","문서","편지","봉투","상자",
+  "가방","백팩","지갑","열쇠","안경","시계","우산","장갑","목도리","모자",
+  "신발","구두","운동화","슬리퍼","샌들","양말","옷","바지","치마","셔츠",
+  "티셔츠","재킷","코트","잠옷","수건","비누","샴푸","칫솔","치약","거울",
+  "빗","드라이어","휴지","물티슈","휴지통","빗자루","걸레","세제","비닐","봉지",
+  "컵","잔","접시","그릇","수저","숟가락","젓가락","포크","칼","냄비",
+  "프라이팬","도마","전자레인지","냉장고","세탁기","청소기","에어컨","선풍기","텔레비전","리모컨",
+  "침대","소파","책장","옷장","서랍","탁자","식탁","의자","전등","전구",
+
+  // =====================================================
+  // 교통
+  // =====================================================
+  "자동차","승용차","버스","택시","기차","지하철","전철","전동차","고속열차","고속버스",
+  "자전거","오토바이","스쿠터","킥보드","트럭","화물차","승합차","소방차","구급차","경찰차",
+  "택배차","배","배달차","여객선","화물선","잠수함","요트","카누","카약",
+  "비행기","여객기","전투기","헬리콥터","열기구","우주선","로켓","타이어","엔진",
+  "핸들","브레이크","페달","도로","신호등","횡단보도","주차장","정류장",
+
+  // =====================================================
+  // 스포츠
+  // =====================================================
+  "축구","야구","농구","배구","탁구","테니스","배드민턴","골프","볼링","수영",
+  "달리기","마라톤","줄넘기","줄다리기","씨름","태권도","유도","검도","복싱","레슬링",
+  "펜싱","양궁","사격","역도","체조","스케이트","스키","스노보드","서핑","등산","등신",
+  "선수","감독","코치","심판","관중","경기","시합","대회","결승","예선",
+  "우승","준우승","득점","골","홈런","안타","도루","패스","슛","드리블",
+  "골대","농구대","라켓","배트","글러브","공","축구공","야구공","농구공","배구공",
+  "유니폼","운동복","체력","훈련","연습","기록","메달","금메달","은메달",
+  "동메달","선발","교체","우승컵","응원","응원단","팀","선수단",
+
+  // =====================================================
+  // 감정 / 마음
+  // =====================================================
+  "기쁨","슬픔","분노","공포","놀람","행복","걱정","불안","긴장","설렘",
+  "그리움","외로움","자신감","용기","희망","사랑","우정","질투","후회","감동",
+  "재미","즐거움","만족","실망","관심","호기심","궁금증","두려움","무서움","감사",
+  "미소","웃음","눈물","마음","생각","기분","의욕","열정","자존심","자존감",
+  "믿음","신뢰","존중","배려","친절","예의","용서","약속","관계",
+
+  // =====================================================
+  // 시간
+  // =====================================================
+  "아침","점심","저녁","새벽","오전","오후","밤","낮","오늘","어제",
+  "내일","모레","그제","이번주","다음주","지난주","주말","평일","월요일","화요일",
+  "수요일","목요일","금요일","토요일","일요일","이번달","다음달","지난달","올해","작년",
+  "내년","시각","시간","분","초",
+  "순간","기간","시작","끝","처음","마지막","과거","현재","미래","언젠가",
+
+  // =====================================================
+  // 문화 / 여가
+  // =====================================================
+  "영화","드라마","예능","뉴스","소설","시","동화","만화","웹툰","책",
+  "잡지","신문","음악","노래","가요","팝송","악기","피아노","기타","드럼",
+  "바이올린","첼로","플루트","트럼펫","색소폰","공연","연극","뮤지컬","콘서트","축제",
+  "전시","그림","미술","조각","사진","촬영","카메라","영상","동영상","방송",
+  "게임","보드게임","카드게임","퍼즐","퀴즈","놀이","취미","독서","낚시","여행",
+  "캠핑","등산","요리","쇼핑","산책","관람","구경","수집","사진첩","앨범",
+
+  // =====================================================
+  // IT / 컴퓨터
+  // =====================================================
+  "컴퓨터","노트북","태블릿","스마트폰","휴대폰","인터넷","웹사이트","홈페이지","브라우저","검색",
+  "서버","네트워크","데이터","파일","폴더","프로그램","소프트웨어","하드웨어","키보드","마우스",
+  "모니터","프린터","스캐너","카메라","스피커","이어폰","헤드폰","충전기","배터리","케이블",
+  "화면","영상","사진","음악","문서","코딩","파이썬","자바","유니티",
+  "로봇","인공지능","알고리즘","암호","비밀번호","계정","아이디","주소","웹",
+  "검색창","메뉴","버튼","아이콘","저장","삭제","복사","붙여넣기","다운로드",
+  "업로드","로그인","로그아웃","채팅","메시지","문자","이메일",
+
+  // =====================================================
+  // 과학
+  // =====================================================
+  "과학","물리","화학","생물","지구과학","수학","원자","분자","전자","양성자",
+  "중성자","원소","금속","산소","수소","질소","탄소","철","금","은",
+  "구리","소금","물","공기","에너지","전기","자석","빛","소리","열",
+  "온도","압력","속도","거리","시간","힘","중력","운동","마찰","파동",
+  "진동","전류","전압","저항","회로","배터리","전구","렌즈","거울","현미경",
+  "망원경","실험","관찰","측정","결과","가설","이론","법칙","연구","발견",
+
+  // =====================================================
+  // 우주
+  // =====================================================
+  "태양","수성","금성","지구","화성","목성","토성","천왕성","해왕성","달",
+  "별","행성","위성","우주","은하","은하수","성운","혜성","소행성","운석",
+  "궤도","로켓","우주선","우주인","천문학","망원경","중력","블랙홀","태양계","우주복",
+
+  // =====================================================
+  // 사회 / 생활
+  // =====================================================
+  "나라","국가","도시","마을","사회","문화","역사","경제","정치","법",
+  "규칙","질서","권리","의무","책임","약속","계약","문제","해결","방법",
+  "이유","결과","원인","목적","계획","준비","기회","경험","기억","습관",
+  "생활","일상","세상","세계","이웃","공동체",
+  "회의","모임","행사","대회","축제","뉴스","신문","방송","소식","정보",
+
+  // =====================================================
+  // 행동 / 동작
+  // =====================================================
+  "걷기","달리기","뛰기","앉기","서기","눕기","자기","먹기","마시기","읽기",
+  "쓰기","듣기","보기","말하기","웃기","울기","놀기","공부하기","운동하기","여행하기",
+  "요리하기","청소하기","정리하기","만들기","그리기","노래하기","춤추기","게임하기","검색하기","촬영하기",
+
+  // =====================================================
+  // 일반 명사
+  // =====================================================
+  "이야기","전설","신화","동화","수수께끼","퍼즐","보물","모험","여행","축제",
+  "행사","대회","경기","시합","경주","약속","선물","편지","일기","비밀",
+  "과일","동물","음식","사람","나라","도시","날씨","국가","친구","가족",
+  "학생","어른","아이","이름","전화","시간","공부","운동","놀이","게임",
+  "음악","영화","드라마","소설","사진","그림","노래","악기","무용","언어",
+  "단어","문장","글씨","숫자","계산","질문","대답","설명","이해","생각",
+  "기억","경험","습관","성격","태도","관계","소통","대화","토론","의견",
+  "목표","성공","실패","도전","노력","연습","실력","능력","재능","방법",
+  "과정","결과","시작","끝","기회","선택","결정","변화","발전","성장",
+  "문제","답","해결","이유","원인","목적","계획","준비","내용",
+  "모양","색깔","크기","모습","소리","냄새","맛","느낌",
+
+  // =====================================================
+  // 색깔 / 모양 / 상태
+  // =====================================================
+  "빨강","주황","노랑","초록","파랑","남색","보라","분홍","검정","하양",
+  "흰색","검은색","회색","갈색","금색","은색","동그라미","세모","네모","원",
+  "삼각형","사각형","직선","곡선","점","선","면","길이","높이",
+  "넓이","깊이","무게","속도","온도","상태",
+
+  // =====================================================
+  // 의류
+  // =====================================================
+  "옷","바지","치마","셔츠","티셔츠","남방","원피스","재킷","코트","패딩",
+  "점퍼","조끼","스웨터","니트","후드티","청바지","반바지","속옷","잠옷","운동복",
+  "교복","체육복","모자","장갑","목도리","양말","신발","구두","운동화","슬리퍼",
+  "샌들","장화","부츠","가방","백팩","지갑","벨트","단추","주머니","안경",
+
+  // =====================================================
+  // 집 / 가전
+  // =====================================================
+  "집","방","거실","부엌","주방","침실","화장실","욕실","베란다","현관",
+  "문","창문","벽","바닥","천장","계단","침대","소파","책상","의자",
+  "식탁","책장","옷장","서랍","거울","냉장고","세탁기","건조기","청소기","에어컨",
+  "선풍기","텔레비전","전자레인지","전기밥솥","가스레인지","전등","스탠드","전구","리모컨","시계",
+
+  // =====================================================
+  // 여행
+  // =====================================================
+  "여행","관광","휴가","호텔","숙소","예약","여권","비자","공항","비행기",
+  "기차","버스","택시","지도","가이드","관광객","사진","기념품","선물","가방",
+  "해변","바다","산","섬","도시","마을","시장","공원","박물관","미술관",
+  "전망대","축제","음식","식당","카페","호텔","방","침대","수영장","온천",
+
+  // =====================================================
+  // 자동차
+  // =====================================================
+  "자동차","차량","승용차","스포츠카","경차","세단","쿠페","왜건","해치백","트럭",
+  "버스","택시","오토바이","엔진","모터","타이어","휠","브레이크","핸들","페달",
+  "배터리","라이트","전조등","후미등","범퍼","보닛","트렁크","문","유리","거울",
+  "시트","안전벨트","에어백","속도","도로","주유소","주차장","정비소","공구","기름",
+  "휘발유","경유","전기차","하이브리드","충전","운전","면허","교통","신호","교차로",
+
+  // =====================================================
+  // 자연 / 식물 추가
+  // =====================================================
+  "소나무","은행나무","단풍나무","벚나무","대나무","버드나무","느티나무","참나무","전나무","야자수",
+  "장미","튤립","해바라기","민들레","개나리","진달래","철쭉","벚꽃","국화","무궁화",
+  "연꽃","코스모스","라일락","수선화","백합","카네이션","선인장","이끼","풀잎","나뭇잎",
+
+  // =====================================================
+  // 경제 / 돈
+  // =====================================================
+  "돈","화폐","지폐","동전","은행","통장","카드","신용카드","체크카드","현금",
+  "가격","금액","비용","수입","지출","월급","급여","용돈","저축","저금",
+  "대출","이자","세금","시장","상품","물건","가게","회사","기업","사업",
+  "경제","주식","주가","투자","금융","계좌","송금","결제","영수증",
+
+  // =====================================================
+  // 디지털 / 인터넷
+  // =====================================================
+  "인터넷","웹","웹사이트","홈페이지","검색","검색어","브라우저","주소","링크","서버",
+  "계정","아이디","비밀번호","로그인","로그아웃","회원","게시판","댓글","채팅","메시지",
+  "이메일","문자","전화","영상","사진","음성","파일","폴더","다운로드","업로드",
+  "프로그램","어플","콘텐츠","방송","스트리밍","구독","채널",
+  "유튜브","블로그","뉴스","알림","검색창",
+
+  
+// 최신 유행어 / 신조어 / 인터넷 밈
+"갓생","킹받다","킹받네","쫌쫌따리","레게노","도파민","도파민폭발",
+"점메추","저메추","폼미쳤다","폼미침","폼미쳤네","알잘딱깔센",
+"알잘딱깔센하다","억까","억까하다","억텐","찐텐","텐션","노잼","꿀잼",
+"존잼","핵잼","극한직업","현타","현생","현생복귀","현생살이",
+"무물","무물보","스불재","갑분싸","갑분싸하다","갑분띠","별다줄",
+"자만추","인만추","아만추","꾸안꾸","꾸꾸꾸","꾸덕","꾸덕하다",
+"오운완","오운완인증","오하운","갓생러","갓생살이","갓생루틴",
+"열공","열공모드","공부인증","공스타","공스타그램","식집사",
+"집콕","방콕","홈카페","홈트","홈트레이닝","혼밥","혼술","혼영",
+"혼코노","소확행","소확행템","플렉스","가심비","가성비",
+"가심비템","가성비템","소비요정","텅장","텅장주의","월급루팡",
+"월급로그","퇴근","칼퇴","칼퇴근","워라밸","워라밸러","직장인밈",
+
+// 인터넷 / SNS
+"밈","밈화","밈주식","밈코인","짤","짤방","짤줍","짤털","짤쟁이",
+"댓글","댓망진창","댓삭","댓관","좋댓구알","구독","구독자","구독취소",
+"좋아요","좋아요테러","팔로우","팔로워","언팔","맞팔","선팔","소통",
+"소통왕","인스타","릴스","쇼츠","숏폼","틱톡","브이로그","브이로거",
+"유튜버","유튜브","스트리머","스트리밍","라이브","라이방","클립",
+"하이라이트","바이럴","바이럴마케팅","알고리즘","알고리즘픽",
+"추천영상","추천탭","피드","피드백","프로필","프사","닉네임","닉변",
+"본계","부계","비계","공계","덕계","팬계",
+
+// 반응 / 감정 표현
+"열받다","어이없다","어질어질","어질하다",
+"어쩔티비","저쩔티비","안물안궁","안궁안물","오히려좋아","이왜진",
+"이왜진하다","실화냐","실화냐고","레전드","레전드다",
+"미쳤다","미쳤네","폼미친","대박","쩐다","쩔어",
+"개쩐다","개웃겨","개웃김","개이득","개꿀","존맛",
+"존맛탱","존맛이다","존예","존잘","핵인싸","인싸","아싸","찐","찐친",
+"찐이다","멘붕","현타온다","킹정","인정","인정각",
+
+// 학생들이 자주 쓰는 표현
+"급식체","급식","급식충","중딩","고딩","대딩","잼민이","초딩",
+"잼민","어린이밈","친구추가","친추","단톡","단톡방","갠톡","갠메",
+"답장","답장테러","읽씹","안읽씹","칼답","늦답","답장봇","공감",
+"공감대","눈치게임","눈치챙겨","눈치없음","눈치왕","관종","관종력",
+"관종짓","인싸템","인싸력","아싸력","인싸픽","인생네컷",
+"네컷","포토부스","포토이즘","탕진잼","탕진","득템","득템하다",
+"신상","신상템","핫템","핫플","핫플레이스","맛집","찐맛집","인생맛집",
+
+// 소비 / 생활
+"내돈내산","내돈내산템","갓성비","갓성비템","혜자","혜자템",
+"창렬","창렬하다","품절대란","오픈런","오픈런족","런치플레이션",
+"런치","카공","카공족","카페인","커피수혈","커피챌린지","먹방",
+"먹방러","먹스타","먹스타그램","맛잘알","맛알못","빵지순례",
+"카페투어","여행스타그램","여행러","캠핑족","차박","차박러",
+"가성비갑","가심비갑","인생템","최애템","필수템",
+
+// 인간관계 / 연애
+"썸","썸남","썸녀","썸타다","썸붕","썸붕나다","플러팅","플러팅하다",
+"밀당","밀당하다","어장","어장관리","환승","환승연애","환승이별",
+"손절","손절하다","손절각","손절각이다","익절","익절하다","연락두절",
+"답정너","답정너질","내로남불","내로남불하다",
+"사바사","케바케","복불복","취향존중","취존","TMI","TMI폭격","TMI충",
+"프로참견러","관심법",
+
+// 공부 / 학교
+"공부법","공부루틴","공부스타그램","열공러","공부인증",
+"시험기간","시험공부","벼락치기","벼락치기러","찍기","찍신","시험망함",
+"시험폭망","수행평가","수행","생기부","생기부러",
+"진로탐색","진로고민","임용","공시","공시생","취준","취준생","취뽀",
+"취업준비","스펙","스펙업","자소서","면접","면접왕","합격","합격각",
+
+// 게임 / 온라인
+"겜","겜방","겜돌이","겜순이","겜덕","게임러","게임방송","게임방송인",
+"뉴비","고인물","썩은물","초보자","중수","고수","랭커","랭킹",
+"티어","티어상승","티어하락","캐리","캐리하다","트롤","트롤링","버프",
+"너프","사기캐","사기캐릭","메타","메타픽","픽","밴","벤픽",
+"현질","무과금","과금러","소과금","핵과금","파밍","노가다",
+"퀘스트","보스","레이드","길드","파티","파티원","매칭","매칭게임",
+
+// '과'로 시작하는 단어 추가
+"과속","과장","과외","과속방지턱","과외수업","과학관","과학기술","과일가게",
+"과일주스","과녁","과수원","과감",
+
+// 최신식 줄임말
+"점추","저추","오운식","오운공","오운러",
+"갓생인증","자만추","인만추","아만추",
+"꾸밈비","꾸밈템","꾸밈노동",
+"별다줄","갑분띠",
+"좋댓구알",
+
+  // =====================================================
+  // 추가 연결 단어
+  // =====================================================
+  "가방","가게","가격","가족","가구","가수","가슴","가위","가을","가지",
+  "간식","간장","감자","감정","감사","감동","강아지","강물","강의","거리",
+  "건물","게임","결과","결정","경기","경험","경찰","계곡","계절","계산",
+  "고기","고민","공간","공부","공원","공책","과자","관계","관광","교통",
+  "구름","구두","구조","국가","국민","그림","글씨","금요일","기계","기차",
+  "기회","기억","기술","길이","김치","꽃밭","나라","나무","날씨","남자",
+  "내일","노래","농구","농장","눈물","뉴스","다리","단어","달력","답변",
+  "대답","대학","도시","독서","돈","동네","동물","동생","드라마","등산",
+  "라면","마음","만남","만화","말","맛","매장","메뉴","모험",
+  "목소리","목표","문장","문화","미래","미술","바다","바람","박물관","반찬",
+  "발표","방학","방법","배경","배달","배우","버스","법","변화","병원",
+  "보물","복습","봉사","부모","분노","불안","비밀","사랑","사진","산책",
+  "상상","상식","생각","생활","서점","선물","선택","성공","세계","소리",
+  "소풍","수업","수영","숙제","습관","시간","시장","식사","신발","실력",
+  "실수","심장","아침","안전","약속","어려움","어제","언어","여름","연습",
+  "영어","영화","예술","오늘","오후","요리","우산","운동","음식","의견",
+  "이름","이야기","인간","인사","일기","일상","자동차","자료","작품","장소",
+  "재미","전기","전설","전화","정답","정보","정리","정책","제목","조사",
+  "졸업","주말","준비","중학교","지도","직업","진실","질문","책임","처음",
+  "천장","청소","체육","초콜릿","친구","카메라","캠핑","컴퓨터","케이크","코딩",
+  "퀴즈","타자","태양","택시","토끼","토론","통신","특징","파도","파일",
+  "판다","평가","포도","폭포","프로그램","학교","학생","학원","한글","행복",
+  "현관","현재","형제","호수","화면","화요일","환경","회사","휴대폰","희망",
+];
+
+// Set으로 중복을 자동 제거합니다. (같은 단어가 여러 카테고리에 중복 등록돼도 문제없음)
+const WORDCHAIN_DICTIONARY = [...new Set(WORDCHAIN_DICTIONARY_RAW)];
+
+
+
+// ===== jungbo-quiz-questions.js =====
+// =========================================================
+// "정보 퀴즈" 방에서 사용하는 문제 목록입니다.
+// 고등학교 정보(컴퓨팅시스템 / 데이터 / 네트워크 / 알고리즘 / 파이썬 제어구조 / 디지털윤리)
+// 6개 영역에서 골고루 출제되도록 만들었습니다.
+//
+// 이 파일만 수정하면 문제를 자유롭게 바꿀 수 있습니다.
+// - category  : 영역 구분용 (게임 로직에는 영향 없음, 정리용)
+// - question  : 화면에 보여줄 문제
+// - answer    : 참가자가 정확히 입력해야 하는 정답
+//   (앞뒤 공백은 자동으로 무시되고, 대소문자는 구분하지 않습니다)
+//
+// 문제 개수는 배열 길이에 따라 자동으로 라운드 수가 정해집니다 (지금은 48문제 = 48라운드).
+// =========================================================
+
+const JUNGBO_QUIZ_QUESTIONS = [
+// ---- 컴퓨팅시스템 ----
+  { question: "컴퓨터의 두뇌 역할을 하는 핵심 장치는? c O O", answer: "cpu" },
+  { question: "전원이 꺼지면 저장된 내용이 사라지는 휘발성 메모리는? r O O", answer: "ram" },
+  { question: "프로그램 실행 결과를 사람이 볼 수 있게 나타내는 장치는? ㅊㄹㅈㅊ", answer: "출력장치" },
+  { question: "컴퓨터 내부에서 0과 1로만 표현하는 수 체계는? ㅇㅈㅅ", answer: "이진수" },
+  { question: "하드웨어를 관리하고 사용자와 컴퓨터를 연결해주는 대표적인 소프트웨어(MS)는? ㅇㄷㅇ", answer: "윈도우" },
+  { question: "외부 네트워크와 내부 네트워크를 연결해주는 장치는? ㄹㅇㅌ", answer: "라우터" },
+
+  // ---- 데이터 ----
+  { question: "정해진 틀이나 구조(표 형태)에 맞추어 정돈된 데이터는? ㅈㅎㄷㅇㅌ", answer: "정형데이터" },
+  { question: "대량의 데이터를 빠르게 수집하고 분석하여 가치 있는 정보를 얻는 기술은? ㅂㄷㅇㅌ", answer: "빅데이터" },
+  { question: "원본 데이터를 복원할 수 있도록 크기를 줄이는 압축 방식은? ㅂㅅㅅㅇㅊ", answer: "비손실압축" },
+  { question: "압축 후 일부 데이터가 손실되지만 높은 압축률을 얻는 방식은? ㅅㅅㅇㅊ", answer: "손실압축" },
+  { question: "컴퓨터가 다루는 데이터의 가장 작은 단위(0 또는 1)는? ㅂㅌ", answer: "비트" },
+  { question: "8비트를 묶어서 부르는 데이터 단위는? ㅂㅇㅌ", answer: "바이트" },
+  { question: "데이터를 다른 사람이 알아볼 수 없도록 변환하여 보호하는 작업은? ㅇㅎㅎ", answer: "암호화" },
+  { question: "암호화된 데이터를 원래의 데이터로 되돌리는 작업은? ㅂㅎㅎ", answer: "복호화" },
+
+  // ---- 네트워크 ----
+  { question: "전 세계의 컴퓨터를 서로 연결하는 거대한 통신망은? ㅇㅌㄴ", answer: "인터넷" },
+  { question: "웹사이트 주소 앞에 붙는 보안 통신 프로토콜의 약자는? h O O O s", answer: "https" },
+  { question: "네트워크에서 각 장치를 구분하는 고유 주소를 부르는 두 글자 영문 약자는? i O", answer: "ip" },
+  { question: "무선으로 인터넷에 접속할 수 있게 해주는 근거리 통신 기술은? ㅇㅇㅍㅇ", answer: "와이파이" },
+  { question: "와이파이 신호를 제공하여 무선 기기가 네트워크에 연결될 수 있도록 하는 장치는? ㅇㅅㅅㅍㅇㅌ", answer: "액세스포인트" },
+  { question: "빛을 이용하여 데이터를 빠르게 전송하는 통신 케이블은? ㄱㅋㅇㅂ", answer: "광케이블" },
+  { question: "컴퓨터와 공유기 등을 유선으로 연결할 때 사용하는 케이블은? ㅇㄷㄴㅋㅇㅂ", answer: "이더넷케이블" },
+
+  // ---- 알고리즘 ----
+  { question: "문제 해결 절차를 순서대로 나타낸 것을 무엇이라 하는가? ㅇㄱㄹㅈ", answer: "알고리즘" },
+  { question: "알고리즘의 흐름을 도형과 화살표로 표현한 것은? ㅅㅅㄷ", answer: "순서도" },
+  { question: "알고리즘을 사람이 이해하기 쉬운 일상적인 언어로 표현하는 방법은? ㅈㅇㅇ", answer: "자연어" },
+  { question: "프로그래밍 언어와 비슷한 형식으로 알고리즘을 표현하는 방법은? ㅇㅅㅋㄷ", answer: "의사코드" },
+  { question: "인접한 두 값을 비교하며 교환해 나가는 정렬 알고리즘은? ㅂㅂㅈㄹ", answer: "버블정렬" },
+  { question: "정렬된 자료에서 중간값과 비교해 범위를 절반씩 줄여가는 탐색법은? ㅇㅈㅌㅅ", answer: "이진탐색" },
+  { question: "가장 작은(또는 큰) 값을 찾아 앞에서부터 차례대로 배치하는 정렬 알고리즘은? ㅅㅌㅈㄹ", answer: "선택정렬" },
+  { question: "자료를 처음부터 끝까지 차례대로 확인하며 찾는 탐색 방법은? ㅅㅊㅌㅅ", answer: "순차탐색" },
+
+  // ---- 파이썬 제어구조 ----
+  { question: "파이썬에서 입력은 input, 출력은? p O O O O", answer: "print" },
+  { question: "파이썬에서 조건을 판단할 때 사용하는 예약어는? i O", answer: "if" },
+  { question: "파이썬에서 정해진 횟수/범위를 반복할 때 자주 쓰는 반복문은? f O O", answer: "for" },
+  { question: "조건이 참인 동안 계속 반복 실행하는 파이썬 반복문은? w O O O O", answer: "while" },
+  { question: "파이썬에서 반복문을 즉시 빠져나올 때 쓰는 키워드는? b O O O O", answer: "break" },
+  { question: "파이썬에서 이번 반복을 건너뛰고 다음 반복으로 넘어갈 때 쓰는 키워드는? c O O t O O O e", answer: "continue" },
+  { question: "10, -3, 100과 같은 정수를 저장하는 자료형은? i O O", answer: "int" },
+  { question: "3.14, 0.5와 같은 실수를 저장하는 자료형은? f O O O O", answer: "float" },
+  { question: "True와 False 값을 저장하는 자료형은? b O O O", answer: "bool" },
+  { question: "HelloWorld와 같은 문자열을 저장하는 자료형은? s O O", answer: "str" },
+
+  // ---- 디지털윤리 ----
+  { question: "다른 사람의 저작물을 허락 없이 자신의 것처럼 사용하는 행위는? ㅍㅈ", answer: "표절" },
+  { question: "인터넷에서 상대를 존중하며 지켜야 할 예절을 무엇이라 하는가? ㄴㅌㅋ", answer: "네티켓" },
+  { question: "온라인에서 특정인을 지속적으로 괴롭히는 행위를 무엇이라 하는가? ㅅㅇㅂㅍㄹ", answer: "사이버폭력" },
+  { question: "사이버 공간에서 발생하는 집단 따돌림이나 괴롭힘 현상은? ㅅㅇㅂㅂㄹ", answer: "사이버불링" },
+  { question: "인터넷 활동을 통해 만들어지는 개인의 온라인 정체성은? ㄷㅈㅌㅈㅇ", answer: "디지털자아" },
+  { question: "스마트폰 문자메시지를 이용한 피싱(phishing) 범죄는? ㅅㅁㅅ", answer: "스미싱" },
+  { question: "사용자의 동의 없이 대량으로 전송되는 불필요한 이메일은? ㅅㅍㅁㅇ", answer: "스팸메일" },
+  { question: "이름, 전화번호처럼 특정 개인을 알아볼 수 있는 정보를 무엇이라 하는가? ㄱㅇㅈㅂ", answer: "개인정보" },
+];
+
+
+
+// ===== common-quiz-questions.js =====
+// =========================================================
+// "상식 퀴즈" 방에서 사용하는 문제 목록입니다. (일반 상식)
+// 고등학교 정보 교과 문제는 jungbo-quiz-questions.js 에 따로 있습니다.
+//
+// 이 파일만 수정하면 문제를 자유롭게 바꿀 수 있습니다.
+// - question : 화면에 보여줄 문제
+// - answer   : 참가자가 정확히 입력해야 하는 정답
+//   (앞뒤 공백은 자동으로 무시되고, 대소문자는 구분하지 않습니다)
+// =========================================================
+
+const COMMON_QUIZ_QUESTIONS = [
+  { question: "대한민국의 수도는?", answer: "서울" },
+  { question: "세계에서 가장 높은 산은?", answer: "에베레스트" },
+  { question: "물의 화학 기호는?", answer: "H2O" },
+  { question: "1년은 총 몇 일일까요? (평년 기준, 숫자만)", answer: "365" },
+  { question: "태양계에서 가장 큰 행성은?", answer: "목성" },
+  { question: "피자의 원산지 국가는?", answer: "이탈리아" },
+  { question: "인체에서 가장 큰 장기는?", answer: "피부" },
+  { question: "세계에서 가장 긴 강은?", answer: "나일강" },
+  { question: "축구 한 팀의 필드 플레이어 수(골키퍼 제외, 숫자만)는?", answer: "10" },
+  { question: "우리나라 화폐 단위는?", answer: "원" },
+  { question: "빛의 삼원색이 아닌 것: 빨강, 초록, 파랑, 노랑 중 정답은?", answer: "노랑" },
+  { question: "대한민국의 국화(나라꽃)는?", answer: "무궁화" },
+  { question: "지구에서 가장 가까운 별은?", answer: "태양" },
+  { question: "커피의 주요 성분 중 각성 효과를 내는 물질은?", answer: "카페인" },
+  { question: "대한민국의 표준시는 UTC+몇? (숫자만)", answer: "9" },
+  { question: "세계에서 가장 작은 대륙은?", answer: "오세아니아" },
+  { question: "무지개의 색깔은 총 몇 가지? (숫자만)", answer: "7" },
+  { question: "김치의 주요 재료 중 하나는?", answer: "배추" },
+  { question: "물이 어는 온도는 섭씨 몇 도? (숫자만)", answer: "0" },
+  { question: "1더하기1은? (숫자만)", answer: "2" },
+  { question: "정해원의 뜻은?", answer: "정보해원" },
+  { question: "대한민국의 국기는?", answer: "태극기" },
+  { question: "지구가 태양을 한 바퀴 도는 데 걸리는 시간은? (일 단위, 숫자만)", answer: "365" },
+  { question: "태양계에서 지구와 가장 가까운 행성은?", answer: "금성" },
+  { question: "사람의 몸에서 피를 순환시키는 기관은?", answer: "심장" },
+  { question: "소리를 듣는 신체 기관은?", answer: "귀" },
+  { question: "식물이 광합성을 할 때 흡수하는 기체는?", answer: "이산화탄소" },
+  { question: "대한민국의 국가는?", answer: "애국가" },
+  { question: "한글을 창제한 왕은?", answer: "세종대왕" },
+  { question: "지구의 위성은?", answer: "달" },
+  { question: "삼각형의 내각의 합은 몇 도? (숫자만)", answer: "180" },
+  { question: "대한민국에서 가장 높은 산은?", answer: "한라산" },
+  { question: "세계에서 가장 넓은 대양은?", answer: "태평양" },
+  { question: "1킬로미터는 몇 미터인가? (숫자만)", answer: "1000" },
+  { question: "컴퓨터의 중앙처리장치를 뜻하는 약자는?", answer: "CPU" },
+  { question: "대한민국의 수도 서울을 흐르는 대표적인 강은?", answer: "한강" },
+  { question: "지구가 자전하는 데 걸리는 시간은 약 몇 시간인가? (숫자만)", answer: "24" },
+  { question: "사계절 중 가장 더운 계절은?", answer: "여름" },
+  { question: "태양계에서 태양에 가장 가까운 행성은?", answer: "수성" },
+  { question: "대한민국의 국조(나라를 상징하는 새)는?", answer: "까치" },
+  { question: "사람의 정상적인 체온은 약 몇 도인가? (숫자만)", answer: "36.5" },
+  { question: "대한민국의 국토 면적이 가장 넓은 도는?", answer: "경상북도" },
+  { question: "세계에서 면적이 가장 큰 나라는?", answer: "러시아" },
+  { question: "태양계에서 고리가 가장 유명한 행성은?", answer: "토성" },
+  { question: "공기 중 가장 많은 비율을 차지하는 기체는?", answer: "질소" },
+  { question: "사람이 숨을 쉴 때 산소를 받아들이는 기관은?", answer: "폐" },
+  { question: "물의 끓는점은 섭씨 몇 도? (숫자만)", answer: "100" },
+  { question: "대한민국의 초대 대통령은?", answer: "이승만" },
+  { question: "조선 시대의 수도는?", answer: "한양" },
+  { question: "3·1 운동이 일어난 해는? (숫자만)", answer: "1919" },
+  { question: "대한민국이 광복을 맞은 해는? (숫자만)", answer: "1945" },
+  { question: "세계에서 가장 큰 사막은?", answer: "남극 사막" },
+  { question: "일본의 수도는?", answer: "도쿄" },
+  { question: "중국의 수도는?", answer: "베이징" },
+  { question: "미국의 수도는?", answer: "워싱턴 D.C." },
+  { question: "컴퓨터에서 데이터를 임시로 저장하는 장치는?", answer: "RAM" },
+  { question: "인터넷에서 웹사이트 주소를 나타내는 것은?", answer: "URL" },
+  { question: "1바이트는 몇 비트인가? (숫자만)", answer: "8" },
+  { question: "빛의 속도는 초당 약 몇 km인가? (숫자만)", answer: "300000" },
+  { question: "식물이 햇빛을 이용해 양분을 만드는 과정은?", answer: "광합성" },
+  { question: "지구에서 가장 큰 동물은?", answer: "대왕고래" },
+];
+
+
+
+// ===== haewon-quiz-questions.js =====
+// =========================================================
+// "해원고 퀴즈" 방에서 사용하는 문제 목록입니다. (우리 학교 관련)
+//
+// - question : 화면에 보여줄 문제 (초성 힌트 포함)
+// - answer   : 참가자가 정확히 입력해야 하는 정답
+//   (앞뒤 공백은 자동으로 무시되고, 대소문자는 구분하지 않습니다)
+// =========================================================
+
+const HAEWON_QUIZ_QUESTIONS = [
+  { question: "정해원의 뜻은?", answer: "정보해원" },
+
+  // ---- 1학년 ----
+  { question: "1학년 1반 담임인 국어쌤 이름은?ㅇㅎㅈ", answer: "유혜진" },
+  { question: "1학년 2반 담임인 음악쌤 이름은?ㅇㅇㅅ", answer: "이이슬" },
+  { question: "1학년 3반 담임인 정보쌤 이름은?ㅂㄱㅇ", answer: "박건우" },
+  { question: "1학년 4반 담임인 한국사쌤 이름은?ㅈㅅㅎ", answer: "정승호" },
+  { question: "1학년 5반 담임인 사회쌤 이름은?ㅈㅇㅈ", answer: "정운자" },
+  { question: "1학년 6반 담임인 과학쌤 이름은?ㄳ", answer: "김성" },
+  { question: "1학년 7반 담임인 영어쌤 이름은?ㅇㅅㅅ", answer: "안성실" },
+  { question: "1학년 8반 담임인 지리쌤 이름은?ㄱㅇㅅ", answer: "김이식" },
+  { question: "1학년 9반 담임인 국어쌤 이름은?ㄱㄱㅎ", answer: "김관희" },
+  { question: "1학년 10반 담임인 국어쌤 이름은?ㅇㅅㄹ", answer: "오상록" },
+  { question: "1학년 부장인 수학쌤 이름은?ㄱㄹㅎ", answer: "권량희" },
+
+  // ---- 2학년 ----
+  { question: "2학년 부장인 화학쌤 이름은?ㄱㅅㅁ", answer: "김선미" },
+  { question: "2학년 1반 담임인 국어쌤 이름은?ㄱㅈㅇ", answer: "김지안" },
+  { question: "2학년 2반 담임인 물리쌤 이름은?ㅊㄷㅎ", answer: "최대한" },
+  { question: "2학년 3반 담임인 지구쌤 이름은?ㅇㅇㅅ", answer: "안예슬" },
+  { question: "2학년 4반 담임인 영어쌤 이름은?ㅈㄱㅎ", answer: "진경훈" },
+  { question: "2학년 5반 담임인 수학쌤 이름은?ㅇㅎㅇ", answer: "윤희연" },
+  { question: "2학년 6반 담임인 국어쌤 이름은?ㅂㅈㅅ", answer: "방지수" },
+  { question: "2학년 7반 담임인 역사쌤 이름은?ㄱㅎㅁ", answer: "김현민" },
+  { question: "2학년 8반 담임인 사회쌤 이름은?ㅇㅈㅅ", answer: "유진선" },
+  { question: "2학년 9반 담임인 지리쌤 이름은?ㅇㅎㅈ", answer: "이희진" },
+  { question: "2학년 10반 담임인 도덕쌤 이름은?ㅅㅈㅇ", answer: "신주원" },
+
+  // ---- 학교 정보 ----
+  { question: "교장선생님 성함은?ㅂㅅㅇ", answer: "박성우" },
+  { question: "교감선생님 성함은?ㄱㅎㅅ", answer: "김효식" },
+  { question: "해원고등학교 개교 연도는? 2010년 이후", answer: "2013" },
+  { question: "해원고등학교 교목은?ㅁㅅㄴㅁ", answer: "미선나무" },
+];
+
+
+
+// ===== ai-quiz-questions.js =====
+// =========================================================
+// "인공지능 퀴즈" 방에서 사용하는 문제 목록입니다.
+// 이 파일만 수정하면 문제를 자유롭게 바꿀 수 있습니다.
+// =========================================================
+
+const AI_QUIZ_QUESTIONS = [
+  { question: "인공지능을 뜻하는 영어 약자는?", answer: "AI" },
+  { question: "데이터를 통해 컴퓨터가 스스로 학습하는 인공지능 기술 분야는? ㅁㅅㄹㄴ", answer: "머신러닝" },
+  { question: "사람의 뇌 신경망 구조를 모방해 여러 층으로 학습하는 방식은? ㄷㄹㄴ", answer: "딥러닝" },
+  { question: "딥러닝에서 사용하는, 뉴런을 본뜬 연결 구조를 무엇이라 하는가? ㅇㄱㅅㄱㅁ", answer: "인공신경망" },
+  { question: "정답(레이블)이 주어진 데이터로 학습하는 방식은? ㅈㄷㅎㅅ", answer: "지도학습" },
+  { question: "정답 없이 데이터의 패턴이나 구조를 스스로 찾는 학습 방식은? ㅂㅈㄷㅎㅅ", answer: "비지도학습" },
+  { question: "행동에 대한 보상을 통해 최적의 전략을 학습하는 방식은? ㄱㅎㅎㅅ", answer: "강화학습" },
+  { question: "이미지나 영상을 인식하고 분석하는 인공지능 기술 분야는? ㅋㅍㅌㅂㅈ", answer: "컴퓨터비전" },
+  { question: "사람의 언어를 이해하고 처리하는 인공지능 기술 분야를 부르는 영문 약자는?(영문)", answer: "NLP" },
+  { question: "사람과 대화하듯 상호작용하도록 만들어진 프로그램은? ㅊㅂ", answer: "챗봇" },
+  { question: "이미지 인식에 특히 강한 신경망 구조를 부르는 영문 약자는?(영문)", answer: "CNN" },
+  { question: "순서가 있는 데이터(문장, 시계열 등) 처리에 강한 신경망을 부르는 영문 약자는?(영문)", answer: "RNN" },
+  { question: "대량의 텍스트로 학습해 문장을 만들어내는 대표적인 언어모델 계열의 이름은?(영문)", answer: "GPT" },
+  { question: "모델이 학습 데이터에만 지나치게 맞춰져 새로운 데이터에서는 성능이 떨어지는 현상은? ㄱㅈㅎ", answer: "과적합" },
+  { question: "모델이 학습 데이터에서도 성능이 충분히 나오지 않는 상태를 무엇이라 하는가? ㄱㅅㅈㅎ", answer: "과소적합" },
+  { question: "예측값과 실제 정답의 차이를 계산해 학습 방향을 정하는 함수는? ㅅㅅㅎㅅ", answer: "손실함수" },
+  { question: "오차를 신경망의 앞쪽 층까지 전달해 가중치를 업데이트하는 대표적인 딥러닝 알고리즘은? ㅇㅈㅍ", answer: "역전파" },
+  { question: "2016년 이세돌과 바둑을 둔 인공지능 프로그램의 이름은? ㅇㅍㄱ", answer: "알파고" },
+  { question: "알파고를 만든 회사의 이름은? ㄷㅁㅇㄷ", answer: "딥마인드" },
+  { question: "텍스트 프롬프트를 입력하면 그림을 그려주는 인공지능 기술을 통칭하는 말은? ㅇㅁㅈㅅㅅ", answer: "이미지생성" },
+  { question: "지도학습에서 데이터를 미리 정해진 여러 범주 중 하나로 분류하는 문제는? ㅂㄹ", answer: "분류" },
+  { question: "지도학습에서 집값이나 기온처럼 연속적인 값을 예측하는 문제는? ㅎㄱ", answer: "회귀" },
+  { question: "비지도학습에서 비슷한 데이터끼리 묶는 대표적인 방법은? ㄱㅈ", answer: "군집" },
+  { question: "군집화에서 데이터를 몇 개의 그룹으로 나눌지 나타내는 값은? ㄱㅈㅅ", answer: "군집수" },
+  { question: "K개의 중심점을 기준으로 데이터를 여러 군집으로 나누는 알고리즘은? Kㅍㄱ", answer: "K평균" },
+  { question: "K평균 군집화에서 각 데이터와 가장 가까운 중심점까지의 거리를 이용하는 대표적인 거리는? ㅇㅋㄹㄷㄱㄹ", answer: "유클리드거리" },
+  { question: "데이터의 여러 특성 중 분석이나 예측에 사용되는 변수를 무엇이라 하는가? ㅌㅅ", answer: "특성" },
+  { question: "기계학습에서 예측하려는 결과값을 무엇이라 하는가? ㅁㅍㅂㅅ", answer: "목표변수" },
+  { question: "학습 데이터에서 모델이 반복적으로 학습하는 횟수를 나타내는 용어는? ㅇㅍㅋ", answer: "에포크" },
+  { question: "모델이 한 번에 처리하여 학습하는 데이터의 묶음 크기를 무엇이라 하는가? ㅂㅊㅋㄱ", answer: "배치크기" },
+  { question: "모델이 한 번의 학습에서 가중치를 얼마나 크게 변경할지 결정하는 값은? ㅎㅅㄹ", answer: "학습률" },
+  { question: "신경망에서 학습을 통해 조정되는 연결의 값을 무엇이라 하는가? ㄱㅈㅊ", answer: "가중치" },
+  { question: "신경망에서 입력값의 가중합을 다음 층으로 전달하기 전에 변환하는 함수를 무엇이라 하는가? ㅎㅅㅎㅎㅅ", answer: "활성화함수" },
+  { question: "대표적인 활성화 함수 중 0보다 작은 값을 0으로 만드는 함수는?(영문)", answer: "ReLU" },
+  { question: "여러 클래스 중 각각의 확률을 출력할 때 자주 사용하는 함수는? ㅅㅍㅌㅁㅅ", answer: "소프트맥스" },
+  { question: "모델이 학습한 결과를 새로운 데이터에 적용하는 능력을 무엇이라 하는가? ㅇㅂㅎ", answer: "일반화" },
+  { question: "과적합을 줄이기 위해 모델의 복잡도를 제한하는 방법을 무엇이라 하는가? ㅈㄱㅎ", answer: "정규화" },
+  { question: "학습 과정에서 일부 신경망을 무작위로 비활성화하여 과적합을 줄이는 방법은? ㄷㄹㅇㅇ", answer: "드롭아웃" },
+  { question: "실제 양성이고 모델도 양성으로 예측한 경우를 무엇이라 하는가? ㅊㅇㅅ", answer: "참양성" },
+  { question: "실제 음성이고 모델도 음성으로 예측한 경우를 무엇이라 하는가? ㅊㅇㅅ", answer: "참음성" },
+  { question: "실제 음성이지만 모델이 양성으로 잘못 예측한 경우는? ㄱㅈㅇㅅ", answer: "거짓양성" },
+  { question: "실제 양성이지만 모델이 음성으로 잘못 예측한 경우는? ㄱㅈㅇㅅ", answer: "거짓음성" },
+  { question: "분류 모델의 예측 결과를 참양성, 참음성, 거짓양성, 거짓음성으로 정리한 표는? ㅎㄷㅎㄹ", answer: "혼동행렬" },
+  { question: "두 변수 사이의 관계가 얼마나 강한지를 나타내는 통계적 값은? ㅅㄱㄱㅅ", answer: "상관계수" },
+  { question: "한 변수의 변화에 따라 다른 변수의 값을 예측하는 통계적 방법은? ㅎㄱㅂㅅ", answer: "회귀분석" },
+  { question: "두 변수 사이의 관계를 직선으로 나타내어 값을 예측하는 회귀 방법은? ㅅㅎㅎㄱ", answer: "선형회귀" },
+  { question: "수집한 데이터를 분석 목적에 맞게 정리하고 불필요한 데이터를 제거하는 과정은? ㅈㅊㄹ", answer: "전처리" },
+  { question: "데이터의 특징과 패턴을 그래프나 그림으로 표현하는 과정은? ㅅㄱㅎ", answer: "시각화" },
+  { question: "데이터를 표의 행과 열 형태로 나타낸 것은? ㅌㅍ", answer: "테이블" },
+  { question: "데이터에서 비어 있는 값을 무엇이라 하는가? ㅁㄱㄹㅂ", answer: "결측값" },
+  { question: "데이터의 전체적인 경향이나 특징을 파악하기 위해 데이터를 살펴보는 분석은? ㅌㅅㅈㅂㅅ", answer: "탐색적분석" },
+  { question: "데이터를 시간의 흐름에 따라 나타내는 데 적합한 그래프는? ㅅㄱㄹㅍ", answer: "선그래프" },
+  { question: "여러 항목의 값을 막대의 길이로 비교하는 그래프는? ㅁㄷㄱㄹㅍ", answer: "막대그래프" },
+  { question: "전체에서 각 항목이 차지하는 비율을 보여주는 그래프는? ㅇㅈㄱㄹㅍ", answer: "원그래프" },
+  { question: "두 변수 사이의 관계나 상관관계를 나타내는 그래프는? ㅅㅈㄷ", answer: "산점도" },
+  { question: "데이터의 값들을 작은 값부터 큰 값까지 순서대로 정렬했을 때 가운데에 위치하는 값은? ㅈㅇㄱ", answer: "중앙값" },
+  { question: "데이터의 값을 모두 더한 후 데이터의 개수로 나눈 값은? ㅍㄱㄱ", answer: "평균값" },
+  { question: "데이터에서 가장 자주 나타나는 값은? ㅊㅂㄱ", answer: "최빈값" },
+  { question: "데이터가 평균을 중심으로 얼마나 퍼져 있는지를 나타내는 값은? ㅍㅅ", answer: "분산" },
+  { question: "분산에 제곱근을 취한 통계적 값은? ㅍㅈㅍㅊ", answer: "표준편차" },
+  { question: "두 변수 사이에 관련성이 있는지를 나타내는 통계적 관계는? ㅅㄱㄱㄱ", answer: "상관관계" },
+  { question: "서로 비슷한 특성을 가진 데이터들을 묶는 분석 방법은? ㄱㅈㅎ", answer: "군집화" },
+  { question: "데이터를 수집하여 분석에 사용할 수 있도록 저장하는 과정을 무엇이라 하는가? ㄷㅇㅌㅅㅈ", answer: "데이터수집" },
+  { question: "데이터를 분석하기 쉽도록 일정한 형식으로 변환하는 작업은? ㄷㅇㅌㅂㅎ", answer: "데이터변환" },
+  { question: "데이터의 평균과 표준편차를 이용하여 값을 변환하는 방법은? ㅍㅈㅎ", answer: "표준화" },
+  { question: "데이터에 포함되어 있지만 일반적인 값에서 크게 벗어난 값을 무엇이라 하는가? ㅇㅅㅊ", answer: "이상치" },
+  { question: "분석에 필요하지 않은 데이터나 중복된 데이터를 제거하는 작업은? ㄷㅇㅌㅈㄹ", answer: "데이터정리" },
+  { question: "데이터를 분석하여 의미 있는 정보나 패턴을 찾아내는 과정은? ㄷㅇㅌㅂㅅ", answer: "데이터분석" },
+  { question: "데이터를 이용해 미래의 결과나 값을 미리 알아내는 것은? ㅇㅊ", answer: "예측" },
+  { question: "데이터에서 반복적으로 나타나는 특징이나 규칙을 무엇이라 하는가? ㅍㅌ", answer: "패턴" },
+  { question: "많은 양의 데이터에서 유용한 정보나 의미 있는 패턴을 찾아내는 기술은? ㄷㅇㅌㅁㅇㄴ", answer: "데이터마이닝" },
+];
+
+
+
+// ===== datascience-quiz-questions.js =====
+// =========================================================
+// "데이터과학 퀴즈" 방에서 사용하는 문제 목록입니다.
+// 이 파일만 수정하면 문제를 자유롭게 바꿀 수 있습니다.
+// =========================================================
+
+const DATASCIENCE_QUIZ_QUESTIONS = [
+  { question: "데이터를 수집·정리·분석하여 통찰을 얻는 학문 분야는? ㄷㅇㅌㅅㅇㅇㅅ", answer: "데이터사이언스" },
+  { question: "파이썬에서 표(테이블) 형태의 데이터를 다루는 대표적인 라이브러리는? ㅍㄷㅅ", answer: "pandas" },
+  { question: "파이썬에서 배열과 수치 연산을 빠르게 처리하는 라이브러리는? ㄴㅍㅇ", answer: "numpy" },
+  { question: "데이터를 그래프로 시각화할 때 자주 쓰이는 파이썬 라이브러리는? ㅁㅌㅍㄹㅇㄹㅂ", answer: "matplotlib" },
+  { question: "데이터를 모두 더해서 개수로 나눈 대표값은? ㅍㄱ", answer: "평균" },
+  { question: "데이터를 크기순으로 나열했을 때 가운데 위치한 값은? ㅈㅇㄱㅆ", answer: "중앙값" },
+  { question: "데이터에서 가장 자주 나타나는 값은? ㅊㅂㄱ", answer: "최빈값" },
+  { question: "데이터가 평균에서 얼마나 퍼져 있는지를 나타내는 지표는? ㅍㅈㅍㅊ", answer: "표준편차" },
+  { question: "결측치·이상치 등을 처리해 데이터를 분석하기 좋은 상태로 만드는 작업은? ㄷㅇㅌㅈㅊㄹ", answer: "데이터전처리" },
+  { question: "값이 비어 있는 데이터를 무엇이라 하는가? ㄱㅊㅊ", answer: "결측치" },
+  { question: "다른 데이터와 동떨어진 극단적인 값은? ㅇㅅㅊ", answer: "이상치" },
+  { question: "두 변수 사이의 관계 강도와 방향을 나타내는 통계값은? ㅅㄱㄱㅅ", answer: "상관계수" },
+  { question: "모델을 학습시키기 위해 사용하는 데이터는? ㅎㄹㄷㅇㅌ", answer: "훈련데이터" },
+  { question: "모델의 성능을 평가하기 위해 따로 남겨둔 데이터는? ㅌㅅㅌㄷㅇㅌ", answer: "테스트데이터" },
+  { question: "분류 모델에서 예측이 실제와 맞은 비율을 나타내는 지표는? ㅈㅎㄷ", answer: "정확도" },
+  { question: "데이터를 미리 정해진 몇 개의 범주로 나누는 예측 문제는? ㅂㄹ", answer: "분류" },
+  { question: "연속적인 숫자 값을 예측하는 문제는? ㅎㄱ", answer: "회귀" },
+  { question: "비슷한 데이터끼리 그룹으로 묶는 비지도학습 기법은? ㄱㅈㅎ", answer: "군집화" },
+  { question: "데이터의 특징(변수) 개수를 줄이는 기법은? ㅊㅇㅊㅅ", answer: "차원축소" },
+  { question: "데이터를 표 형태로 정리했을 때, 세로 한 줄(항목)을 무엇이라 하는가? ㅇ", answer: "열" },
+
+  // ---- 데이터과학 추가 문제 ----
+  { question: "데이터를 표 형태로 정리했을 때, 가로 한 줄을 무엇이라 하는가? ㅎ", answer: "행" },
+  { question: "데이터의 전체 항목 중 분석에 사용할 특징이나 변수를 무엇이라 하는가? ㅌㅅ", answer: "특성" },
+  { question: "기계학습에서 학습 데이터에 주어진 정답 정보를 무엇이라 하는가? ㄹㅇㅂ", answer: "레이블" },
+  { question: "데이터를 분석 목적에 맞게 일정한 형식으로 바꾸는 작업은? ㄷㅇㅌㅂㅎ", answer: "데이터변환" },
+  { question: "데이터에 포함된 중복된 항목을 찾아 제거하는 작업은? ㅈㅂㄷㅇㅌㅈㄹ", answer: "중복데이터정리" },
+  { question: "서로 다른 범위의 데이터를 일정한 범위로 조정하는 방법은? ㅈㄱㅎ", answer: "정규화" },
+  { question: "평균과 표준편차를 이용하여 데이터의 값을 변환하는 방법은? ㅍㅈㅎ", answer: "표준화" },
+  { question: "데이터의 전체적인 특징과 패턴을 파악하기 위해 데이터를 탐색하는 분석 방법은? ㅌㅅㅈㅂㅅ", answer: "탐색적분석" },
+  { question: "데이터의 특징이나 관계를 그래프와 그림으로 표현하는 과정은? ㅅㄱㅎ", answer: "시각화" },
+  { question: "시간의 흐름에 따른 데이터의 변화를 나타내기에 적합한 그래프는? ㅅㄱㄹㅍ", answer: "선그래프" },
+  { question: "여러 항목의 크기를 막대의 길이로 비교하는 그래프는? ㅁㄷㄱㄹㅍ", answer: "막대그래프" },
+  { question: "두 변수 사이의 관계를 점으로 표현하는 그래프는? ㅅㅈㄷ", answer: "산점도" },
+  { question: "전체에서 각 항목이 차지하는 비율을 나타내는 그래프는? ㅇㅈㄱㄹㅍ", answer: "원그래프" },
+  { question: "데이터에서 반복적으로 나타나는 규칙이나 특징을 무엇이라 하는가? ㅍㅌ", answer: "패턴" },
+  { question: "많은 데이터에서 유용한 패턴과 정보를 찾아내는 기술은? ㄷㅇㅌㅁㅇㄴ", answer: "데이터마이닝" },
+  { question: "미래의 값이나 결과를 데이터와 모델을 이용하여 미리 알아내는 것은? ㅇㅊ", answer: "예측" },
+  { question: "두 변수의 관계가 얼마나 강한지를 나타내는 값으로 -1부터 1 사이의 값을 가지는 것은? ㅅㄱㄱㅅ", answer: "상관계수" },
+  { question: "데이터를 학습용과 평가용 등으로 나누는 과정을 무엇이라 하는가? ㄷㅇㅌㅂㅎ", answer: "데이터분할" },
+  { question: "모델이 학습한 데이터가 아닌 새로운 데이터에서도 좋은 성능을 내는 능력은? ㅇㄹㅎ", answer: "일반화" },
+  { question: "모델이 학습 데이터에 지나치게 맞춰져 새로운 데이터에서 성능이 떨어지는 현상은? ㄱㅈㅎ", answer: "과적합" },
+];
+
+
+
+// ===== narak-quiz-questions.js =====
+// =========================================================
+// "나락퀴즈" 방에서 사용하는 문제 목록입니다.
+// "한국인이라면 모르면 안 되는" 기본 역사/상식 문제 위주로 구성했습니다.
+//
+// - question : 화면에 보여줄 문제
+// - answer   : 참가자가 정확히 입력해야 하는 정답
+//   (앞뒤 공백은 자동으로 무시되고, 대소문자는 구분하지 않습니다)
+// =========================================================
+
+const NARAK_QUIZ_QUESTIONS = [
+  { question: "독도는 어느 나라의 영토인가?", answer: "대한민국" },
+  { question: "한글을 창제한 조선의 왕은?", answer: "세종대왕" },
+  { question: "훈민정음이 반포된 연도는? (숫자만)", answer: "1446" },
+  { question: "3·1 운동이 일어난 연도는? (숫자만)", answer: "1919" },
+  { question: "일제강점기가 시작된 연도는? (숫자만)", answer: "1910" },
+  { question: "8·15 광복이 이루어진 연도는? (숫자만)", answer: "1945" },
+  { question: "6·25 전쟁이 발발한 연도는? (숫자만)", answer: "1950" },
+  { question: "대한민국 임시정부가 처음 수립된 도시는?", answer: "상하이" },
+  { question: "안중근 의사가 하얼빈에서 저격한 인물은?", answer: "이토히로부미" },
+  { question: "3·1 운동 당시 만세운동을 이끈 대표적인 여학생 열사는?", answer: "유관순" },
+  { question: "임진왜란 때 거북선을 이끈 장군은?", answer: "이순신" },
+  { question: "고려를 세운 인물은?", answer: "왕건" },
+  { question: "조선을 세운 인물은?", answer: "이성계" },
+  { question: "삼국시대의 세 나라는 고구려, 백제, 그리고?", answer: "신라" },
+  { question: "발해를 세운 인물은?", answer: "대조영" },
+  { question: "대한민국의 국기 이름은?", answer: "태극기" },
+  { question: "대한민국의 국가(國歌) 이름은?", answer: "애국가" },
+  { question: "대한민국의 광복절은 몇 월 며칠? (예: 815)", answer: "815" },
+  { question: "대한민국의 한글날은 몇 월 며칠? (예: 109)", answer: "109" },
+  { question: "설날은 음력 몇 월 며칠? (예: 1월1일→11)", answer: "11" },
+  { question: "추석은 음력 몇 월 며칠? (예: 8월15일→815)", answer: "815" },
+  { question: "1988년 서울에서 개최된 국제 스포츠 대회는?", answer: "서울올림픽" },
+  { question: "2002년 한일 월드컵에서 대한민국이 기록한 최종 순위는? (숫자만)", answer: "4" },
+  { question: "대한민국 임시정부 초대 대통령은?", answer: "이승만" },
+  { question: "우리나라 최초의 한글 소설 '홍길동전'을 지은 인물은?", answer: "허균" },
+
+  { question: "명량해전에서 이순신 장군이 승리한 연도는? (숫자만)", answer: "1597" },
+  { question: "임진왜란이 발발한 연도는? (숫자만)", answer: "1592" },
+  { question: "병자호란이 발발한 연도는? (숫자만)", answer: "1636" },
+  { question: "갑오개혁이 일어난 연도는? (숫자만)", answer: "1894" },
+  { question: "을사늑약이 체결된 연도는? (숫자만)", answer: "1905" },
+  { question: "국권을 빼앗긴 경술국치가 일어난 연도는? (숫자만)", answer: "1910" },
+  { question: "대한민국 정부가 수립된 연도는? (숫자만)", answer: "1948" },
+  { question: "4·19 혁명이 일어난 연도는? (숫자만)", answer: "1960" },
+  { question: "5·18 민주화운동이 일어난 연도는? (숫자만)", answer: "1980" },
+  { question: "6월 민주항쟁이 일어난 연도는? (숫자만)", answer: "1987" },
+  { question: "IMF 외환위기가 발생한 연도는? (숫자만)", answer: "1997" },
+  { question: "2018년 평창에서 열린 국제 겨울 스포츠 대회는?", answer: "평창올림픽" },
+  { question: "대한민국 대통령의 임기는 몇 년인가? (숫자만)", answer: "5" },
+  { question: "대한민국 국회의원의 임기는 몇 년인가? (숫자만)", answer: "4" },
+  { question: "대한민국 헌법상 주권은 누구에게 있는가?", answer: "국민" },
+  { question: "태권도가 유래한 나라는?", answer: "대한민국" },
+  { question: "대한민국의 전통 가옥을 무엇이라 하는가?", answer: "한옥" },
+  { question: "온돌은 전통적으로 무엇을 데우는 난방 방식인가?", answer: "바닥" },
+  { question: "김장은 무엇을 담그는 것을 말하는가?", answer: "김치" },
+  { question: "대한민국의 국화(나라꽃)는?", answer: "무궁화" },
+  { question: "대한민국에서 가장 높은 산은?", answer: "한라산" },
+  { question: "대한민국(남한) 내에서 가장 긴 강은?", answer: "낙동강" },
+  { question: "대한민국의 최남단 섬은?", answer: "마라도" },
+  { question: "대한민국의 수도는?", answer: "서울" },
+  { question: "세종대왕이 만든 문자의 이름은?", answer: "한글" },
+  { question: "대한민국의 국기는?", answer: "태극기" },
+  { question: "대한민국의 국화는?", answer: "무궁화" },
+  { question: "대한민국의 화폐 단위는?", answer: "원" },
+  { question: "1년은 몇 개월인가?", answer: "12개월" },
+  { question: "1주일은 며칠인가?", answer: "7일" },
+  { question: "하루는 몇 시간인가?", answer: "24시간" },
+  { question: "1시간은 몇 분인가?", answer: "60분" },
+  { question: "1분은 몇 초인가?", answer: "60초" },
+  { question: "물의 화학식은?", answer: "H2O" },
+  { question: "태양계의 중심에 있는 것은?", answer: "태양" },
+  { question: "지구의 위성은?", answer: "달" },
+  { question: "사람의 손가락은 한 손에 몇 개인가?", answer: "5개" },
+  { question: "사람의 눈은 몇 개인가?", answer: "2개" },
+  { question: "삼각형의 변은 몇 개인가?", answer: "3개" },
+  { question: "사각형의 변은 몇 개인가?", answer: "4개" },
+  { question: "대한민국의 가장 큰 섬은?", answer: "제주도" },
+  { question: "우리나라에서 가장 높은 산은?", answer: "한라산" },
+  { question: "세계에서 가장 높은 산은?", answer: "에베레스트" },
+  { question: "지구에서 가장 큰 대륙은?", answer: "아시아" },
+  { question: "지구에서 가장 큰 바다는?", answer: "태평양" },
+  { question: "겨울 다음에 오는 계절은?", answer: "봄" },
+  { question: "여름 다음에 오는 계절은?", answer: "가을" },
+  { question: "빨간색 신호등에서 어떻게 해야 하는가?", answer: "정지" },
+  { question: "비가 올 때 사용하는 물건은?", answer: "우산" },
+  { question: "이를 닦을 때 사용하는 것은?", answer: "칫솔" },
+  { question: "밥을 먹을 때 사용하는 대표적인 도구는?", answer: "숟가락" },
+  { question: "대한민국의 공식 언어는?", answer: "한국어" },
+  { question: "축구 경기에서 한 팀이 경기장에 출전시키는 선수는 몇 명인가?", answer: "11명" },
+];
+
+
+
+// ===== chosung-quiz-questions.js =====
+// =========================================================
+// "초성퀴즈" 방에서 사용하는 문제 목록입니다.
+// 초성(자음)을 보고 원래 단어를 맞히는 게임입니다.
+//
+// - question : 화면에 보여줄 초성 힌트
+// - answer   : 참가자가 정확히 입력해야 하는 정답(원래 단어)
+//   (앞뒤 공백은 자동으로 무시되고, 대소문자는 구분하지 않습니다)
+// =========================================================
+
+const CHOSUNG_QUIZ_QUESTIONS = [
+  { question: "초성퀴즈: ㅅㄱ", answer: ["사과", "소금"] },
+  { question: "초성퀴즈: ㅎㄱ", answer: ["학교", "화가"] },
+  { question: "초성퀴즈: ㅋㅍㅌ", answer: "컴퓨터" },
+  { question: "초성퀴즈: ㄱㅇㅈ", answer: "강아지" },
+  { question: "초성퀴즈: ㄱㅇㅇ", answer: "고양이" },
+  { question: "초성퀴즈: ㅈㄷㅊ", answer: "자동차" },
+  { question: "초성퀴즈: ㅂㅎㄱ", answer: "비행기" },
+  { question: "초성퀴즈: ㅁㅈㄱ", answer: "무지개" },
+  { question: "초성퀴즈: ㄸㅂㅇ", answer: "떡볶이" },
+  { question: "초성퀴즈: ㄱㅊㅉㄱ", answer: "김치찌개" },
+  { question: "초성퀴즈: ㅍㅇㅈ", answer: "편의점" },
+  { question: "초성퀴즈: ㄷㅅㄱ", answer: ["도서관", "대사관"] },
+  { question: "초성퀴즈: ㅈㅎㅊ", answer: "지하철" },
+  { question: "초성퀴즈: ㄴㅈㄱ", answer: "냉장고" },
+  { question: "초성퀴즈: ㅌㄹㅂㅈ", answer: "텔레비전" },
+  { question: "초성퀴즈: ㅊㄱㄱ", answer: "축구공" },
+  { question: "초성퀴즈: ㅇㅅ", answer: ["우산", "의사"] },
+  { question: "초성퀴즈: ㄴㅅㄹ", answer: "눈사람" },
+  { question: "초성퀴즈: ㅋㄹㅅㅁㅅ", answer: "크리스마스" },
+  { question: "초성퀴즈: ㅅㅇㅍㅌ", answer: "생일파티" },
+  { question: "초성퀴즈: ㄴㅇㄱㅇ", answer: "놀이공원" },
+  { question: "초성퀴즈: ㅁㄴㅇ", answer: "물놀이" },
+  { question: "초성퀴즈: ㅂㄲㄴㅇ", answer: "불꽃놀이" },
+  { question: "초성퀴즈: ㅇㅇㅅㅋㄹ", answer: "아이스크림" },
+  { question: "초성퀴즈: ㄹㅁ", answer: ["라면", "로마"] },
+  { question: "초성퀴즈: ㄱㅂ", answer: ["김밥", "가방"] },
+
+  { question: "초성퀴즈: ㅇㄷㅎ", answer: "운동화" },
+  { question: "초성퀴즈: ㅈㅇㄱ", answer: "지우개" },
+  { question: "초성퀴즈: ㅍㅌ", answer: "필통" },
+  { question: "초성퀴즈: ㅊㄱㅂ", answer: "책가방" },
+  { question: "초성퀴즈: ㅅㅎㅇㅎ", answer: "수학여행" },
+  { question: "초성퀴즈: ㅊㅇㄷㅎ", answer: "체육대회" },
+  { question: "초성퀴즈: ㄱㅅㅅ", answer: "급식실" },
+  { question: "초성퀴즈: ㅇㄷㅈ", answer: "운동장" },
+  { question: "초성퀴즈: ㄷㅅㄹ", answer: "도시락" },
+  { question: "초성퀴즈: ㅂㅍ", answer: ["볼펜", "부품"] },
+  { question: "초성퀴즈: ㅁㄷㄹ", answer: "목도리" },
+  { question: "초성퀴즈: ㅈㄱ", answer: ["장갑", "지구"] },
+  { question: "초성퀴즈: ㄴㅆㅁ", answer: "눈썰매" },
+  { question: "초성퀴즈: ㅂㅇㅃ", answer: "붕어빵" },
+  { question: "초성퀴즈: ㄸㄱ", answer: "떡국" },
+  { question: "초성퀴즈: ㅅㅂㄷ", answer: "세뱃돈" },
+  { question: "초성퀴즈: ㅎㅂ", answer: ["한복", "회복"] },
+  { question: "초성퀴즈: ㅇㄴㅇ", answer: "윷놀이" },
+  { question: "초성퀴즈: ㅇㄴㄹㄱ", answer: "연날리기" },
+  { question: "초성퀴즈: ㅌㄱㄷ", answer: "태권도" },
+  { question: "초성퀴즈: ㅈㅈㄱ", answer: "자전거" },
+  { question: "초성퀴즈: ㄴㅇㅌ", answer: "놀이터" },
+  { question: "초성퀴즈: ㄱㄴ", answer: ["그네", "교내"] },
+  { question: "초성퀴즈: ㅅㅅ", answer: ["시소", "선수"] },
+
+  // 5글자 초성퀴즈 추가
+  { question: "초성퀴즈: ㅅㅁㅌㅍ", answer: "스마트폰" },
+  { question: "초성퀴즈: ㅇㅅㅌㄱㄹ", answer: "인스타그램" },
+  { question: "초성퀴즈: ㅇㅌㄴㄱㅇ", answer: "인터넷강의" },
+  { question: "초성퀴즈: ㅋㅍㅌㄱㅎ", answer: "컴퓨터공학" },
+  { question: "초성퀴즈: ㄷㅈㅌㅋㅁㄹ", answer: "디지털카메라" },
+  { question: "초성퀴즈: ㅅㅁㅌㅇㅊ", answer: "스마트워치" },
+  { question: "초성퀴즈: ㅂㄹㅌㅅ", answer: "블루투스" },
+  { question: "초성퀴즈: ㅇㄹㅇㄱㅇ", answer: "온라인게임" },
+  { question: "초성퀴즈: ㅁㅂㅇㄱㅇ", answer: "모바일게임" },
+  { question: "초성퀴즈: ㅇㅅㄴㅋ", answer: "인생네컷" },
+  { question: "초성퀴즈: ㅎㄷㅇㅍ", answer: "휴대용품" },
+  { question: "초성퀴즈: ㅂㄷㅇㅋㅁㄹ", answer: "비디오카메라" },
+  { question: "초성퀴즈: ㅈㅂㄱㅅ", answer: "정보검색" },
+  { question: "초성퀴즈: ㅇㄱㅈㄴ", answer: "인공지능" },
+  { question: "초성퀴즈: ㅁㅅㄹㄴ", answer: "머신러닝" },
+  { question: "초성퀴즈: ㄷㄹㄴ", answer: "딥러닝" },
+  { question: "초성퀴즈: ㄱㅇㅈㅂ", answer: "개인정보" },
+  { question: "초성퀴즈: ㅅㅇㅂㅍㄹ", answer: "사이버폭력" },
+  { question: "초성퀴즈: ㅅㅁㅅ", answer: "스미싱" },
+  { question: "초성퀴즈: ㅍㄹㄱㄹㅁ", answer: "프로그래밍" },
+  { question: "초성퀴즈: ㅋㄷ", answer: "코딩" },
+  { question: "초성퀴즈: ㅎㄱㅅㅎ", answer: "학교생활" },
+  { question: "초성퀴즈: ㅅㅅㅅㅋ", answer: "수상스키" },
+  { question: "초성퀴즈: ㅇㄱㅅㅅ", answer: "야구선수" },
+  { question: "초성퀴즈: ㅊㄱㅅㅅ", answer: "축구선수" },
+];
+
+
+
+// ===== curriculum-questions.js =====
+// =========================================================
+// 교과별 퀴즈: 과목 → 학년 → 대단원
+//  - 한 줄 = '문제|정답'   (정답이 여러 개면 '문제|정답1|정답2')
+//  - 한글 정답은 초성 힌트가 자동으로 붙습니다. (문제에 직접 쓰지 마세요)
+//  - 문제 안에는 | 기호를 쓰면 안 됩니다.
+//  - SUBJ(아이디, 과목명, 이모지, 제한시간(초), { 학년: [과목명, [ [대단원, [문제…]], … ]] })
+// =========================================================
+const CURRICULUM = [];
+function SUBJ(id, name, emoji, time, grades) { CURRICULUM.push({ id, name, emoji, time, grades }); }
+
+SUBJ('kor', '국어', '📖', 8, {
+  1: ['공통국어', [
+    ['문학의 갈래', [
+      '운율이 있는 짧은 글로 정서를 압축해 표현하는 문학 갈래는?|시',
+      '작가가 꾸며 낸 이야기를 서술자가 전달하는 산문 문학은?|소설',
+      '무대 상연을 전제로 대사와 행동으로 표현하는 문학 갈래는?|희곡',
+      '글쓴이의 체험과 생각을 형식에 얽매이지 않고 쓴 글은?|수필',
+      '희곡에서 인물의 행동·표정을 지시하는 부분은?|지시문',
+      '시에서 소리나 구절의 반복으로 생기는 말의 가락은?|운율',
+    ]],
+    ['표현 방법', [
+      "'~같이, ~처럼'을 써서 직접 빗대는 표현법은?|직유법",
+      "'A는 B이다'처럼 간접적으로 빗대는 표현법은?|은유법",
+      '사람이 아닌 것을 사람처럼 표현하는 방법은?|의인법',
+      '겉으로 하는 말과 속뜻을 반대로 표현하는 방법은?|반어법',
+      "'찬란한 슬픔의 봄'처럼 모순된 말 속에 진리를 담는 표현은?|역설법",
+      '비슷한 문장 구조를 짝지어 나란히 늘어놓는 표현법은?|대구법',
+    ]],
+    ['음운', [
+      "'국물'이 [궁물]로 발음되는 음운 변동은?|비음화",
+      "'신라'가 [실라]로 발음되는 음운 변동은?|유음화",
+      "'굳이'가 [구지]로 발음되는 음운 변동은?|구개음화",
+      "'국화'가 [구콰]로 발음되는 음운 변동은?|거센소리되기|자음축약|축약",
+      '말의 뜻을 구별해 주는 소리의 가장 작은 단위는?|음운',
+    ]],
+    ['품사와 문장', [
+      '사물의 이름을 나타내는 품사는?|명사',
+      '대상의 움직임을 나타내는 품사는?|동사',
+      '대상의 성질이나 상태를 나타내는 품사는?|형용사',
+      '체언 뒤에 붙어 문법적 관계를 나타내는 품사는?|조사',
+      '주어와 서술어의 관계가 한 번만 나타나는 문장은?|홑문장',
+      '문장의 주체를 높이는 높임법은?|주체높임법',
+    ]],
+  ]],
+  2: ['문학', [
+    ['고전 시가', [
+      '3장 6구 45자 내외의 우리 고유 정형시는?|시조',
+      "고려 시대 평민들이 부르던 노래로 '청산별곡'이 속한 갈래는?|고려가요|속요",
+      '4음보 연속체로 된 조선 시대의 긴 시가 갈래는?|가사',
+      '정철이 관동 지방을 유람하고 지은 가사는?|관동별곡',
+      '신라 시대에 향찰로 기록한 노래는?|향가',
+    ]],
+    ['고전 산문', [
+      "'춘향전', '흥부전'처럼 판소리가 소설로 정착한 것은?|판소리계소설",
+      '김시습이 지은 우리나라 최초의 한문 소설집은?|금오신화',
+      '허균이 지은 것으로 알려진 최초의 한글 소설은?|홍길동전',
+      '사물을 사람처럼 꾸며 일생을 서술한 고려 시대 산문 갈래는?|가전체|가전',
+      '판소리에서 노래가 아니라 말로 하는 부분은?|아니리',
+    ]],
+    ['현대 시', [
+      "'나 보기가 역겨워 가실 때에는'으로 시작하는 김소월의 시는?|진달래꽃",
+      "'죽는 날까지 하늘을 우러러'로 시작하는 윤동주의 시는?|서시",
+      "'내 고장 칠월은'으로 시작하는 이육사의 시는?|청포도",
+      "한용운의 시집 '님의 ○○'에 들어갈 말은?|침묵",
+      '시 속에서 말하는 이를 무엇이라 하는가?|화자|시적화자',
+    ]],
+    ['현대 소설', [
+      "작품 속 '나'가 주인공으로 자기 이야기를 하는 시점은?|1인칭주인공시점",
+      '서술자가 인물의 속마음까지 모두 아는 시점은?|전지적작가시점',
+      '소설 구성 단계에서 갈등이 최고조에 이르는 부분은?|절정',
+      "점순이와 닭싸움이 나오는 김유정의 소설은?|동백꽃",
+      '인력거꾼 김 첨지가 등장하는 현진건의 소설은?|운수좋은날',
+    ]],
+  ]],
+  3: ['화법과 언어 · 독서와 작문', [
+    ['국어의 역사', [
+      '1443년 세종이 창제한 문자의 이름은?|훈민정음',
+      "훈민정음 초성 기본자는 ㄱ, ㄴ, ㅁ, ㅅ과 무엇?|ㅇ",
+      "훈민정음 중성 기본자 중 하늘을 본뜬 글자 '·'의 이름은?|아래아",
+      '훈민정음 창제 원리 중 기본자에 획을 더하는 방법은?|가획',
+      '조선 왕조 창업을 노래한 최초의 한글 악장은?|용비어천가',
+    ]],
+    ['담화와 화법', [
+      '말하는 이, 듣는 이, 내용, 맥락으로 이루어진 의사소통 단위는?|담화',
+      '공동의 문제를 해결하기 위해 여럿이 의견을 나누는 말하기는?|토의',
+      '찬성과 반대로 나뉘어 논리적으로 주장을 펼치는 말하기는?|토론',
+      '이해관계가 다를 때 합의를 위해 조정하는 말하기는?|협상',
+      '상대의 말에 공감하며 반응해 주는 듣기는?|공감적듣기',
+    ]],
+    ['독서', [
+      '글의 내용이 타당하고 믿을 만한지 따지며 읽는 방법은?|비판적읽기',
+      '글에 드러나지 않은 내용을 짐작하며 읽는 방법은?|추론적읽기',
+      '같은 주제의 여러 글을 비교하며 읽는 방법은?|주제통합적읽기',
+      '자신의 독서 과정을 점검하고 조정하는 인지 활동은?|상위인지|메타인지',
+      '훑어보기-질문-읽기-되새기기-재검토로 이루어진 독서법(영문)은?|SQ3R',
+    ]],
+    ['작문', [
+      '글을 쓰기 전 생각을 자유롭게 떠올려 나열하는 방법은?|브레인스토밍',
+      '쓴 글을 다듬어 고치는 단계는?|고쳐쓰기|퇴고',
+      '근거를 들어 독자를 설득하는 글은?|논설문',
+      '남의 글을 출처 없이 자기 것처럼 쓰는 행위는?|표절',
+      '정보를 정확하게 전달하기 위해 쓰는 글은?|설명문',
+    ]],
+  ]],
+});
+
+SUBJ('eng', '영어', '🔠', 8, {
+  1: ['공통영어', [
+    ['기본 어휘', [
+      "'환경'을 영어로?|environment",
+      "'도서관'을 영어로?|library",
+      "'미래'를 영어로?|future",
+      "'opportunity'의 뜻은?|기회",
+      "'increase'의 반대말은?|decrease",
+    ]],
+    ['동사의 형태', [
+      "'go'의 과거형은?|went",
+      "'write'의 과거형은?|wrote",
+      "'eat'의 과거분사형은?|eaten",
+      "'She ___ to school every day.' 빈칸에 go의 알맞은 형태는?|goes",
+      "'I have ___ been to Paris.' 빈칸에 '한 번도 ~않다'는?|never",
+    ]],
+    ['비교 표현', [
+      "'good'의 최상급은?|best",
+      "'bad'의 비교급은?|worse",
+      "'big'의 비교급은?|bigger",
+      "'many'의 최상급은?|most",
+      "'He is as tall ___ me.' 빈칸에 알맞은 말은?|as",
+    ]],
+    ['명사와 대명사', [
+      "'child'의 복수형은?|children",
+      "'mouse'의 복수형은?|mice",
+      "'tooth'의 복수형은?|teeth",
+      "'I'의 소유대명사(나의 것)는?|mine",
+      "'they'의 목적격은?|them",
+    ]],
+  ]],
+  2: ['영어Ⅰ', [
+    ['관계사', [
+      "'This is the book ___ I bought.' 빈칸의 관계대명사는?|which|that",
+      '사람 선행사를 받는 주격 관계대명사는?|who|that',
+      "'the place ___ I was born' 빈칸의 관계부사는?|where",
+      "'the reason ___ he left' 빈칸의 관계부사는?|why",
+      "선행사를 포함하는 관계대명사('~하는 것')는?|what",
+    ]],
+    ['동명사와 분사', [
+      "'I enjoy ___ books.' 빈칸에 read의 알맞은 형태는?|reading",
+      "'I'm ___ in music.' 빈칸에 interest의 알맞은 형태는?|interested",
+      "'The movie was ___.' 빈칸에 bore의 알맞은 형태(지루한)는?|boring",
+      "'I decided ___ home.' 빈칸에 go의 알맞은 형태(두 단어)는?|to go",
+      "'Stop ___!' (담배를 끊어라) 빈칸에 smoke의 알맞은 형태는?|smoking",
+    ]],
+    ['수동태와 가정법', [
+      "'The window was ___ by Tom.' 빈칸에 break의 알맞은 형태는?|broken",
+      "'English is ___ all over the world.' 빈칸에 speak의 알맞은 형태는?|spoken",
+      "'If I ___ a bird, I could fly.' 빈칸의 be동사는?|were",
+      "'If I had known, I ___ have told you.' 빈칸의 조동사는?|would",
+      "'I wish I ___ swim.' 빈칸에 can의 알맞은 형태는?|could",
+    ]],
+    ['주제 어휘', [
+      "'기후 변화'를 영어로? (두 단어)|climate change",
+      "'멸종 위기에 처한'을 영어로?|endangered",
+      "'재생 가능한'을 영어로?|renewable",
+      "'pollution'의 뜻은?|오염",
+      "'diversity'의 뜻은?|다양성",
+    ]],
+  ]],
+  3: ['영어Ⅱ', [
+    ['동의어', [
+      "'essential'과 뜻이 비슷한 단어는? (n으로 시작)|necessary",
+      "'enormous'와 뜻이 비슷한 단어는? (h로 시작)|huge",
+      "'begin'과 뜻이 비슷한 단어는? (s로 시작)|start",
+      "'rapid'와 뜻이 비슷한 단어는? (q로 시작)|quick",
+      "'answer'와 뜻이 비슷한 단어는? (r로 시작)|reply|respond",
+    ]],
+    ['반의어', [
+      "'ancient'의 반대말은?|modern",
+      "'accept'의 반대말은? (r로 시작)|reject|refuse",
+      "'temporary'의 반대말은? (p로 시작)|permanent",
+      "'include'의 반대말은?|exclude",
+      "'majority'의 반대말은?|minority",
+    ]],
+    ['접두사와 접미사', [
+      "'possible'에 부정 접두사를 붙이면?|impossible",
+      "'happy'의 명사형은?|happiness",
+      "'agree'에 부정 접두사를 붙이면?|disagree",
+      "'decide'의 명사형은?|decision",
+      "'beauty'의 형용사형은?|beautiful",
+    ]],
+    ['구동사와 숙어', [
+      "'look ___' = 돌보다. 빈칸은?|after",
+      "'give ___' = 포기하다. 빈칸은?|up",
+      "'put ___' = 미루다. 빈칸은?|off",
+      "'look ___ to' = 고대하다. 빈칸은?|forward",
+      "'run ___ of' = ~이 바닥나다. 빈칸은?|out",
+    ]],
+  ]],
+});
+
+SUBJ('math', '수학', '➗', 12, {
+  1: ['공통수학 1 · 2', [
+    ['다항식', [
+      '(x+1)² 을 전개했을 때 x의 계수는?|2',
+      'x³ - 1 을 x - 1 로 나눈 나머지는?|0',
+      '다항식 f(x)를 x - 2로 나눈 나머지는 f(?)이다. ?는?|2',
+      '(a+b)³ 전개식에서 a²b 의 계수는?|3',
+      'x² - 5x + 6 = (x - 2)(x - ?) 에서 ?는?|3',
+    ]],
+    ['방정식과 부등식', [
+      'i² = ? (i는 허수단위)|-1',
+      'x² - 5x + 6 = 0 의 두 근의 합은?|5',
+      'x² - 5x + 6 = 0 의 두 근의 곱은?|6',
+      '이차방정식 ax²+bx+c=0 에서 b²-4ac 를 무엇이라 하는가?|판별식',
+      '-3 < x < 3 을 만족하는 정수 x의 개수는?|5',
+    ]],
+    ['경우의 수와 행렬', [
+      '서로 다른 5개를 일렬로 나열하는 경우의 수는?|120',
+      '5P2 = ?|20',
+      '5C2 = ?|10',
+      '2×3 행렬의 성분의 개수는?|6',
+      '주대각선 성분이 모두 1이고 나머지가 0인 정사각행렬은?|단위행렬',
+    ]],
+    ['도형의 방정식', [
+      '두 점 (0,0), (3,4) 사이의 거리는?|5',
+      '두 점 (2,4), (6,8)의 중점의 x좌표는?|4',
+      '직선 y = 2x + 1 의 기울기는?|2',
+      '원 x² + y² = 25 의 반지름은?|5',
+      '서로 수직인 두 직선의 기울기의 곱은?|-1',
+    ]],
+    ['집합과 명제 · 함수', [
+      '집합 {1, 2, 3}의 부분집합의 개수는?|8',
+      "명제 'p이면 q이다'와 참·거짓이 항상 같은 명제는?|대우",
+      '전체집합 U에서 A에 속하지 않는 원소의 집합은?|여집합',
+      'f(x) = 2x + 1 일 때 f(3) = ?|7',
+      'f(x) = 2x 의 역함수 g에서 g(6) = ?|3',
+    ]],
+  ]],
+  2: ['대수 · 미적분Ⅰ', [
+    ['지수와 로그', [
+      '2의 10제곱은?|1024',
+      'log₂ 32 = ?|5',
+      'log₁₀ 1000 = ?|3',
+      '8의 실수인 세제곱근은?|2',
+      'log₃ 9 + log₃ 3 = ?|3',
+    ]],
+    ['삼각함수', [
+      'sin 90° = ?|1',
+      'cos 0° = ?|1',
+      'tan 45° = ?|1',
+      'π 라디안은 몇 도?|180',
+      'sin²θ + cos²θ = ?|1',
+    ]],
+    ['수열', [
+      '등차수열 2, 5, 8, 11, … 의 공차는?|3',
+      '등비수열 3, 6, 12, 24, … 의 공비는?|2',
+      '1부터 10까지 자연수의 합은?|55',
+      '등차수열 2, 5, 8, … 의 10번째 항은?|29',
+      '합을 나타내는 기호 Σ의 이름은?|시그마',
+    ]],
+    ['함수의 극한과 미분', [
+      'lim(x→2) (x + 3) = ?|5',
+      'f(x) = x² 의 도함수는? (예: 3x)|2x',
+      'f(x) = 3x 의 도함수는?|3',
+      'f(x) = x³ 의 x = 1 에서의 미분계수는?|3',
+      '증가하다가 감소로 바뀌는 점에서의 함숫값은?|극댓값',
+    ]],
+    ['적분', [
+      '부정적분에서 붙이는 적분상수의 기호는? (영문 대문자)|C',
+      '∫₀¹ 2x dx = ?|1',
+      '∫₀² 3 dx = ?|6',
+      '∫₀² x dx = ?|2',
+      "미분과 적분의 관계를 나타내는 정리는? (미적분의 ○○정리)|기본|기본정리",
+    ]],
+  ]],
+  3: ['확률과 통계 · 미적분Ⅱ', [
+    ['순열과 조합', [
+      '3! = ?|6',
+      '서로 다른 4개를 원형으로 배열하는 경우의 수는?|6',
+      '6C3 = ?|20',
+      'A, A, B를 일렬로 나열하는 경우의 수는?|3',
+      '(a+b)⁴ 전개식의 항의 개수는?|5',
+    ]],
+    ['확률', [
+      '주사위 1개를 던져 짝수가 나올 확률은? (분수)|1/2',
+      '동전 2개를 던져 모두 앞면이 나올 확률은? (분수)|1/4',
+      'P(A) = 0.3 일 때 A의 여사건의 확률은?|0.7',
+      '두 사건이 서로의 확률에 영향을 주지 않을 때 두 사건은 서로 ○○이다.|독립',
+      '사건 B가 일어났을 때 A가 일어날 확률을 무엇이라 하는가?|조건부확률',
+    ]],
+    ['통계', [
+      '확률변수의 평균을 다른 말로?|기댓값',
+      '분산의 양의 제곱근은?|표준편차',
+      '평균에 대해 대칭인 종 모양의 연속확률분포는?|정규분포',
+      '평균 0, 표준편차 1인 정규분포는?|표준정규분포',
+      '동전을 10번 던질 때 앞면이 나오는 횟수의 평균은?|5',
+    ]],
+    ['수열의 극한', [
+      'lim(n→∞) 1/n = ?|0',
+      '무한등비급수 1 + 1/2 + 1/4 + … 의 합은?|2',
+      '수열이 일정한 값에 한없이 가까워지면 그 수열은 ○○한다.|수렴',
+      'lim(n→∞) (2n+1)/n = ?|2',
+      '자연상수 e의 근삿값은? (소수 첫째 자리까지)|2.7',
+    ]],
+    ['미분법과 적분법', [
+      '(sin x)′ = ?|cos x',
+      '(ln x)′ = ?|1/x',
+      '∫ cos x dx = ? + C|sin x',
+      'y = eˣ 의 x = 0 에서의 접선의 기울기는?|1',
+      'f(x) = x⁴ 일 때 f′(1) = ?|4',
+    ]],
+  ]],
+});
+
+SUBJ('social', '사회', '🏛️', 8, {
+  1: ['통합사회', [
+    ['인간, 사회, 환경과 행복', [
+      '시간적·공간적·사회적·윤리적 관점을 종합하는 관점은?|통합적관점',
+      '시대적 상황과 배경을 고려하는 관점은?|시간적관점',
+      '사회 구조와 제도의 영향을 고려하는 관점은?|사회적관점',
+      '아리스토텔레스가 말한 인간 삶의 궁극적 목적은?|행복',
+      '행복의 정치적 조건으로 가장 중요한 것은?|민주주의',
+    ]],
+    ['자연환경과 인간', [
+      '자연을 인간을 위한 도구로 보는 자연관은?|인간중심주의',
+      '모든 생명체를 도덕적으로 고려해야 한다는 자연관은?|생명중심주의',
+      '생태계 전체를 도덕적 고려 대상으로 보는 자연관은?|생태중심주의',
+      '2015년 체결된 기후 변화 대응 국제 협약은?|파리협정',
+      '도시의 기온이 주변보다 높게 나타나는 현상은?|열섬현상',
+    ]],
+    ['문화와 다양성', [
+      '자기 문화만 우월하다고 여기는 태도는?|자문화중심주의',
+      '다른 문화를 동경해 자기 문화를 낮게 보는 태도는?|문화사대주의',
+      '문화를 그 사회의 맥락에서 이해하는 태도는?|문화상대주의',
+      '서로 다른 문화가 접촉하여 변하는 현상은?|문화변동',
+      '여러 문화가 섞여 새로운 문화가 만들어지는 것은?|문화융합',
+    ]],
+    ['인권 보장과 헌법', [
+      '인간이라면 누구나 누려야 할 기본 권리는?|인권',
+      '국가의 최고법은?|헌법',
+      '국가 권력을 입법·행정·사법으로 나누는 원리는?|권력분립',
+      '국가에 일정한 행위를 요구할 수 있는 기본권은?|청구권',
+      '인간다운 생활을 보장받을 권리는?|사회권',
+    ]],
+    ['시장경제와 지속가능발전', [
+      '선택으로 포기한 대안 중 가장 큰 가치는?|기회비용',
+      '시장이 자원을 효율적으로 배분하지 못하는 상황은?|시장실패',
+      '하나의 기업이 시장을 지배하는 형태는?|독점',
+      '미래 세대를 해치지 않으며 현재의 필요를 충족하는 발전은?|지속가능한발전',
+      '상대적으로 적은 기회비용으로 생산하는 상품에 특화하는 원리는?|비교우위',
+    ]],
+    ['세계화와 평화', [
+      '국경을 넘어 교류가 확대되는 현상은?|세계화',
+      '여러 나라에 생산·판매 거점을 둔 기업은?|다국적기업',
+      '구조적 폭력까지 없는 상태의 평화는?|적극적평화',
+      '국제 평화와 안전 유지를 위한 국제기구는?|국제연합|UN',
+      '국가 간 분쟁을 법적으로 해결하는 UN 산하 사법 기관은?|국제사법재판소',
+    ]],
+  ]],
+  2: ['한국사', [
+    ['전근대 한국사', [
+      '8개 조항 중 3개가 전해지는 고조선의 법은?|8조법|범금8조',
+      '고구려 광개토대왕의 업적을 기록한 비석은?|광개토대왕릉비|광개토대왕비',
+      '신라가 삼국 통일을 완성한 해는?|676',
+      '고려를 세운 인물은?|왕건',
+      '조선 세종 때 만든 강우량 측정 기구는?|측우기',
+    ]],
+    ['근대 국민 국가 수립 운동', [
+      '1876년 일본과 맺은 최초의 근대적 조약은?|강화도조약',
+      '1894년 전봉준이 이끈 농민 운동은?|동학농민운동',
+      '1897년 고종이 선포한 국호는?|대한제국',
+      '1884년 김옥균 등 급진 개화파가 일으킨 정변은?|갑신정변',
+      '1907년 나랏빚을 갚기 위해 전개된 운동은?|국채보상운동',
+    ]],
+    ['일제 강점기와 독립운동', [
+      '1919년 전국적으로 일어난 독립 만세 운동은?|3·1운동|삼일운동',
+      '1919년 상하이에 수립된 정부는?|대한민국임시정부',
+      '1920년 홍범도가 이끈 독립군이 승리한 전투는?|봉오동전투',
+      '1929년 광주에서 일어난 학생 항일 운동은?|광주학생항일운동',
+      '1932년 윤봉길 의거가 일어난 상하이의 공원은?|훙커우공원|홍커우공원',
+    ]],
+    ['대한민국의 발전', [
+      '1948년 대한민국 정부 수립을 위해 실시된 총선거는?|5·10총선거',
+      '1950년 6월 25일에 시작된 전쟁은?|6·25전쟁|한국전쟁',
+      '1960년 이승만 정부를 무너뜨린 민주 혁명은?|4·19혁명',
+      '1987년 대통령 직선제 개헌을 이끈 민주 항쟁은?|6월민주항쟁',
+      '1980년 광주에서 일어난 민주화 운동은?|5·18민주화운동',
+    ]],
+  ]],
+  3: ['정치', [
+    ['민주주의와 정치 과정', [
+      '국가 권력이 국민에게서 나온다는 원리는?|국민주권',
+      '대표자를 뽑아 정치를 맡기는 민주주의는?|대의민주주의|간접민주주의',
+      '자기 집단의 이익을 위해 정책에 영향을 미치는 집단은?|이익집단',
+      '정권 획득을 목표로 하는 정치 집단은?|정당',
+      '여론 형성에 큰 역할을 하는 신문·방송 등은?|언론|대중매체',
+    ]],
+    ['정부 형태', [
+      '의회의 신임에 따라 내각이 구성되는 정부 형태는?|의원내각제',
+      '대통령이 행정부 수반이고 의회와 엄격히 분리된 정부 형태는?|대통령제',
+      '우리나라 대통령의 임기는 몇 년?|5',
+      '우리나라 국회의원의 임기는 몇 년?|4',
+      '국회가 고위 공직자의 파면을 요구하는 것은?|탄핵소추|탄핵',
+    ]],
+    ['선거와 정당', [
+      '선거의 4대 원칙: 보통·평등·직접·○○ 선거|비밀',
+      '정당 득표율에 따라 의석을 배분하는 제도는?|비례대표제',
+      '특정 정당에 유리하게 선거구를 정하는 것은?|게리맨더링',
+      '한 선거구에서 1명을 뽑는 제도는?|소선거구제',
+      '우리나라 선거권 연령은 만 몇 세 이상?|18',
+    ]],
+    ['국제 정치', [
+      '국제 관계를 힘의 논리로 보는 관점은?|현실주의',
+      '국제기구와 규범으로 협력이 가능하다고 보는 관점은?|자유주의',
+      'UN 안전보장이사회 상임이사국의 수는?|5',
+      '국가가 가지는 최고·독립적 권력은?|주권',
+      '정부가 아닌 민간 국제 단체(영문 약자)는?|NGO',
+    ]],
+  ]],
+});
+
+SUBJ('science', '과학', '🔬', 8, {
+  1: ['통합과학', [
+    ['물질의 규칙성과 결합', [
+      '빅뱅 직후 가장 먼저 만들어진 원소는?|수소',
+      '주기율표에서 같은 세로줄을 무엇이라 하는가?|족',
+      '1족 금속 원소 무리는?|알칼리금속',
+      '18족 원소를 무엇이라 하는가?|비활성기체',
+      '원자들이 전자쌍을 공유하여 이루는 결합은?|공유결합',
+    ]],
+    ['시스템과 상호작용', [
+      '물체가 운동 상태를 유지하려는 성질은?|관성',
+      '운동량 = 질량 × ?|속도',
+      '지구 시스템의 4권: 지권, 수권, 기권, ?|생물권',
+      '판이 서로 멀어지는 판의 경계는?|발산형경계',
+      '물이 농도가 낮은 쪽에서 높은 쪽으로 막을 통과하는 현상은?|삼투',
+    ]],
+    ['변화와 다양성', [
+      '물질이 산소를 얻는 반응은?|산화',
+      '산과 염기가 반응하여 물이 생성되는 반응은?|중화반응',
+      'pH 7보다 작은 용액의 성질은?|산성',
+      '다윈이 주장한 진화의 원리는?|자연선택',
+      '같은 종 내 개체들 사이의 형질 차이는?|변이',
+    ]],
+    ['환경과 에너지', [
+      '생물과 비생물 요인이 상호작용하는 체계는?|생태계',
+      '먹이 단계가 올라갈수록 에너지양은? (증가/감소)|감소',
+      '지구 온난화의 주원인 기체는?|이산화탄소',
+      '코일 속 자석이 움직일 때 전류가 흐르는 현상은?|전자기유도',
+      '햇빛을 전기 에너지로 바꾸는 발전은?|태양광발전',
+    ]],
+  ]],
+  2: ['물리학 · 화학', [
+    ['힘과 운동', [
+      '힘 = 질량 × ?|가속도',
+      '힘의 단위는? (영문 대문자)|N',
+      '작용이 있으면 크기가 같고 방향이 반대인 힘이 생긴다는 법칙은?|작용반작용법칙',
+      '운동하는 물체가 가진 에너지는?|운동에너지',
+      '마찰이 없을 때 역학적 에너지가 일정하다는 법칙은?|역학적에너지보존법칙',
+    ]],
+    ['전기와 자기', [
+      '전압 = 전류 × 저항 을 나타내는 법칙은?|옴의법칙',
+      '전류의 단위는? (영문 대문자)|A',
+      '전기 저항의 단위는?|옴|Ω',
+      '전류가 흐르는 도선 주위에 생기는 것은?|자기장',
+      '직선 전류 주위 자기장의 방향을 오른손으로 찾는 법칙은? (○○○ 법칙)|앙페르|앙페르법칙|오른나사법칙',
+    ]],
+    ['화학 결합', [
+      '양이온과 음이온이 정전기적 인력으로 이루는 결합은?|이온결합',
+      '물 분자의 화학식은?|H2O',
+      '원자가 전자 8개를 채워 안정해지려는 경향은?|옥텟규칙',
+      '원자가 공유 전자쌍을 끌어당기는 정도는?|전기음성도',
+      '금속 원자들이 자유 전자를 공유하는 결합은?|금속결합',
+    ]],
+    ['화학 반응', [
+      '1몰에 들어 있는 입자 수를 무엇이라 하는가?|아보가드로수',
+      '물질이 전자를 잃는 반응은?|산화',
+      '반응 전후 질량의 총합이 같다는 법칙은?|질량보존법칙',
+      '반응 속도를 바꾸지만 자신은 변하지 않는 물질은?|촉매',
+      '원소 기호 Na가 나타내는 원소는?|나트륨',
+    ]],
+  ]],
+  3: ['생명과학 · 지구과학', [
+    ['세포와 유전', [
+      '생명체를 이루는 기본 단위는?|세포',
+      '유전 정보를 담은 이중 나선 물질(영문 약자)은?|DNA',
+      '세포에서 에너지를 만드는 소기관은?|미토콘드리아',
+      '사람의 체세포 염색체 수는?|46',
+      '생식세포를 만드는 세포 분열은?|감수분열',
+    ]],
+    ['항상성과 몸의 기능', [
+      '몸의 내부 환경을 일정하게 유지하는 성질은?|항상성',
+      '혈당량을 낮추는 호르몬은?|인슐린',
+      '혈액 속에서 산소를 운반하는 세포는?|적혈구',
+      '병원체에 대항해 만들어지는 단백질은?|항체',
+      '신경계를 이루는 기본 단위 세포는?|뉴런',
+    ]],
+    ['지구 시스템', [
+      '판들의 움직임으로 지각 변동을 설명하는 이론은?|판구조론',
+      '마그마가 식어 굳은 암석은?|화성암',
+      '퇴적물이 쌓이고 굳어 생긴 암석은?|퇴적암',
+      '동태평양 해수면 온도가 평소보다 높아지는 현상은?|엘니뇨',
+      '지진이 처음 발생한 지하 지점은?|진원',
+    ]],
+    ['우주', [
+      '우주가 한 점에서 대폭발로 시작되었다는 이론은?|빅뱅이론|빅뱅',
+      '태양계에서 가장 큰 행성은?|목성',
+      '달이 지구 그림자에 가려지는 현상은?|월식',
+      '별이 핵융합을 하는 주된 원료는?|수소',
+      '빛이 1년 동안 가는 거리 단위는?|광년',
+    ]],
+  ]],
+});
+
+SUBJ('info', '정보', '💻', 8, {
+  1: ['정보', [
+    ['컴퓨팅 시스템', [
+      '명령어를 해석하고 실행하는 컴퓨터의 핵심 장치(영문 약자)는?|CPU',
+      '전원이 꺼지면 내용이 사라지는 주기억장치(영문 약자)는?|RAM',
+      '하드웨어를 관리하고 사용 환경을 제공하는 소프트웨어는?|운영체제',
+      '빛, 온도 등 외부 환경을 감지하는 입력 장치는?|센서',
+      '컴퓨터가 처리하는 정보의 최소 단위는?|비트',
+    ]],
+    ['데이터', [
+      '8비트는 몇 바이트?|1',
+      '10진수 5를 2진수로 나타내면?|101',
+      '2진수 1111을 10진수로 나타내면?|15',
+      '전 세계 문자를 표현하기 위한 국제 표준 문자 코드는?|유니코드',
+      '데이터의 용량을 줄이는 것을 무엇이라 하는가?|압축',
+    ]],
+    ['알고리즘과 프로그래밍', [
+      '문제 해결 절차를 순서대로 나타낸 것은?|알고리즘',
+      '알고리즘을 도형과 화살표로 나타낸 그림은?|순서도',
+      '복잡한 문제에서 핵심만 남기는 과정은?|추상화',
+      '같은 동작을 여러 번 되풀이하는 구조는?|반복구조',
+      '조건에 따라 실행 흐름이 달라지는 구조는?|선택구조',
+    ]],
+    ['디지털 문화', [
+      '저작물에 대한 창작자의 권리는?|저작권',
+      '살아 있는 개인을 알아볼 수 있는 정보는?|개인정보',
+      '저작물 이용 조건을 표시한 라이선스(영문 약자)는?|CCL',
+      '남을 속여 개인정보나 금융정보를 빼내는 수법은?|피싱',
+      '온라인에서 지켜야 할 예절은?|네티켓',
+    ]],
+  ]],
+  2: ['프로그래밍', [
+    ['변수와 자료형', [
+      '값을 저장하는 이름 붙은 공간은?|변수',
+      '파이썬의 정수 자료형 이름은?|int',
+      '파이썬의 문자열 자료형 이름은?|str',
+      '파이썬에서 참/거짓을 나타내는 자료형 이름은?|bool',
+      '파이썬에서 키보드로 입력받는 함수는?|input',
+    ]],
+    ['연산자', [
+      '파이썬에서 7 // 2 의 결과는?|3',
+      '파이썬에서 7 % 2 의 결과는?|1',
+      '파이썬에서 2 ** 3 의 결과는?|8',
+      '두 값이 같은지 비교하는 연산자는?|==',
+      "파이썬에서 '그리고'를 뜻하는 논리 연산자는?|and",
+    ]],
+    ['조건문과 반복문', [
+      '파이썬에서 조건문을 시작하는 키워드는?|if',
+      '앞 조건이 거짓일 때 다른 조건을 검사하는 파이썬 키워드는?|elif',
+      '정해진 범위만큼 반복할 때 주로 쓰는 반복문은?|for',
+      '조건이 참인 동안 반복하는 반복문은?|while',
+      '반복문을 즉시 빠져나오는 키워드는?|break',
+    ]],
+    ['함수와 리스트', [
+      '파이썬에서 함수를 정의하는 키워드는?|def',
+      '함수가 값을 돌려줄 때 쓰는 키워드는?|return',
+      '리스트 끝에 원소를 추가하는 메서드는?|append',
+      '리스트의 길이를 구하는 함수는?|len',
+      'a = [3, 5, 7] 일 때 a[1]의 값은?|5',
+    ]],
+  ]],
+  3: ['정보과학', [
+    ['자료구조', [
+      '나중에 넣은 것이 먼저 나오는 자료구조는?|스택',
+      '먼저 넣은 것이 먼저 나오는 자료구조는?|큐',
+      '정점과 간선으로 이루어진 자료구조는?|그래프',
+      '계층 구조를 나타내는 자료구조는?|트리',
+      '스택의 입출력 방식(영문 약자)은?|LIFO',
+    ]],
+    ['정렬과 탐색', [
+      '정렬된 자료에서 범위를 절반씩 줄이며 찾는 탐색은?|이진탐색',
+      '처음부터 하나씩 차례로 비교하는 탐색은?|순차탐색|선형탐색',
+      '이웃한 두 값을 비교·교환하며 정렬하는 방법은?|버블정렬',
+      '가장 작은 값을 찾아 앞으로 보내는 정렬은?|선택정렬',
+      '기준값(피벗)을 정해 분할하며 정렬하는 방법은?|퀵정렬',
+    ]],
+    ['네트워크와 보안', [
+      '인터넷에서 컴퓨터를 구별하는 주소는?|IP주소',
+      '도메인 이름을 IP 주소로 바꿔 주는 시스템(영문 약자)은?|DNS',
+      '웹 문서를 암호화하여 주고받는 프로토콜(영문 약자)은?|HTTPS',
+      '데이터를 알아볼 수 없게 바꾸는 것은?|암호화',
+      '외부의 불법 접근을 차단하는 보안 시스템은?|방화벽',
+    ]],
+    ['종합 (기존 정보 퀴즈)', 'JUNGBO_QUIZ_QUESTIONS'],
+  ]],
+});
+
+SUBJ('geo', '지리', '🗺️', 8, {
+  1: ['통합사회 · 지리 영역', [
+    ['지도와 위치', [
+      '위도 0도인 선은?|적도',
+      '경도 0도 기준선이 지나는 영국의 지명은?|그리니치',
+      '경도 15도마다 생기는 시차는 몇 시간?|1',
+      '우리나라 표준시의 기준 경선은 동경 몇 도?|135',
+      '지리 정보를 수집·분석하는 컴퓨터 시스템(영문 약자)은?|GIS',
+    ]],
+    ['기후와 생활', [
+      '적도 부근의 연중 덥고 비가 많은 기후는?|열대우림기후|열대기후',
+      '강수량보다 증발량이 많은 기후는?|건조기후',
+      '사막에서 물을 얻을 수 있는 곳은?|오아시스',
+      '계절에 따라 풍향이 바뀌는 바람은?|계절풍',
+      '툰드라 기후 지역에서 주로 기르는 동물은?|순록',
+    ]],
+    ['지형과 생활', [
+      '하천이 바다로 흘러드는 곳에 쌓인 지형은?|삼각주',
+      '빙하가 깎은 골짜기에 바닷물이 들어온 좁고 긴 만은?|피오르',
+      '석회암이 빗물에 녹아 만들어진 지형은?|카르스트지형',
+      '파도의 침식으로 해안에 생긴 절벽은?|해식애',
+      '바다로 길게 뻗은 모래 퇴적 지형으로 섬과 육지를 잇는 것은?|육계사주',
+    ]],
+  ]],
+  2: ['세계시민과 지리', [
+    ['세계의 기후', [
+      '세계 기후 구분을 체계화한 독일의 기후학자는?|쾨펜',
+      "지중해성 기후의 여름 특징은? (고온 ○○)|건조",
+      '사막이 넓어지는 현상은?|사막화',
+      '고도에 따라 다른 작물을 재배하는 남아메리카의 산맥은?|안데스산맥',
+      '서유럽에 연중 온화한 날씨를 가져오는 바람은?|편서풍',
+    ]],
+    ['인구와 도시', [
+      '2023년 이후 세계에서 인구가 가장 많은 나라는?|인도',
+      '1위 도시의 인구가 2위 도시보다 지나치게 많은 현상은?|종주도시화',
+      '65세 이상 인구 비율이 14% 이상인 사회는?|고령사회',
+      '박해를 피해 국경을 넘은 사람은?|난민',
+      '도심의 주거 인구가 줄어드는 현상은?|인구공동화',
+    ]],
+    ['자원과 환경', [
+      '석유 수출국 기구(영문 약자)는?|OPEC',
+      '석유 매장량이 많은 서남아시아의 만은?|페르시아만',
+      '태양광·풍력처럼 고갈되지 않는 에너지는?|재생에너지|신재생에너지',
+      '열대우림 파괴가 심각한 남아메리카의 강 유역은?|아마존',
+      '온실가스를 배출할 권리를 사고파는 제도는?|배출권거래제|탄소배출권거래제',
+    ]],
+    ['세계의 지역', [
+      '세계에서 가장 높은 산은?|에베레스트산|에베레스트',
+      '극지를 제외하고 세계에서 가장 넓은 사막은?|사하라사막',
+      '유럽 연합(영문 약자)은?|EU',
+      '동남아시아 국가 연합(영문 약자)은?|ASEAN',
+      '세계에서 가장 긴 강으로 알려진 아프리카의 강은?|나일강',
+    ]],
+  ]],
+  3: ['한국지리 탐구', [
+    ['국토와 위치', [
+      '우리나라 영토의 가장 동쪽 섬은?|독도',
+      '우리나라 영토의 가장 남쪽 섬은?|마라도',
+      '영해 기선에서 200해리까지의 수역(영문 약자)은?|EEZ|배타적경제수역',
+      '우리나라 영해는 기선으로부터 몇 해리? (일반적)|12',
+      '우리나라 국토의 약 70%를 차지하는 지형은?|산지',
+    ]],
+    ['지형', [
+      '동쪽이 높고 서쪽이 낮은 우리나라의 지형 특징은?|동고서저',
+      '한반도에서 가장 높은 산은?|백두산',
+      '남한에서 가장 높은 산은?|한라산',
+      '밀물과 썰물의 해수면 높이 차이는?|조차',
+      '제주도에 많은 작은 화산체를 부르는 말은?|오름',
+    ]],
+    ['기후', [
+      '겨울철 북서 계절풍을 몰고 오는 기단은?|시베리아기단',
+      '여름철 무더위를 가져오는 기단은?|북태평양기단',
+      '초여름 영서 지방에 부는 고온 건조한 북동풍은?|높새바람',
+      '바람이 산을 넘으며 고온 건조해지는 현상은?|푄현상',
+      '초여름 우리나라에 오래 머무르는 정체 전선은?|장마전선',
+    ]],
+    ['인구와 지역', [
+      '출생아 수가 줄어드는 현상은?|저출산',
+      '인구와 기능이 서울 주변으로 몰리는 현상은?|수도권집중',
+      '경상북도의 대표적 제철 공업 도시는?|포항',
+      '도시 기능이 주변 지역으로 확산되는 현상은?|교외화',
+      '지역 특성을 살려 상품 가치를 높이는 전략은?|지역브랜드|지역브랜드화',
+    ]],
+  ]],
+});
+
+SUBJ('culture', '문화', '🎭', 8, {
+  1: ['통합사회 · 문화 영역', [
+    ['문화의 의미와 속성', [
+      '한 사회 구성원이 공유하는 생활양식은?|문화',
+      '문화가 태어난 뒤에 배워서 익혀진다는 속성은?|학습성',
+      '문화가 구성원들 사이에 공유된다는 속성은?|공유성',
+      '문화 요소들이 서로 영향을 주고받는다는 속성은?|총체성|전체성',
+      '문화가 다음 세대로 전달·축적된다는 속성은?|축적성',
+    ]],
+    ['문화를 이해하는 태도', [
+      '자기 문화만 우월하다고 여기는 태도는?|자문화중심주의',
+      '다른 문화를 동경해 자기 문화를 낮추는 태도는?|문화사대주의',
+      '문화를 그 사회의 맥락에서 이해하는 태도는?|문화상대주의',
+      '인권을 침해하는 문화까지 인정하는 태도는?|극단적문화상대주의',
+      '한 사회의 주류 문화와 구별되는 일부 집단의 문화는?|하위문화',
+    ]],
+    ['다문화 사회', [
+      '여러 문화가 각자의 특성을 유지하며 공존하는 모습의 비유는? (○○○ 그릇)|샐러드볼',
+      '여러 문화를 하나로 녹이는 동화주의의 비유는?|용광로',
+      '이주민 문화를 주류 문화에 흡수시키려는 정책은?|동화주의',
+      '다양한 문화의 공존을 인정하는 정책은?|다문화주의',
+      '한 문화가 다른 문화에 흡수되어 사라지는 것은?|문화동화',
+    ]],
+  ]],
+  2: ['사회와 문화', [
+    ['사회·문화 현상의 탐구', [
+      '통계 등 계량적 자료로 법칙을 찾는 연구 방법은?|양적연구',
+      '의미 해석과 깊이 있는 이해를 중시하는 연구 방법은?|질적연구',
+      '질문지를 통해 자료를 수집하는 방법은?|질문지법',
+      '연구자가 직접 참여하여 관찰하는 방법은?|참여관찰법',
+      '변인을 통제하여 인과 관계를 밝히는 방법은?|실험법',
+    ]],
+    ['개인과 사회 구조', [
+      '개인이 사회 구성원으로 자라는 과정은?|사회화',
+      '사회적 지위에 기대되는 행동 양식은?|역할',
+      '태어나면서 갖게 되는 지위는?|귀속지위',
+      '노력으로 얻는 지위는?|성취지위',
+      '한 사람의 여러 역할이 서로 충돌하는 것은?|역할갈등',
+    ]],
+    ['사회 집단과 조직', [
+      '가족처럼 친밀하고 전인격적인 관계의 집단은?|1차집단',
+      '특정 목적을 위해 모인 집단은?|2차집단',
+      '자신이 소속감을 느끼는 집단은?|내집단',
+      '행동과 판단의 기준이 되는 집단은?|준거집단',
+      '규칙과 위계에 따라 운영되는 조직 형태는?|관료제',
+    ]],
+    ['사회 불평등', [
+      '구성원이 서열화되어 위계를 이루는 현상은?|사회계층화',
+      '사회 계층의 위치가 바뀌는 것은?|사회이동',
+      '최소한의 생존 기준에 미치지 못하는 빈곤은?|절대적빈곤',
+      '다른 사람에 비해 상대적으로 부족한 빈곤은?|상대적빈곤',
+      '사회적 약자에게 혜택을 주어 실질적 평등을 이루려는 정책은?|적극적우대조치',
+    ]],
+  ]],
+  3: ['사회문제 탐구', [
+    ['사회 변동', [
+      '사회가 단순에서 복잡으로 발전한다는 변동 이론은?|진화론',
+      '사회가 성장과 쇠퇴를 반복한다는 이론은?|순환론',
+      '정보가 가장 중요한 자원이 되는 사회는?|정보사회',
+      '물질 문화와 비물질 문화의 변동 속도 차이로 생기는 현상은?|문화지체',
+      '국가 간 상호 의존이 커지는 현상은?|세계화',
+    ]],
+    ['사회 문제와 일탈', [
+      '65세 이상 인구 비율이 늘어나는 현상은?|고령화',
+      '사회 규범에서 벗어난 행동은?|일탈행동|일탈',
+      '일탈이 주변 사람과의 상호작용으로 학습된다는 이론은?|차별교제이론',
+      '일탈자로 규정되면서 일탈이 강화된다는 이론은?|낙인이론',
+      '사회 변화를 목적으로 하는 조직적·집단적 행동은?|사회운동',
+    ]],
+    ['사회 복지', [
+      '국민이 보험료를 내고 사회적 위험에 대비하는 제도는?|사회보험',
+      '생활이 어려운 사람에게 국가가 비용을 지원하는 제도는?|공공부조',
+      '도움이 필요한 사람에게 상담·돌봄 등을 제공하는 제도는?|사회서비스',
+      '4대 보험 중 노후 생활을 대비하는 것은?|국민연금',
+      '일하다 다친 근로자를 보호하는 보험은?|산재보험|산업재해보상보험',
+    ]],
+  ]],
+});
+
+SUBJ('ethics', '윤리', '🧭', 8, {
+  1: ['통합사회 · 윤리 영역', [
+    ['윤리의 기초', [
+      '옳고 그름의 기준을 탐구하는 학문은?|윤리학',
+      '결과보다 동기와 의무를 중시한 독일 철학자는?|칸트',
+      '행위의 결과로 옳고 그름을 판단하는 윤리는?|결과주의|공리주의',
+      '좋은 품성을 기르는 것을 강조하는 윤리는?|덕윤리',
+      '인간이 존엄하기에 누구나 갖는 보편적 권리는?|인권',
+    ]],
+    ['행복과 정의', [
+      "'최대 다수의 최대 행복'을 주장한 사상은?|공리주의",
+      '공리주의를 처음 체계화한 영국 사상가는?|벤담',
+      "'정의론'을 쓴 미국 철학자는?|롤스",
+      "롤스가 공정한 원칙을 정하기 위해 가정한 상황: 무지의 ○○|베일",
+      '사회적 약자에게 가장 큰 혜택이 될 때만 불평등을 허용하는 롤스의 원칙은?|차등의원칙',
+    ]],
+    ['일상의 윤리', [
+      '타인의 처지에서 생각하고 느끼는 능력은?|공감',
+      '대가 없이 남을 돕는 활동은?|봉사',
+      '온라인에서 지켜야 할 예절은?|네티켓',
+      '생명을 소중히 여기는 태도는?|생명존중',
+      '서로 다름을 인정하고 받아들이는 태도는?|관용',
+    ]],
+  ]],
+  2: ['현대사회와 윤리', [
+    ['생명 윤리', [
+      '회복이 불가능한 환자의 고통을 덜기 위해 생명을 단축하는 것은?|안락사',
+      '생명 과학과 의료의 윤리 문제를 다루는 분야는?|생명윤리',
+      '유전적으로 동일한 개체를 만드는 기술은?|복제|생명복제',
+      '뇌 기능이 회복 불가능하게 정지한 상태는?|뇌사',
+      '자신의 장기를 다른 사람에게 주는 것은?|장기기증',
+    ]],
+    ['사회 윤리', [
+      '기업의 사회적 책임(영문 약자)은?|CSR',
+      '직업 생활에서 지켜야 할 윤리는?|직업윤리',
+      '공직자 등의 부정 청탁과 금품 수수를 금지한 법의 통칭은?|청탁금지법|김영란법',
+      '근로자가 근로 조건 개선을 위해 만든 단체는?|노동조합',
+      '사형 제도의 범죄 억제 효과를 강조하는 입장은? (존치/폐지)|존치',
+    ]],
+    ['과학·정보 윤리', [
+      "과학 기술 시대의 '책임 윤리'를 강조한 철학자는?|요나스",
+      '남의 저작물을 출처 없이 쓰는 행위는?|표절',
+      '정보 접근·활용 능력 차이로 생기는 격차는?|정보격차',
+      '인터넷에 남은 자기 기록의 삭제를 요구할 권리는?|잊힐권리',
+      '사실처럼 꾸민 거짓 정보는?|가짜뉴스|허위정보',
+    ]],
+    ['평화와 공존', [
+      '직접적·구조적·문화적 폭력을 구분한 평화학자는?|갈퉁',
+      '정당한 전쟁의 조건을 따지는 이론은?|정의전쟁론',
+      '칸트가 영구 평화를 위해 제안한 국가 간 연합은?|국제연맹|평화연맹',
+      '해외 원조를 공리주의 관점에서 의무로 본 철학자는?|싱어',
+      '분단 때문에 남북이 치르는 비용은?|분단비용',
+    ]],
+  ]],
+  3: ['윤리와 사상', [
+    ['동양 윤리', [
+      "'인(仁)'을 핵심으로 강조한 사상가는?|공자",
+      '성선설을 주장한 사상가는?|맹자',
+      '성악설을 주장한 사상가는?|순자',
+      "'무위자연'을 강조한 사상가는?|노자",
+      '연기와 자비를 강조한 사상은?|불교',
+    ]],
+    ['한국 윤리', [
+      "'경(敬)'을 강조한 퇴계는?|이황",
+      "'기발이승일도설'을 주장한 율곡은?|이이",
+      '일심 사상과 화쟁 사상을 주장한 신라 승려는?|원효',
+      "실학을 집대성하고 '목민심서'를 쓴 사람은?|정약용",
+      '동학을 창시한 인물은?|최제우',
+    ]],
+    ['서양 윤리', [
+      "'너 자신을 알라'로 유명한 고대 그리스 철학자는?|소크라테스",
+      '이데아론을 주장한 철학자는?|플라톤',
+      '중용의 덕을 강조한 철학자는?|아리스토텔레스',
+      "쾌락을 '마음의 평정'으로 본 학파는?|에피쿠로스학파",
+      '정언 명령을 주장한 철학자는?|칸트',
+    ]],
+    ['사회사상', [
+      '국가가 시민의 계약으로 성립한다는 사상은?|사회계약설',
+      "'만인의 만인에 대한 투쟁'을 말한 사상가는?|홉스",
+      '자연권과 저항권을 강조한 영국 사상가는?|로크',
+      "'일반 의지'를 강조한 프랑스 사상가는?|루소",
+      '생산 수단의 사회적 소유를 주장한 사상은?|사회주의',
+    ]],
+  ]],
+});
+
+SUBJ('law', '법', '⚖️', 8, {
+  1: ['통합사회 · 법 영역', [
+    ['법의 이해', [
+      '국가의 강제력이 뒷받침되는 사회 규범은?|법',
+      '국가의 최고법은?|헌법',
+      '법의 이념: 정의, 합목적성, 그리고?|법적안정성',
+      '범죄와 형벌을 미리 법률로 정해야 한다는 원칙은?|죄형법정주의',
+      '국회에서 제정하는 법 규범은?|법률',
+    ]],
+    ['기본권', [
+      "기본권의 근본: 인간으로서의 ○○와 가치|존엄",
+      '국가로부터 간섭받지 않을 권리는?|자유권',
+      '국가의 정치에 참여할 권리는?|참정권',
+      '모든 국민이 법 앞에 차별받지 않을 권리는?|평등권',
+      '공권력으로 기본권이 침해되었을 때 헌법재판소에 청구하는 것은?|헌법소원',
+    ]],
+    ['국가 기관', [
+      '법률이 헌법에 어긋나는지 심판하는 기관은?|헌법재판소',
+      '우리나라 최고 법원은?|대법원',
+      '대통령이 국회 의결 법률안에 대해 갖는 거부 권한은?|법률안거부권|거부권',
+      '국회가 매년 국정 전반을 살펴보는 활동은?|국정감사',
+      '법원이 재판을 공개적으로 하는 원칙은?|재판공개주의|공개재판',
+    ]],
+  ]],
+  2: ['법과 사회', [
+    ['민법과 계약', [
+      '개인 간 재산·가족 관계를 다루는 법은?|민법',
+      '당사자의 의사가 합치하여 성립하는 법률 행위는?|계약',
+      '민법상 성년 나이는 만 몇 세?|19',
+      '미성년자가 법정대리인 동의 없이 한 계약은 ○○할 수 있다.|취소',
+      '고의나 과실로 타인에게 손해를 입힌 행위는?|불법행위',
+    ]],
+    ['가족 관계', [
+      '혼인이 법적 효력을 갖기 위해 필요한 신고는?|혼인신고',
+      '사망한 사람의 재산이 이전되는 것은?|상속',
+      '유언이 없을 때 법이 정한 순위에 따른 상속은?|법정상속',
+      '친생자가 아닌 사람을 법적으로 자녀로 삼는 것은?|입양',
+      '미성년 자녀를 보호·교육할 부모의 권리와 의무는?|친권',
+    ]],
+    ['형법과 형사 절차', [
+      '범죄와 형벌을 규정한 법은?|형법',
+      '수사 단계에서 범죄 혐의를 받는 사람은?|피의자',
+      '기소되어 재판을 받는 사람은?|피고인',
+      '유죄 판결이 확정되기 전까지 무죄로 보는 원칙은?|무죄추정의원칙',
+      '일정 기간 교도소에 가두고 노역을 시키는 형벌은?|징역',
+    ]],
+    ['근로와 사회법', [
+      '근로 조건의 최저 기준을 정한 법은?|근로기준법',
+      '단결권·단체교섭권·단체행동권을 묶어 부르는 말은?|노동3권|노동삼권',
+      '근로자가 받아야 할 최소한의 임금은?|최저임금',
+      '원칙적으로 만 몇 세 미만은 근로자로 고용할 수 없나?|15',
+      '부당 해고 구제를 신청하는 기관은?|노동위원회',
+    ]],
+  ]],
+  3: ['법과 사회 심화', [
+    ['재판과 소송', [
+      '개인 간 분쟁을 해결하는 재판은?|민사재판',
+      '범죄 여부와 형벌을 정하는 재판은?|형사재판',
+      '1심 판결에 불복하여 2심을 청구하는 것은?|항소',
+      '2심 판결에 불복하여 대법원에 청구하는 것은?|상고',
+      '국민이 배심원으로 형사 재판에 참여하는 제도는?|국민참여재판',
+    ]],
+    ['국제법', [
+      '국가 간 문서로 합의한 국제법은?|조약',
+      '오랜 관행으로 법적 구속력을 인정받은 국제법은?|국제관습법',
+      '국가 간 분쟁을 다루는 UN의 사법 기관은?|국제사법재판소',
+      '집단 살해 등 개인의 국제 범죄를 처벌하는 재판소는?|국제형사재판소',
+      '외교관이 주재국 법의 적용을 받지 않는 특권은?|외교특권|치외법권',
+    ]],
+    ['소비자와 생활 법', [
+      '일정 기간 안에 구매 계약을 취소할 수 있는 소비자 권리는?|청약철회',
+      '소비자 피해 상담과 구제를 담당하는 공공 기관은?|한국소비자원',
+      '집을 빌린 세입자를 보호하는 법은?|주택임대차보호법',
+      '제품 결함으로 생긴 손해를 제조업자가 배상하는 책임은?|제조물책임',
+      '개인정보 처리와 보호를 규정한 법은?|개인정보보호법',
+    ]],
+  ]],
+});
+
+SUBJ('econ', '경제', '💰', 8, {
+  1: ['통합사회 · 경제 영역', [
+    ['경제생활의 기초', [
+      '욕구에 비해 자원이 부족한 상태는?|희소성',
+      '선택으로 포기한 대안 중 가장 큰 가치는?|기회비용',
+      '이미 지출해 되돌릴 수 없는 비용은?|매몰비용',
+      '경제 활동의 세 가지: 생산, 분배, 그리고?|소비',
+      '정부 계획에 따라 경제 문제를 해결하는 체제는?|계획경제',
+    ]],
+    ['시장과 가격', [
+      '수요량과 공급량이 일치하는 가격은?|균형가격',
+      '가격이 오르면 수요량은? (증가/감소)|감소',
+      '함께 소비할 때 만족이 커지는 재화의 관계는?|보완재',
+      '서로 대신 쓸 수 있는 재화의 관계는?|대체재',
+      '한 기업이 시장을 지배하는 것은?|독점',
+    ]],
+    ['금융 생활', [
+      '원금과 이자 모두에 이자가 붙는 방식은?|복리',
+      '원금에만 이자가 붙는 방식은?|단리',
+      '주식회사가 발행하는 소유권 증서는?|주식',
+      '정부나 기업이 돈을 빌리며 발행하는 증서는?|채권',
+      '여러 자산에 나누어 투자하는 것은?|분산투자',
+    ]],
+  ]],
+  2: ['경제', [
+    ['국민 경제', [
+      '한 나라 안에서 생산된 최종 생산물 가치의 합(영문 약자)은?|GDP',
+      '물가가 지속적으로 오르는 현상은?|인플레이션',
+      '물가가 지속적으로 내리는 현상은?|디플레이션',
+      '일할 의사와 능력이 있지만 일자리가 없는 상태는?|실업',
+      '경기 침체와 물가 상승이 함께 나타나는 현상은?|스태그플레이션',
+    ]],
+    ['경제 정책', [
+      '정부가 세금과 지출을 조절하는 정책은?|재정정책',
+      '중앙은행이 통화량과 금리를 조절하는 정책은?|통화정책',
+      '우리나라의 중앙은행은?|한국은행',
+      '소득이 많을수록 높은 세율을 적용하는 세금은?|누진세',
+      '시장이 자원을 효율적으로 배분하지 못하는 상황은?|시장실패',
+    ]],
+    ['국제 경제', [
+      '다른 나라보다 적은 기회비용으로 생산하는 것은?|비교우위',
+      '외국과의 거래로 주고받은 돈을 기록한 것은?|국제수지',
+      '우리 돈과 외국 돈의 교환 비율은?|환율',
+      '환율이 오르면 수출은 대체로? (증가/감소)|증가',
+      '국가 간 관세를 없애는 자유 무역 협정(영문 약자)은?|FTA',
+    ]],
+    ['경제 지표', [
+      '소득 불평등을 0~1로 나타내는 지수는?|지니계수',
+      '가계 소비 지출 중 식료품비가 차지하는 비율은?|엥겔계수',
+      '경기가 확장과 수축을 반복하는 현상은?|경기변동|경기순환',
+      '생활에 필요한 상품의 가격 변동을 나타내는 지수: 소비자 ○○ 지수|물가',
+      '국민 전체 소득을 인구로 나눈 값은?|1인당국민소득',
+    ]],
+  ]],
+  3: ['금융과 경제생활', [
+    ['소득과 소비', [
+      '소득에서 세금 등을 빼고 실제 쓸 수 있는 소득은?|가처분소득',
+      '일을 해서 받는 소득은?|근로소득',
+      '이자·배당·임대료 등으로 얻는 소득은?|재산소득',
+      '수입과 지출을 기록하는 장부는?|가계부',
+      '미래 소득을 앞당겨 쓰는 결제 수단은?|신용카드',
+    ]],
+    ['저축과 투자', [
+      '금융 상품 선택 기준: 안전성, 수익성, 그리고?|유동성',
+      '전문가가 투자자들의 돈을 모아 대신 운용하는 상품은?|펀드',
+      '72를 연 수익률로 나누어 원금이 두 배가 되는 기간을 구하는 법칙은?|72의법칙',
+      '실질 금리 = 명목 금리 - ?|물가상승률',
+      '주식 투자로 받는 회사 이익의 몫은?|배당금|배당',
+    ]],
+    ['신용과 위험 관리', [
+      '개인의 신용 상태를 점수로 나타낸 것은?|신용점수',
+      '빚을 갚을 수 없을 때 법원에 신청하여 채무를 정리하는 제도는?|개인파산',
+      '미래 위험에 대비해 보험료를 내는 금융 상품은?|보험',
+      '전화로 속여 돈을 가로채는 금융 사기는?|보이스피싱',
+      '등록하지 않고 법정 최고 금리를 넘겨 돈을 빌려주는 것은?|불법사금융',
+    ]],
+  ]],
+});
+
+SUBJ('aibasic', '인공지능 기초', '🤖', 8, {
+  1: ['인공지능의 이해', [
+    ['인공지능의 개념', [
+      '인간의 지능을 컴퓨터로 구현한 기술은?|인공지능',
+      '기계가 인간처럼 생각하는지 판별하는 시험은?|튜링테스트',
+      '특정 분야에서만 지능을 발휘하는 인공지능은?|약인공지능',
+      '인간처럼 범용적인 지능을 가진 인공지능은?|강인공지능',
+      "1956년 '인공지능'이라는 말이 처음 쓰인 학술 회의는?|다트머스회의",
+    ]],
+    ['탐색과 지식 표현', [
+      '현재 상태에서 목표 상태로 가는 경로를 찾는 과정은?|탐색',
+      '가까운 노드부터 차례로 넓게 탐색하는 방법(영문 약자)은?|BFS|너비우선탐색',
+      '한 경로를 끝까지 깊게 탐색하는 방법(영문 약자)은?|DFS|깊이우선탐색',
+      '개념과 관계를 그래프로 표현한 지식 표현 방법은?|의미망',
+      "'만약 ~라면 ~이다' 규칙으로 전문가의 지식을 담은 시스템은?|전문가시스템",
+    ]],
+    ['인공지능과 사회', [
+      '학습 데이터 때문에 특정 집단에 불공정한 결과가 나오는 것은?|편향|데이터편향',
+      '판단 근거를 설명할 수 있는 인공지능(영문 약자)은?|XAI|설명가능한인공지능',
+      '인공지능으로 얼굴·음성을 조작한 합성 영상은?|딥페이크',
+      'AI가 사실이 아닌 내용을 그럴듯하게 만들어내는 현상은?|환각|할루시네이션',
+      'AI를 개발·활용할 때 지켜야 할 윤리 원칙은?|인공지능윤리|AI윤리',
+    ]],
+  ]],
+  2: ['기계학습', [
+    ['기계학습의 종류', [
+      '데이터에서 규칙을 스스로 학습하는 기술은?|기계학습|머신러닝',
+      '정답(레이블)이 있는 데이터로 학습하는 방법은?|지도학습',
+      '정답 없이 데이터의 구조를 찾는 학습은?|비지도학습',
+      '보상을 최대화하도록 행동을 학습하는 방법은?|강화학습',
+      '비슷한 데이터끼리 묶는 비지도학습 방법은?|군집|클러스터링',
+    ]],
+    ['분류와 회귀', [
+      '데이터를 정해진 범주로 나누는 지도학습은?|분류',
+      '연속적인 수치를 예측하는 지도학습은?|회귀',
+      '가장 가까운 k개 이웃의 다수결로 분류하는 알고리즘(영문 약자)은?|KNN',
+      '질문을 따라 가지를 나누며 분류하는 모델은?|의사결정트리|결정트리',
+      'k개의 중심점을 기준으로 데이터를 묶는 군집 알고리즘은?|kmeans|k평균',
+    ]],
+    ['모델 평가', [
+      '학습 데이터에만 지나치게 맞춰져 새 데이터에서 성능이 떨어지는 현상은?|과대적합|과적합',
+      '학습이 부족해 성능이 낮은 현상은?|과소적합',
+      '전체 예측 중 맞힌 비율은?|정확도',
+      '모델 평가를 위해 따로 남겨 둔 데이터는?|테스트데이터',
+      '예측값과 실제값의 차이를 계산하는 함수는?|손실함수',
+    ]],
+  ]],
+  3: ['딥러닝과 활용', [
+    ['인공 신경망', [
+      '뇌의 뉴런을 본뜬 계산 모델은?|인공신경망',
+      '입력에 가중치를 곱해 더한 뒤 출력하는 가장 단순한 신경망은?|퍼셉트론',
+      '신경망에서 다음 층으로 보낼 출력값을 정하는 함수는?|활성화함수',
+      '은닉층이 여러 개인 깊은 신경망 학습은?|딥러닝',
+      '오차를 거꾸로 전달하며 가중치를 수정하는 방법은?|오차역전파',
+    ]],
+    ['딥러닝 응용', [
+      '이미지 인식에 주로 쓰이는 합성곱 신경망(영문 약자)은?|CNN',
+      '순서가 있는 데이터를 처리하는 순환 신경망(영문 약자)은?|RNN',
+      '사람의 언어를 컴퓨터가 이해·생성하는 분야는?|자연어처리',
+      '방대한 텍스트로 학습한 대규모 언어 모델(영문 약자)은?|LLM',
+      '원하는 답을 얻도록 AI에게 주는 지시문은?|프롬프트',
+    ]],
+    ['종합 (기존 인공지능 퀴즈)', 'AI_QUIZ_QUESTIONS'],
+  ]],
+});
+
+SUBJ('datasci', '데이터 과학', '📊', 8, {
+  1: ['데이터의 이해', [
+    ['데이터의 종류', [
+      '행과 열로 정리된 데이터는?|정형데이터',
+      '이미지·영상처럼 정해진 형식이 없는 데이터는?|비정형데이터',
+      '규모·속도·다양성이 매우 큰 데이터는?|빅데이터',
+      '키·몸무게처럼 숫자로 측정되는 데이터는?|수치형데이터|양적데이터',
+      '혈액형처럼 범주로 구분되는 데이터는?|범주형데이터|질적데이터',
+    ]],
+    ['데이터 수집', [
+      '정부·공공기관이 개방한 데이터는?|공공데이터',
+      '웹 페이지에서 자동으로 데이터를 수집하는 기술은?|크롤링|웹크롤링',
+      '쉼표로 값을 구분한 텍스트 파일 형식은?|CSV',
+      '프로그램끼리 데이터를 주고받는 인터페이스(영문 약자)는?|API',
+      '전체 집단 중 일부를 뽑아 조사한 집단은?|표본',
+    ]],
+  ]],
+  2: ['데이터 분석', [
+    ['데이터 전처리', [
+      '비어 있는 값을 무엇이라 하는가?|결측치',
+      '다른 값들과 크게 동떨어진 값은?|이상치',
+      '값의 범위를 0~1로 맞추는 것은?|정규화',
+      '분석하기 쉽게 데이터를 정리하는 과정은?|전처리|데이터전처리',
+      '파이썬에서 표 형태 데이터를 다루는 라이브러리는?|pandas',
+    ]],
+    ['데이터 시각화', [
+      '시간에 따른 변화를 보기 좋은 그래프는?|꺾은선그래프|선그래프',
+      '전체에 대한 비율을 나타내는 둥근 그래프는?|원그래프|파이차트',
+      '두 변수의 관계를 점으로 나타낸 그래프는?|산점도',
+      '도수 분포를 붙은 막대로 나타낸 그래프는?|히스토그램',
+      '파이썬의 대표적인 그래프 라이브러리는?|matplotlib',
+    ]],
+    ['통계 분석', [
+      '크기순으로 나열했을 때 가운데 값은?|중앙값',
+      '가장 많이 나타나는 값은?|최빈값',
+      '두 변수가 함께 변하는 관계는?|상관관계',
+      '상관계수의 범위는 -1부터 몇까지?|1',
+      '1, 2, 3, 4, 5의 평균은?|3',
+    ]],
+  ]],
+  3: ['데이터 모델링과 윤리', [
+    ['예측 모델', [
+      '데이터를 가장 잘 나타내는 직선을 찾는 방법은?|선형회귀',
+      '원인이 되는 변수는?|독립변수',
+      '결과가 되는 변수는?|종속변수',
+      '모델 학습에 쓰는 데이터는?|훈련데이터|학습데이터',
+      '오차를 제곱해 평균한 평가 지표(영문 약자)는?|MSE',
+    ]],
+    ['데이터 윤리', [
+      '개인을 알아볼 수 없도록 정보를 처리하는 것은?|비식별화|익명화',
+      '자기 정보의 이용 범위를 스스로 결정할 권리는?|개인정보자기결정권',
+      '개인정보를 수집할 때 정보 주체에게 받아야 하는 것은?|동의',
+      '한 변수가 원인이 되어 다른 변수를 변화시키는 관계는?|인과관계',
+      '표본이 모집단을 대표하지 못해 생기는 오류는?|표본편향|표집편향',
+    ]],
+    ['종합 (기존 데이터과학 퀴즈)', 'DATASCIENCE_QUIZ_QUESTIONS'],
+  ]],
+});
+
+// ---------- 교과 퀴즈 엔진 ----------
+function toChosung(str) {
+  const CH = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+  return [...str].map(c => {
+    const code = c.charCodeAt(0) - 0xAC00;
+    return (code >= 0 && code < 11172) ? CH[Math.floor(code / 588)] : c;
+  }).join('');
+}
+function curriculumQuestion(line) {
+  const parts = line.split('|');
+  const question = parts[0].trim();
+  const answers = parts.slice(1).map(s => s.trim()).filter(Boolean);
+  const first = answers[0] || '';
+  let hint = '';
+  if (/[가-힣]/.test(first)) hint = ' ' + toChosung(first.replace(/\s+/g, ''));
+  else if (/^[a-z][a-z ]+$/.test(first) && !/\(/.test(question)) hint = ' (' + first[0] + '로 시작, ' + first.replace(/ /g, '').length + '글자)';
+  return { question: question + hint, answer: answers.length > 1 ? answers : first };
+}
+function unitBank(unit) {
+  const data = unit[1];
+  if (typeof data === 'string') return (typeof window[data] !== 'undefined' ? window[data] : eval(data)) || [];
+  return data.map(curriculumQuestion);
+}
+
+
+
+</script>
+<script>
+// =====================================================================
+// 게임 엔진 (서버 없이 브라우저 안에서 전부 동작 / 다른 참가자는 봇)
+// =====================================================================
+const MAX_PLAYERS = 35, START_ROW = 3, MAX_ROW = 10;
+const NEXT_ROUND_DELAY = 1800, COUNTDOWN_STEP_MS = 700;
+const STAGE_TOP_PAD = 0, STAGE_BOTTOM_PAD = 22;
+
+const ROOMS = {
+  typing:      { mode: 'typing',    label: '⌨️ 타자연습' },
+  common:      { mode: 'quiz',      label: '📚 상식 퀴즈',     bank: COMMON_QUIZ_QUESTIONS },
+  haewon:      { mode: 'quiz',      label: '🏫 해원고 퀴즈',   bank: HAEWON_QUIZ_QUESTIONS },
+  quiz:        { mode: 'quiz',      label: '💻 정보',     bank: JUNGBO_QUIZ_QUESTIONS, fixed: 5 },
+  ai:          { mode: 'quiz',      label: '🤖 인공지능 기초', bank: AI_QUIZ_QUESTIONS, fixed: 5 },
+  datascience: { mode: 'quiz',      label: '📊 데이터 과학', bank: DATASCIENCE_QUIZ_QUESTIONS, fixed: 5 },
+  wordchain:   { mode: 'wordchain', label: '🔤 끝말잇기' },
+  narak:       { mode: 'quiz',      label: '🔥 나락퀴즈',      bank: NARAK_QUIZ_QUESTIONS },
+  chosung:     { mode: 'quiz',      label: '🈂️ 초성퀴즈',     bank: CHOSUNG_QUIZ_QUESTIONS },
+};
+
+const BOT_NAMES = ['민준','서연','도윤','하은','지호','수아','예준','지우','시우','서윤','주원','다은','건우','채원','현우','지민','유준','나은','승민','소율','태양','하린','준서','윤서','민재','아린','은우','세아','정우','예린','시윤','하준','가온','리아','도현'];
+const DICT_SET = new Set(WORDCHAIN_DICTIONARY);
+
+function getRoundTime(round) {
+  if (round <= 10) return 5;
+  if (round <= 20) return 4;
+  if (round <= 26) return 3;
+  if (round <= 31) return 2;
+  return 1;
+}
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function rand(a, b) { return a + Math.random() * (b - a); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+// 끝말잇기: 첫 글자별 단어 색인 (봇이 단어를 고를 때 사용)
+const CHAIN_INDEX = {};
+WORDCHAIN_DICTIONARY.forEach(w => { if (w.length >= 2 && /^[가-힣]+$/.test(w)) (CHAIN_INDEX[w[0]] = CHAIN_INDEX[w[0]] || []).push(w); });
+
+function checkChainWord(chainWord, usedWords, raw) {
+  const w = (raw || '').toString().trim();
+  if (w.length < 2) return { ok: false, reason: '두 글자 이상 입력해야 해요.' };
+  if (!/^[가-힣]+$/.test(w)) return { ok: false, reason: '한글 단어만 입력할 수 있어요.' };
+  const lastChar = chainWord[chainWord.length - 1];
+  if (w[0] !== lastChar) return { ok: false, reason: `"${lastChar}"(으)로 시작해야 해요.` };
+  if (usedWords.has(w)) return { ok: false, reason: '이미 나온 단어예요.' };
+  if (!DICT_SET.has(w)) return { ok: false, reason: '사전에 없는 단어예요.' };
+  return { ok: true, word: w };
+}
+
+// ---------- 사운드 (Web Audio API) ----------
+const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function ensureAudio() {
+  try {
+    if (!audioCtx) audioCtx = new AudioCtxClass();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (e) {}
+}
+function playTone(freq, duration, type, volume, delay) {
+  if (!audioCtx) return;
+  delay = delay || 0;
+  const t0 = audioCtx.currentTime + delay;
+  const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+  osc.type = type || 'sine'; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(volume, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0 + duration + 0.02);
+}
+function playCountdownBeep(n) { playTone(n === 1 ? 880 : (n === 2 ? 659 : 523), 0.22, 'square', 0.3); }
+function playCorrectSound() { playTone(784.0, 0.14, 'sine', 0.28, 0); playTone(1046.5, 0.2, 'sine', 0.28, 0.11); }
+function playFallSound() {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(520, t0);
+  osc.frequency.exponentialRampToValueAtTime(90, t0 + 0.35);
+  gain.gain.setValueAtTime(0.25, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0 + 0.42);
+}
+function playSplashSound() {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime;
+  const size = Math.floor(audioCtx.sampleRate * 0.3);
+  const buffer = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < size; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / size);
+  const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.3, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.3);
+  const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 700;
+  noise.connect(filter).connect(gain).connect(audioCtx.destination);
+  noise.start(t0);
+}
+function playBonusSound() {
+  playTone(880, 0.12, 'sine', 0.22, 0.02);
+  playTone(1174.7, 0.12, 'sine', 0.22, 0.1);
+  playTone(1568, 0.18, 'sine', 0.24, 0.18);
+}
+
+// ---------- DOM ----------
+const $ = id => document.getElementById(id);
+const screens = { login: $('screen-login'), waiting: $('screen-waiting'), game: $('screen-game'), result: $('screen-result') };
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+}
+const nicknameInput = $('nickname-input'), loginError = $('login-error');
+const waitingGrid = $('waiting-grid'), waitingCount = $('waiting-count'), waitingRoomLabel = $('waiting-room-label');
+const btnStart = $('btn-start'), langSelect = $('lang-select'), langBtnEn = $('lang-btn-en'), langBtnKr = $('lang-btn-kr');
+const botCountEl = $('bot-count');
+const playersLayer = $('players-layer'), roundLabel = $('round-label'), aliveLabel = $('alive-label');
+const timerBar = $('timer-bar'), wordDisplay = $('word-display'), answerInput = $('answer-input'), answerFeedback = $('answer-feedback');
+const countdownOverlay = $('countdown-overlay'), countdownNumberEl = $('countdown-number'), chainHintEl = $('chain-hint');
+const pauseOverlay = $('pause-overlay'), rankingOverlay = $('ranking-overlay');
+
+// ---------- 상태 ----------
+let G = null;                // 현재 방 상태
+let selectedRoom = 'subject:kor';
+let botCount = 14;
+let myName = '';
+let myAnimal = null;
+let wordLanguage = 'en';
+let alreadyAnswered = false;
+let escPaused = false, rankPaused = false;
+let paused = false, pauseStart = null, pauseOffset = 0;
+
+function vNow() { return paused ? (pauseStart - pauseOffset) : (Date.now() - pauseOffset); }
+function syncPause() {
+  const want = escPaused || rankPaused;
+  if (want && !paused) { paused = true; pauseStart = Date.now(); }
+  else if (!want && paused) { pauseOffset += Date.now() - pauseStart; paused = false; pauseStart = null; }
+}
+function resetPauseState() {
+  escPaused = false; rankPaused = false; paused = false; pauseStart = null; pauseOffset = 0;
+  pauseOverlay.classList.add('hidden'); rankingOverlay.classList.add('hidden');
+}
+
+// ---------- 로그인 ----------
+function selectRoomBtn(btn) {
+  document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedRoom = btn.dataset.room;
+  renderUnitPicker();
+}
+
+// ---------- 교과별 퀴즈: 과목 → 학년 → 대단원 ----------
+const subjPick = { id: null, grade: 1, unit: 'all' };
+(function buildSubjectGrid() {
+  const grid = $('subject-grid');
+  CURRICULUM.forEach(sub => {
+    const b = document.createElement('button');
+    b.className = 'room-btn subject-btn';
+    b.dataset.room = 'subject:' + sub.id;
+    b.innerHTML = '<span class="room-emoji">' + sub.emoji + '</span><span class="room-name">' + sub.name + '</span><span class="room-desc"></span>';
+    grid.appendChild(b);
+  });
+  renderGradeTabs();
+})();
+// 학년 선택 (고1 · 고2 · 고3)
+function renderGradeTabs() {
+  const tabs = $('grade-tabs'); tabs.innerHTML = '';
+  [1, 2, 3].forEach(g => {
+    const t = document.createElement('button');
+    t.textContent = '고등학교 ' + g + '학년';
+    if (g === subjPick.grade) t.className = 'on';
+    t.onclick = () => { subjPick.grade = g; subjPick.unit = 'all'; renderGradeTabs(); renderUnitPicker(); };
+    tabs.appendChild(t);
+  });
+  // 과목 버튼 아래에 해당 학년 과목명 표시
+  document.querySelectorAll('#subject-grid .room-btn').forEach(b => {
+    const sub = CURRICULUM.find(x => 'subject:' + x.id === b.dataset.room);
+    b.querySelector('.room-desc').textContent = sub.grades[subjPick.grade][0];
+  });
+}
+function currentSubject() { return CURRICULUM.find(x => 'subject:' + x.id === selectedRoom); }
+function renderUnitPicker() {
+  const picker = $('unit-picker');
+  const sub = currentSubject();
+  if (!sub) { picker.classList.add('hidden'); return; }
+  if (subjPick.id !== sub.id) { subjPick.id = sub.id; subjPick.unit = 'all'; }
+  picker.classList.remove('hidden');
+  const [course, units] = sub.grades[subjPick.grade];
+  $('unit-course').innerHTML = '';
+  
+  const bEl = document.createElement('b'); bEl.textContent = '고' + subjPick.grade + ' ' + sub.name + ' — ' + course; $('unit-course').append(bEl, ' · 대단원을 고르세요');
+  const chips = $('unit-chips'); chips.innerHTML = '';
+  const total = units.reduce((n, u) => n + unitBank(u).length, 0);
+  const mk = (key, label, count) => {
+    const c = document.createElement('button');
+    c.textContent = label;
+    const sm = document.createElement('small'); sm.textContent = count; c.appendChild(sm);
+    if (String(subjPick.unit) === String(key)) c.className = 'on';
+    c.onclick = () => { subjPick.unit = key; renderUnitPicker(); };
+    chips.appendChild(c);
+  };
+  mk('all', '전체', total);
+  units.forEach((u, i) => mk(i, u[0], unitBank(u).length));
+  registerSubjectRoom();
+}
+function registerSubjectRoom() {
+  const sub = currentSubject(); if (!sub) return;
+  const [course, units] = sub.grades[subjPick.grade];
+  const chosen = subjPick.unit === 'all' ? units : [units[subjPick.unit]];
+  const bank = chosen.flatMap(unitBank);
+  const unitName = subjPick.unit === 'all' ? '전체' : units[subjPick.unit][0];
+  ROOMS[selectedRoom] = { mode: 'quiz', label: sub.emoji + ' ' + sub.name + ' ' + subjPick.grade + '학년 · ' + unitName, bank, fixed: sub.time };
+}
+$('screen-login').addEventListener('click', e => {
+  const btn = e.target.closest('.room-btn');
+  if (btn) selectRoomBtn(btn);
+});
+
+// =========================================================
+// 멀티플레이: 실시간 서버(Render) 주소를 아래 따옴표 안에 넣으세요.
+//   예) const MULTIPLAY_URL = 'https://haewon-quiz.onrender.com';
+// =========================================================
+const MULTIPLAY_URL = '';
+$('btn-multi').addEventListener('click', () => {
+  if (!MULTIPLAY_URL) { loginError.textContent = '멀티플레이 서버 주소가 아직 설정되지 않았어요.'; return; }
+  window.open(MULTIPLAY_URL, '_blank', 'noopener');
+});
+
+// =========================================================
+// 선생님 문제: 선생님용 페이지(ai-quiz-teacher.html)에서 만든 세트
+//  - 같은 PC·같은 사이트면 자동으로 보이고,
+//  - 다른 PC는 선생님이 보낸 링크(#q=...)로 받습니다.
+// =========================================================
+const T_KEY = 'aiquiz.customSets.v1';
+let customSets = [];
+function tLoad() { try { customSets = JSON.parse(localStorage.getItem(T_KEY) || '[]') || []; } catch (e) { customSets = []; } }
+function tSave() { try { localStorage.setItem(T_KEY, JSON.stringify(customSets)); } catch (e) {} registerCustomRooms(); }
+function tId() { return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function splitAnswers(a) { return String(a).split(',').map(x => x.trim()).filter(Boolean); }
+function registerCustomRooms() {
+  Object.keys(ROOMS).forEach(k => { if (k.startsWith('custom:')) delete ROOMS[k]; });
+  const wrap = $('custom-wrap'), box = $('custom-select');
+  box.innerHTML = '';
+  customSets.forEach(set => {
+    const bank = set.questions.filter(q => q.q && q.a).map(q => {
+      const ans = splitAnswers(q.a);
+      return { question: q.q, answer: ans.length > 1 ? ans : ans[0] };
+    });
+    if (!bank.length) return;
+    const key = 'custom:' + set.id;
+    ROOMS[key] = { mode: 'quiz', label: '✏️ ' + set.name, bank, fixed: set.time || 10 };
+    const b = document.createElement('button');
+    b.className = 'room-btn subject-btn custom-btn';
+    b.dataset.room = key;
+    b.innerHTML = '<span class="room-emoji">✏️</span><span class="room-name"></span><span class="room-desc"></span>';
+    b.querySelector('.room-name').textContent = set.name;
+    b.querySelector('.room-desc').textContent = bank.length + '문제 · ' + (set.time || 10) + '초';
+    if (selectedRoom === key) b.classList.add('selected');
+    box.appendChild(b);
+  });
+  wrap.classList.toggle('hidden', !box.children.length);
+  if (selectedRoom.startsWith('custom:') && !ROOMS[selectedRoom]) {
+    selectedRoom = 'subject:kor';
+    selectRoomBtn(document.querySelector('.room-btn[data-room="subject:kor"]'));
+  }
+}
+
+function decodeSet(str) {
+  const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const o = JSON.parse(decodeURIComponent(escape(atob(b64))));
+  return { srcId: o.i || null, name: String(o.n || '공유된 문제').slice(0, 20), time: o.t || 10, questions: (o.q || []).map(x => ({ q: String(x[0]), a: String(x[1]) })) };
+}
+// 선생님용 페이지에서 문제를 바꾸면 바로 반영
+window.addEventListener('storage', e => { if (e.key === T_KEY) { tLoad(); registerCustomRooms(); } });
+
+// 시작 시: 저장된 세트 불러오기 + 공유 링크 처리
+tLoad();
+(function handleSharedLink() {
+  const m = location.hash.match(/^#q=(.+)$/);
+  if (!m) return;
+  try {
+    const shared = decodeSet(m[1]);
+    const code = m[1].slice(0, 40);
+    let set = customSets.find(s => (shared.srcId && (s.id === shared.srcId || s.srcId === shared.srcId)) || s.shareCode === code);
+    if (!set) { set = Object.assign({ id: tId(), shareCode: code }, shared); customSets.push(set); }
+    else Object.assign(set, shared);
+    tSave();
+    selectedRoom = 'custom:' + set.id;
+    history.replaceState(null, '', location.href.split('#')[0]);
+  } catch (e) {}
+})();
+registerCustomRooms();
+{ const b = document.querySelector('.room-btn[data-room="' + selectedRoom + '"]'); if (b) selectRoomBtn(b); }
+
+$('btn-join').addEventListener('click', doJoin);
+nicknameInput.addEventListener('keydown', e => { if (e.key === 'Enter') doJoin(); });
+
+function doJoin() {
+  ensureAudio();
+  const nick = nicknameInput.value.trim();
+  if (!nick) { loginError.textContent = '닉네임을 입력해주세요.'; return; }
+  loginError.textContent = '';
+  myName = nick.slice(0, 10);
+  const cfg = ROOMS[selectedRoom];
+  if (!cfg || (cfg.mode === 'quiz' && !cfg.bank.length)) { loginError.textContent = '문제가 없는 방이에요.'; return; }
+  G = {
+    roomId: selectedRoom, mode: cfg.mode, label: cfg.label, bank: cfg.bank || null, fixed: cfg.fixed || null,
+    quizTotal: cfg.mode === 'quiz' ? cfg.bank.length : null,
+    players: {}, order: [], gameState: 'waiting',
+    round: 0, eliminationCounter: 0, quizOrder: [],
+    answerList: [], questionText: '', roundTime: 5, deadline: 0, resultEnd: 0,
+    cdStep: 3, cdStart: 0, roundAnswered: {}, firstAwarded: false,
+    chainWord: null, usedWords: new Set(), roundWinner: null,
+  };
+  myAnimal = pick(ANIMALS);
+  buildPlayers();
+  renderWaitingRoom();
+  showScreen('waiting');
+}
+
+function makePlayer(id, nickname, animal, isBot) {
+  return {
+    id, nickname, animal, isBot, isHost: !isBot,
+    row: START_ROW, wrongCount: 0, correctCount: 0, eliminated: false, eliminatedAt: null,
+    acc: isBot ? rand(0.4, 0.92) : 1, speed: isBot ? rand(0.18, 0.6) : 0, plan: null,
+  };
+}
+function buildPlayers() {
+  G.players = {};
+  G.players.me = makePlayer('me', myName, myAnimal, false);
+  const animals = shuffle(ANIMALS.filter(a => a.id !== myAnimal.id));
+  const names = shuffle(BOT_NAMES);
+  for (let i = 0; i < botCount; i++) {
+    const id = 'b' + i;
+    G.players[id] = makePlayer(id, names[i % names.length], animals[i % animals.length], true);
+  }
+}
+
+// ---------- 대기실 ----------
+function renderWaitingRoom() {
+  const list = Object.values(G.players);
+  waitingRoomLabel.textContent = G.label;
+  waitingCount.textContent = `(${list.length}/${MAX_PLAYERS})`;
+  botCountEl.textContent = botCount;
+  waitingGrid.innerHTML = '';
+  list.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'waiting-card' + (p.isBot ? ' bot' : '');
+    card.innerHTML = `<div class="emoji">${p.animal.emoji}</div><div class="name">${escapeHtml(p.nickname)}</div>${p.isHost ? '<div class="host-badge">HOST (나)</div>' : ''}`;
+    waitingGrid.appendChild(card);
+  });
+  langSelect.classList.toggle('hidden', G.mode !== 'typing');
+  langBtnEn.classList.toggle('selected', wordLanguage === 'en');
+  langBtnKr.classList.toggle('selected', wordLanguage === 'kr');
+}
+langBtnEn.addEventListener('click', () => { wordLanguage = 'en'; renderWaitingRoom(); });
+langBtnKr.addEventListener('click', () => { wordLanguage = 'kr'; renderWaitingRoom(); });
+$('bot-minus').addEventListener('click', () => { if (botCount > 1) { botCount--; buildPlayers(); renderWaitingRoom(); } });
+$('bot-plus').addEventListener('click', () => { if (botCount < MAX_PLAYERS - 1) { botCount++; buildPlayers(); renderWaitingRoom(); } });
+
+$('btn-back-to-login').addEventListener('click', () => {
+  stopLoop(); resetPauseState();
+  G = null;
+  nicknameInput.value = ''; loginError.textContent = '';
+  showScreen('login');
+});
+btnStart.addEventListener('click', () => { ensureAudio(); startGame(); });
+
+// ---------- 게임 진행 ----------
+let loopId = null;
+function startLoop() { stopLoop(); loopId = setInterval(tick, 50); }
+function stopLoop() { clearInterval(loopId); loopId = null; }
+
+const activePlayers = () => Object.values(G.players).filter(p => !p.eliminated);
+const me = () => G.players.me;
+// 내가 탈락한 뒤에는 관전 중이므로 진행을 빠르게 합니다.
+const spectating = () => me().eliminated;
+const cdStepMs = () => spectating() ? 250 : COUNTDOWN_STEP_MS;
+const resultDelay = () => spectating() ? 650 : NEXT_ROUND_DELAY;
+
+function computeRanking() {
+  return Object.values(G.players).slice().sort((a, b) => {
+    if (a.eliminated !== b.eliminated) return a.eliminated ? 1 : -1;
+    if (!a.eliminated) {
+      if (a.row !== b.row) return a.row - b.row;
+      return a.wrongCount - b.wrongCount;
+    }
+    return (b.eliminatedAt || 0) - (a.eliminatedAt || 0);
+  });
+}
+
+function startGame() {
+  resetPauseState();
+  G.round = 0; G.eliminationCounter = 0;
+  Object.values(G.players).forEach(p => { p.row = START_ROW; p.wrongCount = 0; p.correctCount = 0; p.eliminated = false; p.eliminatedAt = null; p.plan = null; });
+  if (G.mode === 'quiz') G.quizOrder = shuffle(G.bank.map((_, i) => i));
+  if (G.mode === 'wordchain') {
+    G.usedWords = new Set();
+    G.chainWord = pick(WORDCHAIN_SEED_WORDS);
+    G.usedWords.add(G.chainWord);
+  }
+  G.order = shuffle(Object.keys(G.players));
+  buildPlayerTokens();
+  showScreen('game');
+  startLoop();
+  beginRound();
+}
+
+function rowToTopPercent(row) {
+  const usable = 100 - STAGE_TOP_PAD - STAGE_BOTTOM_PAD;
+  return Math.max(0, Math.min(100, STAGE_TOP_PAD + (row / MAX_ROW) * usable));
+}
+function buildPlayerTokens() {
+  playersLayer.innerHTML = '';
+  const n = G.order.length;
+  G.order.forEach((id, idx) => {
+    const p = G.players[id];
+    const token = document.createElement('div');
+    token.className = 'player-token' + (id === 'me' ? ' me' : '');
+    token.id = 'token-' + id;
+    token.style.left = (((idx + 0.5) / n) * 100) + '%';
+    token.style.top = rowToTopPercent(p.row) + '%';
+    token.innerHTML = `<div class="emoji">${p.animal.emoji}</div><div class="name">${escapeHtml(p.nickname)}</div>`;
+    playersLayer.appendChild(token);
+  });
+}
+const formatRoundLabel = r => G.quizTotal ? `문제 ${r}/${G.quizTotal}` : `라운드 ${r}`;
+
+function beginRound() {
+  const active = activePlayers();
+  if (active.length <= 1) { endGame(active[0] || null); return; }
+  if (G.mode === 'quiz' && G.round >= G.quizTotal) { endGame(computeRanking()[0]); return; }
+  G.round++;
+  G.roundAnswered = {};
+  G.gameState = 'countdown';
+  G.cdStep = 3;
+  G.cdStart = vNow();
+
+  alreadyAnswered = false;
+  timerBar.style.width = '0%';
+  wordDisplay.textContent = '';
+  chainHintEl.classList.add('hidden');
+  answerFeedback.textContent = ''; answerFeedback.className = '';
+  answerInput.value = ''; answerInput.disabled = true;
+  roundLabel.textContent = formatRoundLabel(G.round);
+  aliveLabel.textContent = `생존 ${active.length}명`;
+  showCountdown(3);
+}
+function showCountdown(n) {
+  countdownOverlay.classList.remove('hidden');
+  countdownNumberEl.textContent = n;
+  countdownNumberEl.classList.remove('pop');
+  void countdownNumberEl.offsetWidth;
+  countdownNumberEl.classList.add('pop');
+  playCountdownBeep(n);
+}
+
+function startQuestionPhase() {
+  G.gameState = 'question';
+  G.roundWinner = null;
+  if (G.mode === 'quiz') {
+    const q = G.bank[G.quizOrder[(G.round - 1) % G.quizOrder.length]];
+    G.answerList = (Array.isArray(q.answer) ? q.answer : [q.answer]).filter(Boolean);
+    G.questionText = q.question;
+  } else if (G.mode === 'wordchain') {
+    G.answerList = [];
+    G.questionText = G.chainWord;
+  } else {
+    const pool = wordLanguage === 'kr' ? WORDS_KR : WORDS;
+    const w = pick(pool);
+    G.answerList = [w];
+    G.questionText = w;
+  }
+  G.roundTime = G.fixed || getRoundTime(G.round);
+  G.deadline = vNow() + G.roundTime * 1000;
+  G.firstAwarded = false;
+  planBots();
+
+  countdownOverlay.classList.add('hidden');
+  roundLabel.textContent = formatRoundLabel(G.round);
+  aliveLabel.textContent = `생존 ${activePlayers().length}명`;
+  wordDisplay.textContent = G.questionText;
+  wordDisplay.classList.toggle('quiz-mode', !!G.quizTotal);
+  answerFeedback.textContent = ''; answerFeedback.className = '';
+  answerInput.value = '';
+  alreadyAnswered = false;
+  if (G.mode === 'wordchain') {
+    const last = G.chainWord[G.chainWord.length - 1];
+    chainHintEl.innerHTML = `<b>"${escapeHtml(last)}"</b>(으)로 시작하는 단어를 가장 먼저 입력하세요!`;
+    chainHintEl.classList.remove('hidden');
+  } else chainHintEl.classList.add('hidden');
+
+  if (me().eliminated) {
+    answerInput.disabled = true;
+    answerInput.placeholder = '탈락하여 관전 중입니다';
+  } else {
+    answerInput.disabled = false;
+    answerInput.placeholder = '여기에 정답을 입력하세요';
+    answerInput.focus();
+  }
+}
+
+// ---- 봇: 각 라운드 시작 때 "언제, 무엇을" 제출할지 미리 계산 ----
+function planBots() {
+  const now = vNow();
+  const limitMs = G.roundTime * 1000;
+  const pressure = Math.min(1, G.roundTime / 4);       // 제한시간이 짧을수록 정확도 ↓
+  const timeScale = spectating() ? 0.3 : 1;            // 관전 중에는 빠르게 진행
+  Object.values(G.players).forEach(b => {
+    b.plan = null;
+    if (!b.isBot || b.eliminated) return;
+    if (G.mode === 'wordchain') {
+      const last = G.chainWord[G.chainWord.length - 1];
+      const cands = (CHAIN_INDEX[last] || []).filter(w => !G.usedWords.has(w));
+      const r = Math.random();
+      let text = null;
+      if (cands.length && r < b.acc * 0.55 * (0.5 + 0.5 * pressure)) text = pick(cands);
+      else if (r > 0.9) text = '틀린말';
+      if (text === null && !spectating()) return;      // 이번 라운드는 제출 안 함(시간초과)
+      if (text === null) text = '틀린말';
+      b.plan = { at: now + limitMs * rand(0.25, 0.92) * (b.speed + 0.4) * timeScale, text };
+      return;
+    }
+    const effAcc = b.acc * (0.55 + 0.45 * pressure);
+    const correct = Math.random() < effAcc;
+    if (!spectating() && Math.random() < 0.04) return; // 가끔 아예 못 푸는 경우
+    const t = Math.min(limitMs * 0.95, limitMs * (b.speed + rand(0, 0.28))) * timeScale;
+    b.plan = { at: now + Math.max(250 * timeScale, t), text: correct ? G.answerList[0] : '__wrong__' };
+  });
+}
+
+function tick() {
+  if (!G || paused) { updateTimerBar(); return; }
+  const now = vNow();
+  if (G.gameState === 'countdown') {
+    if (now - G.cdStart >= cdStepMs()) {
+      if (G.cdStep > 1) { G.cdStep--; G.cdStart = now; showCountdown(G.cdStep); }
+      else startQuestionPhase();
+    }
+  } else if (G.gameState === 'question') {
+    const bots = Object.values(G.players).filter(p => p.isBot && !p.eliminated && p.plan && !G.roundAnswered[p.id]);
+    bots.sort((a, b) => a.plan.at - b.plan.at);
+    for (const b of bots) {
+      if (G.gameState !== 'question') break;
+      if (now >= b.plan.at) submitAnswerFor(b, b.plan.text);
+    }
+    if (G.gameState === 'question' && now >= G.deadline) finishRound();
+  } else if (G.gameState === 'result') {
+    if (now >= G.resultEnd) beginRound();
+  }
+  updateTimerBar();
+}
+
+function updateTimerBar() {
+  if (!G || G.gameState !== 'question') return;
+  const remain = Math.max(0, G.deadline - vNow());
+  const pct = Math.max(0, (remain / (G.roundTime * 1000)) * 100);
+  timerBar.style.width = pct + '%';
+  timerBar.style.background = pct < 30 ? '#ff6b6b' : '#ffb347';
+}
+
+function applyAnswer(p, correct, extra) {
+  let firstBonus = false;
+  if (correct) {
+    p.correctCount++;
+    if (!G.firstAwarded) { G.firstAwarded = true; firstBonus = true; p.row -= 1.2; }
+    else p.row -= 1;
+  } else {
+    p.wrongCount++;
+    p.row = Math.min(p.row + 1, MAX_ROW);
+    if (p.row >= MAX_ROW && !p.eliminated) { p.eliminated = true; p.eliminatedAt = ++G.eliminationCounter; }
+  }
+  onAnswerResult(Object.assign({
+    id: p.id, correct, row: p.row, eliminated: p.eliminated, firstBonus,
+    correctAnswer: G.mode === 'wordchain' ? null : G.answerList.join(' / '),
+  }, extra || {}));
+}
+
+function submitAnswerFor(p, text) {
+  if (G.gameState !== 'question' || p.eliminated || G.roundAnswered[p.id]) return;
+  G.roundAnswered[p.id] = true;
+  if (G.mode === 'wordchain') {
+    const check = checkChainWord(G.chainWord, G.usedWords, text);
+    if (check.ok) {
+      G.usedWords.add(check.word);
+      G.chainWord = check.word;
+      G.roundWinner = { id: p.id, nickname: p.nickname, word: check.word };
+      applyAnswer(p, true, { chainWord: check.word });
+      finishRound();
+    } else {
+      applyAnswer(p, false, { reason: check.reason });
+      maybeFinishEarly();
+    }
+    return;
+  }
+  const clean = v => (v || '').toString().replace(/[\s·.ㆍ]+/g, '').toLowerCase();
+  const norm = clean(text);
+  const correct = G.answerList.some(a => clean(a) === norm);
+  applyAnswer(p, correct);
+  maybeFinishEarly();
+}
+function maybeFinishEarly() {
+  if (G.gameState !== 'question') return;
+  if (activePlayers().every(p => G.roundAnswered[p.id])) finishRound();
+}
+
+function finishRound() {
+  if (G.gameState !== 'question') return;
+  G.gameState = 'result';
+  const meWasOut = me().eliminated;
+  activePlayers().forEach(p => {
+    if (G.roundAnswered[p.id]) return;
+    G.roundAnswered[p.id] = true;
+    const extra = G.mode === 'wordchain' && G.roundWinner
+      ? { chainWinnerNickname: G.roundWinner.nickname, chainWinnerWord: G.roundWinner.word } : undefined;
+    applyAnswer(p, false, extra);
+  });
+  // 끝말잇기: 아무도 못 이었으면 새 시작 단어로 넘어갑니다.
+  if (G.mode === 'wordchain' && !G.roundWinner) {
+    G.chainWord = pick(WORDCHAIN_SEED_WORDS);
+    G.usedWords.add(G.chainWord);
+  }
+  // 이미 탈락한 내가 관전 중일 때는 정답을 알려줍니다.
+  if (meWasOut && G.mode !== 'wordchain') {
+    answerFeedback.textContent = `정답: ${G.answerList.join(' / ')}`;
+    answerFeedback.className = 'reveal-answer';
+  } else if (meWasOut && G.roundWinner) {
+    answerFeedback.textContent = `${G.roundWinner.nickname}님이 "${G.roundWinner.word}"(으)로 이었어요.`;
+    answerFeedback.className = 'reveal-answer';
+  }
+  G.resultEnd = vNow() + resultDelay();
+}
+
+// 정답/오답이 확정되는 즉시 토큰 이동 + (내 결과면) 소리·메시지
+function onAnswerResult({ id, correct, row, eliminated, firstBonus, correctAnswer, reason, chainWord, chainWinnerNickname, chainWinnerWord }) {
+  const token = $('token-' + id);
+  if (token) {
+    token.style.top = rowToTopPercent(row) + '%';
+    token.classList.remove('wrong-flash', 'correct-flash', 'first-bonus');
+    void token.offsetWidth;
+    token.classList.add(correct ? 'correct-flash' : 'wrong-flash');
+    if (firstBonus) token.classList.add('first-bonus');
+    if (eliminated) setTimeout(() => token.classList.add('eliminated'), 250);
+  }
+  aliveLabel.textContent = `생존 ${activePlayers().length}명`;
+  if (id !== 'me') return;
+
+  const fail = (msg) => {
+    answerFeedback.textContent = msg; answerFeedback.className = 'wrong';
+    playFallSound();
+    if (eliminated) setTimeout(playSplashSound, 300);
+  };
+  if (G.mode === 'wordchain') {
+    if (correct) {
+      answerFeedback.textContent = `⚡ 성공! "${chainWord}" 로 이었어요! (위로 1.2칸 이동)`;
+      answerFeedback.className = 'correct';
+      playCorrectSound(); playBonusSound();
+    } else if (reason) fail(`${reason} (아래로 한 칸 이동)`);
+    else if (chainWinnerNickname) fail(`너무 늦었어요! ${chainWinnerNickname}님이 "${chainWinnerWord}"로 먼저 이었어요. (아래로 한 칸 이동)`);
+    else fail('시간 초과! 아무도 다음 단어를 찾지 못했어요. (아래로 한 칸 이동)');
+  } else if (correct && firstBonus) {
+    answerFeedback.textContent = '⚡ 1등 정답! 1.2칸 이동!';
+    answerFeedback.className = 'correct';
+    playCorrectSound(); playBonusSound();
+  } else if (correct) {
+    answerFeedback.textContent = '정답입니다! 🎉 (위로 한 칸 이동)';
+    answerFeedback.className = 'correct';
+    playCorrectSound();
+  } else fail(`오답! 정답은 "${correctAnswer}" 였습니다. (아래로 한 칸 이동)`);
+}
+
+// 내 입력 제출
+answerInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitMine(); });
+function submitMine() {
+  if (!G || paused || alreadyAnswered || answerInput.disabled) return;
+  const text = answerInput.value;
+  if (!text) return;
+  alreadyAnswered = true;
+  answerInput.disabled = true;
+  answerFeedback.textContent = '제출 완료! 결과를 기다리는 중...';
+  answerFeedback.className = '';
+  submitAnswerFor(me(), text);
+}
+
+// ---------- 종료 / 결과 ----------
+function endGame(winner) {
+  G.gameState = 'ended';
+  stopLoop();
+  resetPauseState();
+  const ranking = computeRanking();
+  if (winner) { $('winner-animal').textContent = winner.animal.emoji; $('winner-name').textContent = winner.nickname; }
+  else { $('winner-animal').textContent = '🤝'; $('winner-name').textContent = '무승부 (생존자 없음)'; }
+  renderRankingInto($('result-ranking-list'), ranking);
+  showScreen('result');
+}
+function renderRankingInto(container, ranking) {
+  container.innerHTML = '';
+  ranking.forEach((p, idx) => {
+    const row = document.createElement('div');
+    row.className = 'ranking-row' + (p.id === 'me' ? ' me' : '') + (idx === 0 ? ' rank-1' : '');
+    row.innerHTML = `
+      <span class="rank-num">${idx + 1}</span>
+      <span class="rank-emoji">${p.animal.emoji}</span>
+      <span class="rank-name">${escapeHtml(p.nickname)}</span>
+      <span class="rank-correct">정답 ${p.correctCount}개</span>
+      <span class="rank-status">${p.eliminated ? '탈락' : '생존 중'}</span>`;
+    container.appendChild(row);
+  });
+}
+function toWaitingRoom() {
+  stopLoop(); resetPauseState();
+  G.gameState = 'waiting';
+  Object.values(G.players).forEach(p => { p.row = START_ROW; p.wrongCount = 0; p.correctCount = 0; p.eliminated = false; p.eliminatedAt = null; p.plan = null; });
+  renderWaitingRoom();
+  showScreen('waiting');
+}
+$('btn-restart').addEventListener('click', () => { ensureAudio(); startGame(); });
+$('btn-result-to-waiting').addEventListener('click', toWaitingRoom);
+// 나가기: 게임을 멈추고 화면 안 확인 창을 띄움 (iframe 안에서도 동작)
+let exitPaused = false;
+function closeExitDialog() {
+  $('exit-overlay').classList.add('hidden');
+  if (exitPaused) { exitPaused = false; rankPaused = false; syncPause(); }
+}
+$('btn-give-up').addEventListener('click', () => {
+  if (!G) return;
+  if (G.gameState !== 'waiting' && G.gameState !== 'ended' && !paused) { exitPaused = true; rankPaused = true; syncPause(); }
+  $('exit-overlay').classList.remove('hidden');
+});
+$('btn-exit-cancel').addEventListener('click', closeExitDialog);
+$('btn-exit-waiting').addEventListener('click', () => { exitPaused = false; $('exit-overlay').classList.add('hidden'); toWaitingRoom(); });
+$('btn-exit-home').addEventListener('click', () => {
+  exitPaused = false; $('exit-overlay').classList.add('hidden');
+  toWaitingRoom();
+  $('btn-back-to-login').click();
+});
+
+// ---------- 순위 보기 (열려 있는 동안 게임 멈춤) ----------
+$('btn-ranking-toggle').addEventListener('click', () => {
+  if (!G || G.gameState === 'waiting' || G.gameState === 'ended') return;
+  renderRankingInto($('ranking-list'), computeRanking());
+  rankPaused = true; syncPause();
+  rankingOverlay.classList.remove('hidden');
+});
+$('btn-ranking-close').addEventListener('click', () => {
+  rankPaused = false; syncPause();
+  rankingOverlay.classList.add('hidden');
+});
+
+// ---------- ESC 일시정지 ----------
+function setEscPause(on) {
+  escPaused = on; syncPause();
+  pauseOverlay.classList.toggle('hidden', !on);
+}
+window.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!screens.game.classList.contains('active') || !G) return;
+  e.preventDefault();
+  if (rankPaused) { $('btn-ranking-close').click(); return; }
+  setEscPause(!escPaused);
+});
+$('btn-resume').addEventListener('click', () => { setEscPause(false); if (!answerInput.disabled) answerInput.focus(); });
+$('btn-restart-mid').addEventListener('click', toWaitingRoom);
+
+</script>
+</body>
+</html>

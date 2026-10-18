@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 퀴즈 · 선생님용</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAFB;
+  --bg-alt: #F1F2F6;
+  --surface: #FFFFFF;
+  --text: #0B0C10;
+  --text-secondary: #5B5F6B;
+  --text-tertiary: #9498A3;
+  --accent: #3654F4;
+  --accent-dark: #1E2FB0;
+  --accent-soft: #EAEDFE;
+  --border: #E4E6ED;
+  --border-strong: #D3D6E0;
+  --danger: #E1483D;
+  --danger-soft: #FEF1F0;
+  --warn-bg: #FFF7E6;
+  --warn-border: #F5D59A;
+  --warn-text: #8A5A00;
+  --font-display: 'Pretendard Variable','Pretendard',-apple-system,sans-serif;
+  --font-mono: 'JetBrains Mono',monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; font-family: var(--font-display); background: var(--bg); color: var(--text); }
+body { min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 40px 16px; }
+.hidden { display: none !important; }
+.hint { opacity: 0.65; color: var(--text-secondary); font-size: 13px; }
+.login-box { background: var(--surface); border: 1px solid var(--border); box-shadow: 0 12px 32px -12px rgba(11,12,16,0.12); border-radius: 20px; padding: 40px 50px; text-align: center; width: min(760px, calc(100vw - 32px)); }
+.login-box h1 { margin: 0 0 4px; font-size: 30px; font-weight: 800; letter-spacing: -0.01em; text-align: center; }
+.page-sub { text-align: center; color: var(--text-secondary); font-size: 14px; margin: 0 0 22px; }
+.page-sub a { color: var(--accent); font-weight: 700; text-decoration: none; }
+.page-sub a:hover { text-decoration: underline; }
+.t-guide { text-align: left; font-size: 12px; color: var(--text-tertiary); line-height: 1.7; margin: 14px 0 0; border-top: 1px solid var(--border); padding-top: 12px; }
+#teacher-panel { text-align: left; }
+
+/* 페이지 전환 탭 */
+.t-tabs { display: flex; gap: 4px; background: var(--bg-alt); padding: 4px; border-radius: 12px; margin: 0 0 22px; }
+.t-tabs a { flex: 1; text-align: center; padding: 9px; border-radius: 9px; font-size: 14px; font-weight: 700; color: var(--text-secondary); text-decoration: none; }
+.t-tabs a:hover { color: var(--text); }
+.t-tabs a.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(11,12,16,.08); }
+
+/* 백업 안내 배너 */
+.t-banner { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn-text); border-radius: 10px; padding: 9px 12px; font-size: 13px; margin-bottom: 12px; }
+.t-banner .t-btn { padding: 6px 11px; }
+
+.t-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.t-row label { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+.t-in, .t-sel, .t-area { padding: 9px 11px; border-radius: 9px; border: 1.5px solid var(--border-strong); background: var(--bg); color: var(--text); font: inherit; font-size: 14px; outline: none; }
+.t-in:focus, .t-sel:focus, .t-area:focus { border-color: var(--accent); }
+.t-sel { min-width: 180px; flex: 1; }
+.t-btn { padding: 9px 14px; border-radius: 9px; border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.t-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.t-btn:disabled { opacity: .45; cursor: default; }
+.t-btn.primary { background: var(--text); border-color: var(--text); color: #fff; }
+.t-btn.primary:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #fff; }
+.t-btn.danger:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
+.t-section { font-size: 12px; font-weight: 800; color: var(--text-tertiary); letter-spacing: .04em; margin: 16px 0 8px; }
+
+.t-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; user-select: none; }
+.t-check input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+/* 문제 목록 */
+.t-list { border: 1px solid var(--border); border-radius: 12px; max-height: 38vh; overflow-y: auto; margin-bottom: 6px; }
+.t-item, .t-head { display: grid; grid-template-columns: 48px 1fr 150px 32px; gap: 6px; align-items: center; }
+.t-item { padding: 6px 8px; border-bottom: 1px solid var(--border); border-top: 2px solid transparent; }
+.t-item:last-child { border-bottom: none; }
+.t-item.dragging { opacity: .35; }
+.t-item.over-top { border-top-color: var(--accent); }
+.t-item.over-bottom { box-shadow: inset 0 -2px 0 var(--accent); }
+.t-item .num { font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); display: flex; align-items: center; gap: 4px; }
+.t-item .grip { cursor: grab; padding: 2px 3px; border-radius: 4px; letter-spacing: -2px; color: var(--border-strong); }
+.t-item .grip:hover { color: var(--accent); background: var(--accent-soft); }
+.t-item input { width: 100%; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg); font: inherit; font-size: 14px; color: var(--text); outline: none; }
+.t-item input:focus { border-color: var(--accent); }
+.t-item input.bad { border-color: var(--danger); background: var(--danger-soft); }
+.t-item .del { border: none; background: none; color: var(--text-tertiary); font-size: 18px; cursor: pointer; }
+.t-item .del:hover { color: var(--danger); }
+.t-empty { padding: 22px; text-align: center; color: var(--text-tertiary); font-size: 14px; }
+.t-head { padding: 0 8px 4px; font-size: 12px; color: var(--text-tertiary); font-weight: 700; }
+.t-meta { font-size: 12px; color: var(--text-tertiary); margin: 0 0 12px; }
+.t-meta b { color: var(--text-secondary); }
+.t-meta .warn { color: var(--danger); font-weight: 700; }
+
+.t-area { width: 100%; min-height: 90px; resize: vertical; font-size: 13px; }
+details.t-bulk { margin-bottom: 4px; }
+details.t-bulk summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
+
+/* 알림 + 되돌리기 */
+.t-msg { font-size: 13px; color: var(--accent); min-height: 22px; margin: 6px 0 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.t-undo { border: none; background: var(--accent-soft); color: var(--accent-dark); font: inherit; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 6px; cursor: pointer; }
+.t-undo:hover { background: var(--accent); color: #fff; }
+
+/* QR 모달 */
+.t-modal { position: fixed; inset: 0; background: rgba(11,12,16,.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+.t-modal-card { background: var(--surface); border-radius: 20px; padding: 28px 28px 22px; text-align: center; max-width: 440px; width: 100%; }
+.t-modal-card h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; }
+.t-modal-card p { margin: 0 0 16px; color: var(--text-secondary); font-size: 13px; }
+#qr-box { display: flex; justify-content: center; padding: 12px; background: #fff; border-radius: 12px; }
+#qr-box img, #qr-box canvas { width: min(340px, 72vw) !important; height: auto !important; image-rendering: pixelated; }
+.t-modal-card .t-row { justify-content: center; margin: 16px 0 0; }
+
+@media (max-width: 560px) {
+  .login-box { padding: 28px 18px; }
+  .t-item, .t-head { grid-template-columns: 40px 1fr 90px 26px; }
+}
+</style>
+</head>
+<body>
+  <div class="login-box">
+    <h1>AI 퀴즈 · 선생님용</h1>
+    <p class="page-sub">문제 세트를 만들어 학생들에게 보내세요 · <a href="ai-quiz-student.html" target="_blank">학생용 화면 열기 ↗</a></p>
+    <nav class="t-tabs">
+      <a href="ai-quiz-teacher.html" class="on">✏️ 직접 만들기</a>
+      <a href="ai-quiz-ai.html">✨ AI로 만들기</a>
+    </nav>
+    <div id="teacher-panel">
+
+      <div id="t-banner" class="t-banner hidden">
+        <span id="t-banner-text"></span>
+        <button id="t-banner-backup" class="t-btn">전체 백업하기</button>
+      </div>
+
+      <div class="t-row">
+        <label for="t-set">문제 세트</label>
+        <select id="t-set" class="t-sel"></select>
+        <button id="t-new" class="t-btn">＋ 새 세트</button>
+        <button id="t-dup" class="t-btn">세트 복제</button>
+        <button id="t-del-set" class="t-btn danger">세트 삭제</button>
+      </div>
+
+      <div id="t-editor">
+        <div class="t-row">
+          <input id="t-name" class="t-in" style="flex:1;min-width:160px" maxlength="20" placeholder="세트 이름 (예: 3단원 형성평가)">
+          <label for="t-time">제한시간</label>
+          <input id="t-time" class="t-in" type="number" min="3" max="60" style="width:70px">
+          <span class="hint">초</span>
+        </div>
+        <div class="t-head"><span>#</span><span>문제</span><span>정답 (여러 개는 , 로)</span><span></span></div>
+        <div id="t-list" class="t-list"></div>
+        <p id="t-meta" class="t-meta"></p>
+        <div class="t-row">
+          <input id="t-q" class="t-in" style="flex:2;min-width:180px" placeholder="문제 입력">
+          <input id="t-a" class="t-in" style="flex:1;min-width:110px" placeholder="정답">
+          <button id="t-add" class="t-btn primary">추가</button>
+        </div>
+        <details class="t-bulk">
+          <summary>여러 문제 한 번에 붙여넣기</summary>
+          <textarea id="t-bulk" class="t-area" placeholder="한 줄에 한 문제씩 —  문제 | 정답&#10;엑셀에서 [문제][정답] 두 칸을 복사해 붙여넣어도 됩니다.&#10;예) 대한민국의 수도는? | 서울"></textarea>
+          <div class="t-row" style="margin-top:8px"><button id="t-bulk-add" class="t-btn">목록에 추가</button></div>
+        </details>
+
+        <div class="t-section">학생에게 보내기</div>
+        <div class="t-row">
+          <button id="t-play" class="t-btn primary">▶ 학생용 화면에서 시작</button>
+          <button id="t-link" class="t-btn">🔗 학생용 링크 복사</button>
+          <button id="t-qr" class="t-btn">▦ QR 코드 띄우기</button>
+          <label class="t-check"><input type="checkbox" id="t-shuffle"> 문제 순서 섞어서 보내기</label>
+        </div>
+      </div>
+
+      <div class="t-section">파일</div>
+      <div class="t-row">
+        <button id="t-export" class="t-btn">이 세트만 파일로</button>
+        <button id="t-backup" class="t-btn">전체 백업</button>
+        <button id="t-import" class="t-btn">파일 불러오기</button>
+        <input id="t-file" type="file" accept=".json,application/json" class="hidden">
+      </div>
+
+      <div id="t-msg" class="t-msg"></div>
+    </div>
+
+    <p class="t-guide">
+      · 만든 문제는 이 브라우저에 자동 저장되고, 같은 PC의 학생용 화면 맨 아래 <b>✏️ 선생님 문제</b>에 바로 나타납니다.<br>
+      · 학교 PC는 재부팅 때 초기화될 수 있어요. 수업이 끝나면 <b>전체 백업</b> 파일을 USB나 드라이브에 보관하세요.<br>
+      · 학생 PC에는 <b>🔗 링크</b>를 보내고, 태블릿·휴대폰은 <b>▦ QR 코드</b>를 화면에 띄워 찍게 하세요.<br>
+      · 문제 왼쪽 <b>⋮⋮</b>를 끌거나, 입력칸에서 <b>Alt + ↑/↓</b>를 누르면 순서가 바뀝니다.<br>
+      · '섞어서 보내기'는 링크를 만들 때마다 순서가 새로 섞여요. 같은 링크를 받은 학생들은 모두 같은 순서로 풉니다.<br>
+      · 정답이 여러 개면 쉼표(,)로 구분하세요. 띄어쓰기는 채점에서 무시됩니다. 빨간 칸이 있는 문제는 보낼 때 빠집니다.
+    </p>
+  </div>
+
+  <div id="t-modal" class="t-modal hidden">
+    <div class="t-modal-card">
+      <h2 id="qr-title"></h2>
+      <p id="qr-sub">카메라로 찍으면 바로 문제가 열려요</p>
+      <div id="qr-box"></div>
+      <div class="t-row">
+        <button id="qr-copy" class="t-btn">🔗 링크 복사</button>
+        <button id="qr-close" class="t-btn primary">닫기</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+// =========================================================
+// 선생님용: 문제 세트 직접 만들기
+//  - 이 브라우저(localStorage)에 저장됩니다.
+//  - 다른 PC의 학생에게는 '학생용 링크', 'QR', '파일'로 전달합니다.
+// =========================================================
+const T_KEY = 'aiquiz.customSets.v1';
+const B_KEY = 'aiquiz.lastBackup.v1';   // 마지막 전체 백업 시각
+const C_KEY = 'aiquiz.lastChange.v1';   // 마지막 변경 시각
+let customSets = [];
+let tCurrent = null;
+
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+function clampTime(t) { return Math.min(60, Math.max(3, parseInt(t, 10) || 10)); }
+function normSet(s) {
+  s.name = String(s.name || '이름 없는 세트').slice(0, 20);
+  s.time = clampTime(s.time);
+  s.shuffle = !!s.shuffle;
+  s.questions = (Array.isArray(s.questions) ? s.questions : []).map(x => ({ q: String(x.q || ''), a: String(x.a || '') }));
+  return s;
+}
+function tLoad() {
+  try { customSets = JSON.parse(lsGet(T_KEY) || '[]') || []; } catch (e) { customSets = []; }
+  customSets.forEach(normSet);
+}
+function tSave() {
+  if (!lsSet(T_KEY, JSON.stringify(customSets))) tMsg('브라우저 저장에 실패했어요. 전체 백업으로 파일을 받아 두세요.');
+  else lsSet(C_KEY, String(Date.now()));
+  tRenderBanner();
+}
+function tId() { return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function tFind(id) { return customSets.find(s => s.id === id); }
+function splitAnswers(a) { return String(a).split(',').map(x => x.trim()).filter(Boolean); }
+function isValid(item) { return !!item.q.trim() && splitAnswers(item.a).length > 0; }
+
+// 알림 (되돌리기 버튼 선택)
+function tMsg(text, undo) {
+  const box = $('t-msg');
+  box.innerHTML = '';
+  const s = document.createElement('span'); s.textContent = text; box.appendChild(s);
+  if (undo) {
+    const b = document.createElement('button');
+    b.className = 't-undo'; b.textContent = '되돌리기';
+    b.addEventListener('click', () => { undo(); box.innerHTML = ''; });
+    box.appendChild(b);
+  }
+  clearTimeout(tMsg._t);
+  tMsg._t = setTimeout(() => box.innerHTML = '', undo ? 8000 : 3000);
+}
+
+// 백업 안내 배너
+function fmtTime(ms) {
+  const d = new Date(ms);
+  return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+function tRenderBanner() {
+  const changed = +lsGet(C_KEY) || 0, backed = +lsGet(B_KEY) || 0;
+  const hasQ = customSets.some(s => s.questions.length);
+  const show = hasQ && (!backed || changed > backed);
+  $('t-banner').classList.toggle('hidden', !show);
+  if (show) $('t-banner-text').textContent = backed
+    ? '⚠ 마지막 백업(' + fmtTime(backed) + ') 이후 바뀐 내용이 있어요.'
+    : '⚠ 아직 백업한 적이 없어요. PC가 초기화되면 문제가 사라질 수 있어요.';
+}
+
+// ---------- 화면 그리기 ----------
+function tRenderSets() {
+  const sel = $('t-set');
+  sel.innerHTML = '';
+  customSets.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.id; o.textContent = s.name + ' (' + s.questions.length + ')';
+    sel.appendChild(o);
+  });
+  if (!tFind(tCurrent)) tCurrent = customSets[0] ? customSets[0].id : null;
+  if (!customSets.length) {
+    const o = document.createElement('option'); o.value = ''; o.textContent = '아직 세트가 없어요 → 새 세트'; sel.appendChild(o);
+  }
+  sel.value = tCurrent || '';
+  $('t-editor').classList.toggle('hidden', !tCurrent);
+  $('t-del-set').disabled = $('t-dup').disabled = $('t-export').disabled = !tCurrent;
+  tRenderEditor();
+  tRenderBanner();
+}
+
+function tRenderMeta() {
+  const set = tFind(tCurrent); if (!set) return;
+  const n = set.questions.length, bad = set.questions.filter(x => !isValid(x)).length;
+  const sec = (n - bad) * set.time;
+  const opt = $('t-set').selectedOptions[0]; if (opt) opt.textContent = set.name + ' (' + n + ')';
+  $('t-meta').innerHTML = n
+    ? '<b>' + n + '문제</b> · 최대 약 ' + (sec >= 60 ? Math.floor(sec / 60) + '분 ' : '') + (sec % 60 ? sec % 60 + '초' : '') +
+      (bad ? ' · <span class="warn">빈칸이 있는 ' + bad + '문제는 보낼 때 빠져요</span>' : '')
+    : '';
+}
+
+let dragFrom = null;
+function clearOver() { document.querySelectorAll('.t-item.over-top, .t-item.over-bottom').forEach(el => el.classList.remove('over-top', 'over-bottom')); }
+function moveQuestion(set, from, to) {
+  if (to < 0 || to >= set.questions.length || from === to) return false;
+  const [m] = set.questions.splice(from, 1);
+  set.questions.splice(to, 0, m);
+  tSave();
+  return true;
+}
+
+function tRenderEditor(focus) {
+  const set = tFind(tCurrent);
+  if (!set) return;
+  $('t-name').value = set.name;
+  $('t-time').value = set.time;
+  $('t-shuffle').checked = set.shuffle;
+  const list = $('t-list');
+  list.innerHTML = '';
+  tRenderMeta();
+  if (!set.questions.length) { list.innerHTML = '<div class="t-empty">아래에서 문제를 추가하세요.</div>'; return; }
+
+  set.questions.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 't-item';
+    row.innerHTML = '<span class="num"><span class="grip" title="끌어서 순서 바꾸기">⋮⋮</span>' + (i + 1) + '</span>' +
+      '<input data-k="q" placeholder="문제"><input data-k="a" placeholder="정답"><button class="del" title="삭제">×</button>';
+    const [qi, ai] = row.querySelectorAll('input');
+    qi.value = item.q; ai.value = item.a;
+    const mark = () => {
+      qi.classList.toggle('bad', !item.q.trim());
+      ai.classList.toggle('bad', !splitAnswers(item.a).length);
+    };
+    mark();
+    qi.addEventListener('input', () => { item.q = qi.value; mark(); tSave(); tRenderMeta(); });
+    ai.addEventListener('input', () => { item.a = ai.value; mark(); tSave(); tRenderMeta(); });
+
+    // Alt + ↑/↓ 로 순서 이동
+    [qi, ai].forEach(inp => inp.addEventListener('keydown', e => {
+      if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+      e.preventDefault();
+      const to = i + (e.key === 'ArrowUp' ? -1 : 1);
+      if (moveQuestion(set, i, to)) tRenderEditor({ index: to, key: inp.dataset.k });
+    }));
+
+    // 삭제 (되돌리기 가능)
+    row.querySelector('.del').addEventListener('click', () => {
+      const [removed] = set.questions.splice(i, 1);
+      tSave(); tRenderSets();
+      tMsg((i + 1) + '번 문제를 삭제했어요.', () => {
+        const s = tFind(set.id); if (!s) return;
+        s.questions.splice(Math.min(i, s.questions.length), 0, removed);
+        tCurrent = s.id; tSave(); tRenderSets();
+      });
+    });
+
+    // 끌어서 순서 바꾸기 (⋮⋮ 손잡이로만)
+    const grip = row.querySelector('.grip');
+    grip.addEventListener('mousedown', () => { row.draggable = true; });
+    grip.addEventListener('mouseup', () => { row.draggable = false; });
+    row.addEventListener('dragstart', e => {
+      dragFrom = i; row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(i));
+    });
+    row.addEventListener('dragend', () => { row.draggable = false; row.classList.remove('dragging'); clearOver(); dragFrom = null; });
+    row.addEventListener('dragover', e => {
+      if (dragFrom === null) return;
+      e.preventDefault();
+      const r = row.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+      clearOver(); row.classList.add(after ? 'over-bottom' : 'over-top');
+    });
+    row.addEventListener('drop', e => {
+      if (dragFrom === null) return;
+      e.preventDefault();
+      const r = row.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+      let to = i + (after ? 1 : 0);
+      if (dragFrom < to) to--;
+      const from = dragFrom; dragFrom = null;
+      if (moveQuestion(set, from, to)) tRenderEditor(); else clearOver();
+    });
+
+    list.appendChild(row);
+  });
+
+  if (focus) {
+    const row = list.children[focus.index];
+    const inp = row && row.querySelector('input[data-k="' + focus.key + '"]');
+    if (inp) { inp.focus(); inp.scrollIntoView({ block: 'nearest' }); }
+  }
+}
+
+// ---------- 세트 관리 ----------
+function tNewSet(name) {
+  const set = normSet({ id: tId(), name: name || '새 문제 세트', time: 10, questions: [] });
+  customSets.push(set); tCurrent = set.id; tSave(); tRenderSets();
+  return set;
+}
+function parseBulk(text) {
+  let skipped = 0;
+  const items = text.split(/\r?\n/).map(line => {
+    if (!line.trim()) return null;
+    const parts = line.includes('\t') ? line.split('\t') : line.split('|');
+    const a = parts.length >= 2 ? parts.pop().trim() : '';
+    const q = parts.join(' ').trim();
+    if (parts.length < 1 || !q || !a) { skipped++; return null; }
+    return { q, a };
+  }).filter(Boolean);
+  return { items, skipped };
+}
+
+$('t-set').addEventListener('change', e => { if (!e.target.value) return; tCurrent = e.target.value; tRenderSets(); });
+$('t-new').addEventListener('click', () => { tNewSet(); $('t-name').select(); });
+$('t-dup').addEventListener('click', () => {
+  const set = tFind(tCurrent); if (!set) return;
+  const copy = normSet(JSON.parse(JSON.stringify(set)));
+  copy.id = tId(); copy.name = (set.name.slice(0, 17) + ' 사본');
+  customSets.splice(customSets.indexOf(set) + 1, 0, copy);
+  tCurrent = copy.id; tSave(); tRenderSets();
+  $('t-name').select();
+  tMsg('세트를 복제했어요. 이름을 바꿔 다른 반용으로 쓰세요.');
+});
+$('t-del-set').addEventListener('click', () => {
+  const set = tFind(tCurrent); if (!set) return;
+  const idx = customSets.indexOf(set);
+  customSets.splice(idx, 1); tCurrent = null; tSave(); tRenderSets();
+  tMsg('"' + set.name + '" 세트를 삭제했어요.', () => {
+    customSets.splice(Math.min(idx, customSets.length), 0, set);
+    tCurrent = set.id; tSave(); tRenderSets();
+  });
+});
+$('t-name').addEventListener('input', e => {
+  const set = tFind(tCurrent); if (!set) return;
+  set.name = e.target.value.trim() || '이름 없는 세트'; tSave(); tRenderMeta();
+});
+$('t-time').addEventListener('change', e => {
+  const set = tFind(tCurrent); if (!set) return;
+  set.time = clampTime(e.target.value); e.target.value = set.time; tSave(); tRenderMeta();
+});
+$('t-shuffle').addEventListener('change', e => {
+  const set = tFind(tCurrent); if (!set) return;
+  set.shuffle = e.target.checked; tSave();
+});
+
+function tAddOne() {
+  const set = tFind(tCurrent); if (!set) return;
+  const q = $('t-q').value.trim(), a = $('t-a').value.trim();
+  if (!q || !a) { tMsg('문제와 정답을 모두 입력하세요.'); return; }
+  if (set.questions.some(x => x.q.trim() === q)) tMsg('같은 문제가 이미 있어요. 그래도 추가했어요.');
+  set.questions.push({ q, a }); $('t-q').value = ''; $('t-a').value = ''; $('t-q').focus();
+  tSave(); tRenderSets(); $('t-list').scrollTop = 1e9;
+}
+$('t-add').addEventListener('click', tAddOne);
+$('t-q').addEventListener('keydown', e => { if (e.key === 'Enter') $('t-a').focus(); });
+$('t-a').addEventListener('keydown', e => { if (e.key === 'Enter') tAddOne(); });
+$('t-bulk-add').addEventListener('click', () => {
+  const set = tFind(tCurrent); if (!set) return;
+  const { items, skipped } = parseBulk($('t-bulk').value);
+  if (!items.length) { tMsg('형식을 확인하세요: 문제 | 정답'); return; }
+  const before = set.questions.length;
+  set.questions.push(...items); $('t-bulk').value = '';
+  tSave(); tRenderSets(); $('t-list').scrollTop = 1e9;
+  tMsg(items.length + '문제를 추가했어요.' + (skipped ? ' (형식이 안 맞는 ' + skipped + '줄은 건너뜀)' : ''), () => {
+    const s = tFind(set.id); if (!s) return;
+    s.questions.splice(before, items.length); tCurrent = s.id; tSave(); tRenderSets();
+  });
+});
+
+// ---------- 학생에게 보내기 ----------
+// 학생용 페이지 주소 (같은 폴더에 있다고 가정)
+const STUDENT_PAGE = 'ai-quiz-student.html';
+function shuffled(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+// 보낼 수 있는 상태인지 확인하고, 보낼 문제 목록을 만든다
+function sendable() {
+  const set = tFind(tCurrent);
+  if (!set) return null;
+  let qs = set.questions.filter(isValid);
+  if (!qs.length) { tMsg('정답까지 입력된 문제가 1개 이상 있어야 해요.'); return null; }
+  const dropped = set.questions.length - qs.length;
+  if (set.shuffle) qs = shuffled(qs);
+  return { set, qs, dropped };
+}
+function studentLink(set, qs) {
+  return new URL(STUDENT_PAGE, location.href).href.split('#')[0] + '#q=' + encodeSet(set, qs);
+}
+function sendNote(dropped, base) { return base + (dropped ? ' (빈칸 있는 ' + dropped + '문제는 뺐어요)' : ''); }
+
+// 링크 공유: 문제를 주소(#q=...)에 담아 보냄
+function encodeSet(set, qs) {
+  const json = JSON.stringify({ i: set.id, n: set.name, t: set.time, q: (qs || set.questions).map(x => [x.q.trim(), x.a.trim()]) });
+  return btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function decodeSet(str) {
+  const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const o = JSON.parse(decodeURIComponent(escape(atob(b64))));
+  return { srcId: o.i || null, name: String(o.n || '공유된 문제').slice(0, 20), time: o.t || 10, questions: (o.q || []).map(x => ({ q: String(x[0]), a: String(x[1]) })) };
+}
+function copyText(url, okMsg) {
+  const done = () => tMsg(okMsg);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt('아래 링크를 복사하세요', url));
+  else prompt('아래 링크를 복사하세요', url);
+}
+
+$('t-play').addEventListener('click', () => {
+  const s = sendable(); if (!s) return;
+  window.open(studentLink(s.set, s.qs), '_blank');
+  if (s.dropped) tMsg(sendNote(s.dropped, '학생용 화면을 열었어요.'));
+});
+$('t-link').addEventListener('click', () => {
+  const s = sendable(); if (!s) return;
+  copyText(studentLink(s.set, s.qs), sendNote(s.dropped, '링크를 복사했어요. 학생들이 열면 이 문제 방이 바로 선택됩니다.'));
+});
+
+// QR 코드 (필요할 때만 라이브러리 불러오기)
+let qrUrl = '';
+function loadQR() {
+  if (window.QRCode) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+$('t-qr').addEventListener('click', () => {
+  const s = sendable(); if (!s) return;
+  qrUrl = studentLink(s.set, s.qs);
+  loadQR().then(() => {
+    const box = $('qr-box'); box.innerHTML = '';
+    try {
+      new QRCode(box, { text: qrUrl, width: 512, height: 512, correctLevel: QRCode.CorrectLevel.L });
+    } catch (e) {
+      tMsg('문제가 너무 많아 QR 하나에 담기지 않아요. 세트를 나누거나 링크 복사를 쓰세요.');
+      return;
+    }
+    $('qr-title').textContent = s.set.name;
+    $('qr-sub').textContent = s.qs.length + '문제 · 카메라로 찍으면 바로 열려요' + (s.dropped ? ' (빈칸 문제 ' + s.dropped + '개 제외)' : '');
+    $('t-modal').classList.remove('hidden');
+  }).catch(() => tMsg('QR 도구를 불러오지 못했어요. 인터넷 연결을 확인하세요.'));
+});
+function closeQR() { $('t-modal').classList.add('hidden'); }
+$('qr-close').addEventListener('click', closeQR);
+$('t-modal').addEventListener('click', e => { if (e.target === $('t-modal')) closeQR(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeQR(); });
+$('qr-copy').addEventListener('click', () => copyText(qrUrl, '링크를 복사했어요.'));
+
+// ---------- 파일 ----------
+function safeName(s) { return String(s).replace(/[\\/:*?"<>|]/g, '_'); }
+function download(filename, obj) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$('t-export').addEventListener('click', () => {
+  const set = tFind(tCurrent); if (!set) return;
+  download(safeName(set.name) + '.json', set);
+});
+function doBackup() {
+  if (!customSets.length) { tMsg('백업할 세트가 없어요.'); return; }
+  const d = new Date();
+  const stamp = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  download('AI퀴즈_전체백업_' + stamp + '.json', { type: 'aiquiz-backup', version: 1, savedAt: d.toISOString(), sets: customSets });
+  lsSet(B_KEY, String(Date.now()));
+  tRenderBanner();
+  tMsg(customSets.length + '개 세트를 백업 파일로 저장했어요.');
+}
+$('t-backup').addEventListener('click', doBackup);
+$('t-banner-backup').addEventListener('click', doBackup);
+
+$('t-import').addEventListener('click', () => $('t-file').click());
+$('t-file').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(txt => {
+    const o = JSON.parse(txt);
+
+    // 1) 전체 백업 파일
+    if (Array.isArray(o.sets)) {
+      const incoming = o.sets.map(s => normSet(Object.assign({}, s))).filter(s => s.questions.length || s.name);
+      if (!incoming.length) throw new Error();
+      const clash = incoming.filter(s => s.id && tFind(s.id));
+      const overwrite = clash.length
+        ? confirm('이미 있는 세트 ' + clash.length + '개가 백업에도 있어요.\n[확인] 백업 내용으로 덮어쓰기\n[취소] 사본으로 따로 추가')
+        : false;
+      incoming.forEach(s => {
+        const old = s.id && tFind(s.id);
+        if (old && overwrite) customSets[customSets.indexOf(old)] = s;
+        else { if (old || !s.id) s.id = tId(); customSets.push(s); }
+      });
+      tCurrent = incoming[0].id; tSave(); tRenderSets();
+      tMsg('백업에서 ' + incoming.length + '개 세트를 불러왔어요.');
+      return;
+    }
+
+    // 2) 세트 하나짜리 파일
+    const qs = (o.questions || []).map(x => ({ q: String(x.q || ''), a: String(x.a || '') })).filter(x => x.q && x.a);
+    if (!qs.length) throw new Error();
+    const set = normSet({ id: tId(), name: o.name || f.name.replace(/\.json$/, ''), time: o.time, shuffle: o.shuffle, questions: qs });
+    customSets.push(set); tCurrent = set.id; tSave(); tRenderSets(); tMsg(qs.length + '문제를 불러왔어요.');
+  }).catch(() => tMsg('이 파일은 불러올 수 없어요.'));
+  e.target.value = '';
+});
+
+// 시작
+tLoad();
+// AI 페이지에서 '편집하기'로 넘어오면 그 세트를 바로 연다 (#set=ID)
+(function () {
+  const m = location.hash.match(/set=([\w-]+)/);
+  if (m && tFind(m[1])) tCurrent = m[1];
+})();
+tRenderSets();
+window.addEventListener('storage', e => {
+  if (e.key === T_KEY) { tLoad(); tRenderSets(); }
+  if (e.key === B_KEY || e.key === C_KEY) tRenderBanner();
+});
+</script>
+</body>
+</html>
