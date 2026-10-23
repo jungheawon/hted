@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>고교학점제 길잡이</title>
+<meta name="description" content="2026학년도 기준 고교학점제 핵심 정리 — 졸업 요건, 이수 기준, 과목 구조, 최소 성취수준 보장지도, 2028 대입까지">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAFAFB;--surface:#FFFFFF;--surface-2:#F2F3F7;--line:#E4E6EE;
+  --text:#14161F;--muted:#5D6275;--faint:#8A8FA3;
+  --accent:#3654F4;--accent-soft:#EAEEFF;--accent-ink:#2238C9;
+  --ok:#14A06B;--ok-soft:#E3F6EE;--warn:#E08A00;--warn-soft:#FFF3DE;--bad:#E5484D;--bad-soft:#FDECEC;
+  --shadow:0 1px 2px rgba(20,22,31,.04),0 8px 24px rgba(20,22,31,.06);
+  --r:16px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1016;--surface:#161922;--surface-2:#1D212C;--line:#2A2F3D;
+    --text:#ECEEF4;--muted:#A3A9BC;--faint:#7A8196;
+    --accent:#6F86FF;--accent-soft:#1F2647;--accent-ink:#A9B7FF;
+    --ok:#3DD39A;--ok-soft:#123327;--warn:#FFB23E;--warn-soft:#3A2B10;--bad:#FF6B70;--bad-soft:#3A1719;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1016;--surface:#161922;--surface-2:#1D212C;--line:#2A2F3D;
+  --text:#ECEEF4;--muted:#A3A9BC;--faint:#7A8196;
+  --accent:#6F86FF;--accent-soft:#1F2647;--accent-ink:#A9B7FF;
+  --ok:#3DD39A;--ok-soft:#123327;--warn:#FFB23E;--warn-soft:#3A2B10;--bad:#FF6B70;--bad-soft:#3A1719;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased;word-break:keep-all}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+a{color:var(--accent)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+
+/* nav */
+nav.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav.top .wrap{display:flex;align-items:center;gap:16px;height:60px}
+.brand{font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.brand b{color:var(--accent)}
+.links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
+.links::-webkit-scrollbar{display:none}
+.links a{color:var(--muted);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:8px;white-space:nowrap}
+.links a:hover,.links a.on{background:var(--accent-soft);color:var(--accent-ink)}
+.theme-btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:16px;flex:none}
+
+/* hero */
+.hero{padding:64px 0 40px}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--accent-ink);background:var(--accent-soft);padding:6px 12px;border-radius:999px}
+.hero h1{font-size:clamp(32px,6vw,56px);line-height:1.15;letter-spacing:-.035em;margin:18px 0 14px;font-weight:800}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p.lead{font-size:clamp(16px,2.2vw,19px);color:var(--muted);max-width:680px;margin:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:36px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.stat .n{font-family:"JetBrains Mono",monospace;font-size:30px;font-weight:700;color:var(--accent);letter-spacing:-.03em}
+.stat .n small{font-size:15px;color:var(--muted);margin-left:2px}
+.stat .l{font-size:14px;color:var(--muted);margin-top:2px}
+
+/* sections */
+section{padding:48px 0;border-top:1px solid var(--line)}
+.sec-head{margin-bottom:24px}
+.sec-head .num{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--accent);font-weight:700}
+.sec-head h2{font-size:clamp(24px,3.6vw,32px);letter-spacing:-.03em;margin:4px 0 6px;line-height:1.25}
+.sec-head p{color:var(--muted);margin:0;max-width:720px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card h3{margin:0 0 8px;font-size:18px;letter-spacing:-.02em}
+.card p{margin:0;color:var(--muted);font-size:15px}
+.icon{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:20px;margin-bottom:12px}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+.tag.new{background:var(--ok-soft);color:var(--ok)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.note{display:flex;gap:12px;background:var(--accent-soft);border-radius:12px;padding:14px 16px;font-size:14.5px;color:var(--text);margin-top:16px}
+.note b{color:var(--accent-ink)}
+
+/* compare */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.compare>div{padding:22px}
+.compare>div:first-child{background:var(--surface-2)}
+.compare h3{margin:0 0 12px;font-size:16px}
+.compare ul{margin:0;padding-left:18px;color:var(--muted);font-size:15px}
+.compare li{margin:6px 0}
+.compare .after h3{color:var(--accent)}
+
+/* credit bar */
+.bar{display:flex;height:56px;border-radius:12px;overflow:hidden;margin:12px 0 8px;font-weight:700;font-size:14px}
+.bar div{display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;line-height:1.2;padding:0 6px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:560px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-size:13px;color:var(--muted);font-weight:700}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* criteria */
+.crit{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.crit .card{position:relative}
+.crit .req{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.crit .req span{display:flex;align-items:center;gap:8px;font-size:14.5px;background:var(--surface-2);padding:8px 12px;border-radius:10px}
+.crit .req span.x{opacity:.45;text-decoration:line-through}
+.chk{width:20px;height:20px;border-radius:6px;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:12px;flex:none}
+.crit .x .chk{background:var(--faint)}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;counter-reset:s}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 12px;text-align:center;position:relative}
+.step::before{counter-increment:s;content:counter(s,decimal-leading-zero);font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--accent);font-weight:700;display:block}
+.step b{display:block;margin:6px 0 4px;font-size:15px}
+.step span{font-size:12.5px;color:var(--muted);line-height:1.45;display:block}
+
+/* timeline */
+.tl{position:relative;padding-left:28px}
+.tl::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl-item{position:relative;margin-bottom:22px}
+.tl-item::before{content:"";position:absolute;left:-25px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:3px solid var(--accent)}
+.tl-item.now::before{background:var(--accent);box-shadow:0 0 0 6px var(--accent-soft)}
+.tl-item .d{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--accent);font-weight:700}
+.tl-item h4{margin:2px 0 4px;font-size:16px}
+.tl-item p{margin:0;color:var(--muted);font-size:14.5px}
+
+/* tabs */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button{border:1px solid var(--line);background:var(--surface);color:var(--muted);padding:8px 14px;border-radius:999px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:14px;padding:6px 12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line)}
+.chip.g{border-left:3px solid #8A9BFF}
+.chip.j{border-left:3px solid var(--accent)}
+.chip.y{border-left:3px solid var(--ok)}
+
+/* grade dist */
+.dist{display:flex;align-items:flex-end;gap:10px;height:180px;padding:0 4px;margin-top:8px}
+.dist .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.dist .b{width:100%;border-radius:10px 10px 4px 4px;background:var(--accent);opacity:.85;display:flex;align-items:flex-start;justify-content:center;color:#fff;font-weight:700;font-size:13px;padding-top:6px}
+.dist .lb{font-size:13px;color:var(--muted)}
+
+/* calc */
+.calc{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.row{display:flex;align-items:center;gap:12px;margin:12px 0}
+.row label{width:120px;font-size:14.5px;font-weight:600;flex:none}
+.row input[type=range]{flex:1;accent-color:var(--accent)}
+.row output{width:56px;text-align:right;font-family:"JetBrains Mono",monospace;font-weight:700}
+.gauge{height:14px;background:var(--surface-2);border-radius:999px;overflow:hidden;margin:10px 0}
+.gauge div{height:100%;background:var(--accent);border-radius:999px;transition:width .25s}
+.big{font-family:"JetBrains Mono",monospace;font-size:44px;font-weight:700;letter-spacing:-.03em}
+.verdict{margin-top:10px;padding:12px 14px;border-radius:12px;font-size:14.5px;font-weight:600}
+.verdict.ok{background:var(--ok-soft);color:var(--ok)}
+.verdict.no{background:var(--warn-soft);color:var(--warn)}
+
+/* checklist */
+.check-col h3{display:flex;justify-content:space-between;align-items:center}
+.check-col h3 small{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--accent)}
+.check-col label{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14.5px;cursor:pointer}
+.check-col label:last-child{border-bottom:0}
+.check-col input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check-col input:checked+span{color:var(--faint);text-decoration:line-through}
+
+/* faq */
+details{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+summary{cursor:pointer;padding:16px 18px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:"JetBrains Mono",monospace;color:var(--accent);font-size:18px;line-height:1}
+details[open] summary::after{content:"−"}
+details .a{padding:0 18px 16px;color:var(--muted);font-size:15px}
+
+/* glossary */
+.search{width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text);font:inherit;margin-bottom:14px}
+.search:focus{outline:2px solid var(--accent);outline-offset:1px}
+.gl{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.gl .card{padding:16px}
+.gl dt{font-weight:700;margin-bottom:4px}
+.gl dd{margin:0;color:var(--muted);font-size:14.5px}
+
+/* sources */
+.src li{margin:6px 0;font-size:14.5px}
+footer{padding:36px 0 60px;color:var(--faint);font-size:13px;border-top:1px solid var(--line)}
+
+@media (max-width:860px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .grid3,.crit{grid-template-columns:1fr}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .calc,.grid2,.compare,.gl{grid-template-columns:1fr}
+  .brand span{display:none}
+}
+@media print{nav.top,.theme-btn{display:none}section{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap">
+    <div class="brand"><b>HTRO</b> EDU<span> · 고교학점제</span></div>
+    <div class="links" id="navlinks">
+      <a href="#what">개념</a>
+      <a href="#grad">졸업 요건</a>
+      <a href="#criteria">이수 기준</a>
+      <a href="#subjects">과목 구조</a>
+      <a href="#process">운영 절차</a>
+      <a href="#guarantee">최성보</a>
+      <a href="#eval">평가·대입</a>
+      <a href="#career">진로별 과목</a>
+      <a href="#calc">학점 계산기</a>
+      <a href="#roadmap">학년별 로드맵</a>
+      <a href="#history">연혁</a>
+      <a href="#faq">FAQ</a>
+      <a href="#glossary">용어</a>
+    </div>
+    <button class="theme-btn" id="themeBtn" aria-label="테마 전환">◐</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">📘 2026학년도 개정 이수 기준 반영</span>
+    <h1>내 진로에 맞게 <em>골라 듣고</em>,<br>기준에 도달하면 <em>학점</em>을 쌓는 고등학교</h1>
+    <p class="lead">고교학점제는 학생이 기초 소양을 바탕으로 진로·적성에 따라 과목을 선택하고, 이수 기준에 도달한 과목의 학점을 누적해 졸업하는 제도입니다. 2025학년도 고1부터 전면 시행되었고, 2026학년도부터는 선택과목 이수 기준이 완화되었습니다.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">192<small>학점</small></div><div class="l">3년간 졸업 최소 학점</div></div>
+      <div class="stat"><div class="n">16<small>회</small></div><div class="l">1학점 = 50분 수업 16회</div></div>
+      <div class="stat"><div class="n">2/3</div><div class="l">과목별 최소 출석률</div></div>
+      <div class="stat"><div class="n">40<small>%</small></div><div class="l">공통과목 최소 학업성취율</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- 01 -->
+<section id="what">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">01</div><h2>고교학점제란?</h2><p>“모두 같은 시간표”에서 “나만의 시간표”로. 과목 선택권과 책임교육을 함께 담은 제도입니다.</p></div>
+    <div class="compare">
+      <div>
+        <h3>이전 (단위제)</h3>
+        <ul>
+          <li>3년 204단위 이수, 수업일수 2/3 출석만 채우면 졸업</li>
+          <li>학급 단위로 정해진 시간표를 함께 수강</li>
+          <li>과목별 이수 기준 없음 — 성취가 낮아도 다음 단계로 진급</li>
+          <li>내신 9등급 상대평가</li>
+        </ul>
+      </div>
+      <div class="after">
+        <h3>현재 (학점제)</h3>
+        <ul>
+          <li>3년 192학점 취득 + 학년별 수업일수 2/3 출석</li>
+          <li>진로에 따라 과목을 선택해 수강신청, 이동 수업·공강 발생</li>
+          <li>과목별 이수 기준 도달 시 학점 취득, 미도달 시 보장지도</li>
+          <li>내신 5등급 + 성취도(A~E) 병기</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><div class="icon">🧭</div><h3>진로 맞춤 선택</h3><p>공통과목으로 기초를 다진 뒤, 일반·진로·융합 선택과목 중 자신의 진로에 맞는 과목을 골라 학업 이력을 설계합니다.</p></div>
+      <div class="card"><div class="icon">🛟</div><h3>책임교육</h3><p>학생이 과목 이수 기준에 도달할 수 있도록 학교가 예방지도와 보충지도로 끝까지 지원합니다.</p></div>
+      <div class="card"><div class="icon">🏫</div><h3>배움의 공간 확장</h3><p>우리 학교에 없는 과목은 공동교육과정, 온라인학교, 지역 연계 학교 밖 교육으로 들을 수 있습니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 -->
+<section id="grad">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">02</div><h2>졸업 요건 한눈에</h2><p>교과 174학점과 창의적 체험활동 18학점, 그리고 학년별 수업일수 출석 기준을 모두 충족해야 합니다.</p></div>
+    <div class="card">
+      <h3>192학점은 이렇게 구성돼요</h3>
+      <div class="bar" role="img" aria-label="공통과목 48, 그 외 필수이수 36, 자율이수 90, 창체 18">
+        <div style="flex:48;background:#2238C9">공통 48</div>
+        <div style="flex:36;background:#3654F4">필수 +36</div>
+        <div style="flex:90;background:#7D90FF">자율 이수 90</div>
+        <div style="flex:18;background:#14A06B">창체 18</div>
+      </div>
+      <div class="legend">
+        <span><i style="background:#2238C9"></i>공통과목(국·수·영·사·과·한국사) 48학점</span>
+        <span><i style="background:#3654F4"></i>체육·예술·생활교양 등 나머지 필수이수 → 필수이수 합계 84학점</span>
+        <span><i style="background:#7D90FF"></i>학생 선택 중심 자율 이수 90학점</span>
+        <span><i style="background:#14A06B"></i>창의적 체험활동 18학점(288시간)</span>
+      </div>
+    </div>
+    <div class="tbl-wrap" style="margin-top:16px">
+      <table>
+        <thead><tr><th>교과(군)</th><th>공통과목</th><th class="c">공통 학점</th><th class="c">필수 이수 학점</th></tr></thead>
+        <tbody>
+          <tr><td>국어</td><td>공통국어1, 공통국어2</td><td class="c mono">8</td><td class="c mono">8</td></tr>
+          <tr><td>수학</td><td>공통수학1, 공통수학2 <span class="tag">기본수학1·2 대체 가능</span></td><td class="c mono">8</td><td class="c mono">8</td></tr>
+          <tr><td>영어</td><td>공통영어1, 공통영어2 <span class="tag">기본영어1·2 대체 가능</span></td><td class="c mono">8</td><td class="c mono">8</td></tr>
+          <tr><td>사회(역사·도덕 포함)</td><td>통합사회1·2, 한국사1·2</td><td class="c mono">14</td><td class="c mono">14</td></tr>
+          <tr><td>과학</td><td>통합과학1·2, 과학탐구실험1·2</td><td class="c mono">10</td><td class="c mono">10</td></tr>
+          <tr><td>체육 / 예술</td><td>—</td><td class="c mono">—</td><td class="c mono">10 / 10</td></tr>
+          <tr><td>기술·가정 / 정보 / 제2외국어 / 한문 / 교양</td><td>—</td><td class="c mono">—</td><td class="c mono">16</td></tr>
+          <tr><td><b>합계</b></td><td></td><td class="c mono"><b>48</b></td><td class="c mono"><b>84</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><span>💡</span><div><b>1학점 = 50분 × 16회.</b> 4학점 공통과목이라면 한 학기에 64회 수업을 듣게 됩니다. 과목별 기본 학점은 4학점이며, 학교는 ±1학점 범위에서 증감해 편성할 수 있습니다(체육·예술·교양 등 일부 교과는 별도 기준).</div></div>
+  </div>
+</section>
+
+<!-- 03 -->
+<section id="criteria">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">03</div><h2>학점 이수 기준 <span class="tag new" style="vertical-align:middle">2026 개정</span></h2><p>국가교육위원회 의결(2026.1.15.)과 교육부 「고교학점제 안착을 위한 지원 대책」(2026.1.28.)에 따라 2026학년도 1학기부터 적용됩니다.</p></div>
+    <div class="crit">
+      <div class="card">
+        <span class="tag">주로 1학년</span>
+        <h3 style="margin-top:10px">공통과목</h3>
+        <p>국어·수학·영어 등 공통과목은 기존 기준을 유지합니다.</p>
+        <div class="req">
+          <span><i class="chk">✓</i>과목 출석률 2/3 이상</span>
+          <span><i class="chk">✓</i>학업성취율 40% 이상</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag new">완화</span>
+        <h3 style="margin-top:10px">선택과목</h3>
+        <p>일반·진로·융합 선택과목은 학업성취율 기준이 빠지고 출석률만 봅니다.</p>
+        <div class="req">
+          <span><i class="chk">✓</i>과목 출석률 2/3 이상</span>
+          <span class="x"><i class="chk">–</i>학업성취율 40%</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag new">명확화</span>
+        <h3 style="margin-top:10px">창의적 체험활동</h3>
+        <p>학년별 전체 수업일수의 2/3 이상 출석하면 그 학년에 편성된 창체 학점을 충족한 것으로 인정합니다.</p>
+        <div class="req">
+          <span><i class="chk">✓</i>학년 수업일수 2/3 이상 출석</span>
+        </div>
+      </div>
+    </div>
+    <div class="note"><span>🔁</span><div><b>미이수가 나오면?</b> 학교의 최소 성취수준 보장지도(보충지도)를 이수하면 학점을 받을 수 있고, 한국교육개발원의 <b>온라인 보충과정</b> 플랫폼을 개편해 미이수 과목을 온라인 콘텐츠로 이수하는 길도 마련되었습니다. 특수교육대상·이주배경 학생은 이수 기준을 유연하게 적용하는 방안이 검토되고 있습니다.</div></div>
+  </div>
+</section>
+
+<!-- 04 -->
+<section id="subjects">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">04</div><h2>과목 구조 (2022 개정 교육과정)</h2><p>공통과목 위에 세 갈래의 선택과목이 놓입니다. 교과를 눌러 과목을 살펴보세요.</p></div>
+    <div class="grid3" style="margin-bottom:16px">
+      <div class="card"><span class="chip g">일반 선택</span><p style="margin-top:10px">교과별 학문의 기본 이해와 핵심 내용을 다루는 과목. 대부분의 학생이 2학년에 많이 듣습니다.</p></div>
+      <div class="card"><span class="chip j">진로 선택</span><p style="margin-top:10px">교과별 심화 학습과 진로 관련 탐구를 위한 과목. 학업 이력에서 진로 방향을 보여줍니다.</p></div>
+      <div class="card"><span class="chip y">융합 선택</span><p style="margin-top:10px">교과 안팎의 주제를 융합하고 실생활에 적용해 보는 체험·응용 중심 과목입니다.</p></div>
+    </div>
+    <div class="card">
+      <div class="tabs" id="subjTabs"></div>
+      <div id="subjBody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 -->
+<section id="process">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">05</div><h2>학교에서는 이렇게 운영돼요</h2><p>입학부터 졸업까지 이어지는 7단계 흐름입니다.</p></div>
+    <div class="steps">
+      <div class="step"><b>진로·학업 설계</b><span>진로 탐색, 학업 설계 상담</span></div>
+      <div class="step"><b>과목 안내</b><span>개설 과목·선택 가이드북 확인</span></div>
+      <div class="step"><b>수강 신청</b><span>희망 과목 조사 → 확정</span></div>
+      <div class="step"><b>시간표 편성</b><span>개인별 시간표, 이동 수업</span></div>
+      <div class="step"><b>수업·평가</b><span>성취기준 기반 수업과 평가</span></div>
+      <div class="step"><b>학점 취득</b><span>이수 기준 도달, 미도달 시 보충지도</span></div>
+      <div class="step"><b>졸업</b><span>192학점 + 출석 기준 충족</span></div>
+    </div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><div class="icon">🤝</div><h3>공동교육과정</h3><p>인근 학교들이 함께 과목을 개설해 운영합니다. 소인수·심화 과목을 들을 때 유용합니다.</p></div>
+      <div class="card"><div class="icon">💻</div><h3>온라인학교</h3><p>시·도 교육청의 온라인학교에서 실시간 쌍방향 수업으로 학교에 없는 과목을 수강합니다.</p></div>
+      <div class="card"><div class="icon">🌐</div><h3>학교 밖 교육</h3><p>대학·공공기관 등 교육청이 승인한 기관의 교육을 학점으로 인정받을 수 있습니다.</p></div>
+    </div>
+    <div class="note"><span>⏱️</span><div><b>공강 시간</b>은 자율학습, 최소 성취수준 보장지도, 진로·학업 설계 상담 등에 활용됩니다. 담임교사가 직접 관찰한 공강 중 활동은 학생부 행동특성 및 종합의견에 기재될 수 있습니다.</div></div>
+  </div>
+</section>
+
+<!-- 06 -->
+<section id="guarantee">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">06</div><h2>최소 성취수준 보장지도 (최성보)</h2><p>학생이 과목 이수 기준에 도달하도록 학기 중에는 예방하고, 학기 말에는 보충하는 책임교육 장치입니다.</p></div>
+    <div class="grid3">
+      <div class="card"><span class="tag">학기 초</span><h3 style="margin-top:10px">① 계획 수립</h3><p>진단 결과 등을 바탕으로 예방지도 대상 학생을 선정하고, 지도 방법·시기·담당자를 정합니다.</p></div>
+      <div class="card"><span class="tag">학기 중</span><h3 style="margin-top:10px">② 예방지도</h3><p>미도달이 우려되는 학생에게 수업 내 개별 지도, 학습 멘토링, 과제 피드백 등으로 미리 지원합니다.</p></div>
+      <div class="card"><span class="tag">학기 말</span><h3 style="margin-top:10px">③ 보충지도</h3><p>미이수가 확정된 학생에게 대면 지도를 포함한 보충 과정(방과후·방학 중, 온라인 콘텐츠 병행)을 운영하고 이수를 인정합니다.</p></div>
+    </div>
+    <div class="grid2" style="margin-top:16px">
+      <div class="card">
+        <h3>성취율과 성취도</h3>
+        <div class="tbl-wrap" style="border:0;box-shadow:none">
+          <table style="min-width:0">
+            <thead><tr><th>성취율</th><th class="c">성취도</th><th>학점(공통과목)</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">90% 이상</td><td class="c"><b>A</b></td><td>이수</td></tr>
+              <tr><td class="mono">80 ~ 90%</td><td class="c"><b>B</b></td><td>이수</td></tr>
+              <tr><td class="mono">70 ~ 80%</td><td class="c"><b>C</b></td><td>이수</td></tr>
+              <tr><td class="mono">60 ~ 70%</td><td class="c"><b>D</b></td><td>이수</td></tr>
+              <tr><td class="mono">40 ~ 60%</td><td class="c"><b>E</b></td><td>이수</td></tr>
+              <tr><td class="mono">40% 미만</td><td class="c"><b style="color:var(--bad)">I</b></td><td>미이수 → 보충지도 후 이수</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>현장에서 쓰는 지원 도구</h3>
+        <p style="margin-bottom:12px">공통 국어·수학·영어를 중심으로 국가 수준 자료가 제공됩니다.</p>
+        <div class="chips">
+          <span class="chip">EBSi 최소 성취수준 온라인 콘텐츠</span>
+          <span class="chip">KEDI 온라인 보충과정 플랫폼</span>
+          <span class="chip">교육과정평가원 운영 매뉴얼</span>
+          <span class="chip">시·도교육청 지원 자료집</span>
+          <span class="chip">기초학력 지도와 연계 운영</span>
+        </div>
+        <div class="note" style="margin-top:14px"><span>📝</span><div>2026 지원 대책에서는 교사 부담을 덜기 위해 <b>고1 공통과목의 기초학력 지도를 최성보와 통합·연계</b>해 운영하도록 했습니다.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 -->
+<section id="eval">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">07</div><h2>내신 평가와 2028 대입</h2><p>고교학점제 첫 세대(2025년 고1)는 2028학년도 대입에서 새로운 내신·수능 체제를 처음 적용받습니다.</p></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>내신 5등급제 비율</h3>
+        <p>9등급 상대평가가 5등급으로 바뀌고, 성취도(A~E)와 석차 등급이 함께 기재됩니다.</p>
+        <div class="dist">
+          <div class="col"><div class="b" style="height:25%">10%</div><div class="lb">1등급</div></div>
+          <div class="col"><div class="b" style="height:60%">24%</div><div class="lb">2등급</div></div>
+          <div class="col"><div class="b" style="height:80%">32%</div><div class="lb">3등급</div></div>
+          <div class="col"><div class="b" style="height:60%">24%</div><div class="lb">4등급</div></div>
+          <div class="col"><div class="b" style="height:25%">10%</div><div class="lb">5등급</div></div>
+        </div>
+        <p style="margin-top:12px;font-size:13.5px">누적 기준: 1등급 10% · 2등급 34% · 3등급 66% · 4등급 90% · 5등급 100%. 사회·과학 융합선택 일부 과목은 성취도만 기재됩니다.</p>
+      </div>
+      <div class="card">
+        <h3>2028학년도 수능</h3>
+        <div class="req" style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+          <span class="chip">국어·수학·사회·과학 <b>선택과목 없는 통합형</b></span>
+          <span class="chip">사회·과학탐구는 <b>통합사회·통합과학</b> 중심</span>
+          <span class="chip">심화수학(미적분Ⅱ·기하)은 출제 범위 미포함</span>
+          <span class="chip">평가·성적 제공 방식, EBS 연계는 현행 유지</span>
+        </div>
+        <div class="note"><span>🎯</span><div>통합형 수능으로 학업 이력 정보가 줄어드는 만큼, 대학들은 <b>학생부에 드러난 과목 선택과 학업 과정</b>을 더 꼼꼼히 보는 흐름입니다. 희망 대학·학과의 권장 과목을 꼭 확인하세요.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 -->
+<section id="career">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">08</div><h2>진로별 과목 선택 예시</h2><p>대표적인 진로 계열별로 함께 고려해 볼 만한 선택과목입니다. 실제 개설 과목과 대학 권장 과목은 학교·대학마다 다르니 참고용으로 활용하세요.</p></div>
+    <div class="card">
+      <div class="tabs" id="careerTabs"></div>
+      <div id="careerBody"></div>
+      <div class="legend" style="margin-top:14px">
+        <span><i style="background:#8A9BFF"></i>일반 선택</span><span><i style="background:var(--accent)"></i>진로 선택</span><span><i style="background:var(--ok)"></i>융합 선택</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 -->
+<section id="calc">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">09</div><h2>졸업 학점 계산기</h2><p>학년별로 취득(예정) 학점을 넣어 졸업 요건 충족 여부를 확인해 보세요.</p></div>
+    <div class="calc">
+      <div class="card">
+        <h3>교과 학점</h3>
+        <div class="row"><label>1학년</label><input type="range" min="0" max="70" value="58" id="g1"><output id="o1" class="mono">58</output></div>
+        <div class="row"><label>2학년</label><input type="range" min="0" max="70" value="58" id="g2"><output id="o2" class="mono">58</output></div>
+        <div class="row"><label>3학년</label><input type="range" min="0" max="70" value="58" id="g3"><output id="o3" class="mono">58</output></div>
+        <h3 style="margin-top:18px">창의적 체험활동</h3>
+        <div class="row"><label>3년 합계</label><input type="range" min="0" max="24" value="18" id="ch"><output id="oc" class="mono">18</output></div>
+        <p style="font-size:13px;margin-top:8px">※ 학교 편성에 따라 학년별 교과 학점은 달라질 수 있습니다(대개 학년당 56~60학점 안팎).</p>
+      </div>
+      <div class="card">
+        <h3>결과</h3>
+        <div class="big" id="total">192</div>
+        <div style="color:var(--muted);font-size:14px">/ 192학점</div>
+        <div class="gauge"><div id="gauge" style="width:100%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted)"><span>교과 <b class="mono" id="sub">174</b> / 174</span><span>창체 <b class="mono" id="cr">18</b> / 18</span></div>
+        <div class="verdict ok" id="verdict">졸업 학점 요건을 충족합니다.</div>
+        <p style="font-size:13px;margin-top:10px">학년별 수업일수 2/3 이상 출석 요건은 별도로 충족해야 합니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="roadmap">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">10</div><h2>학년별 로드맵 체크리스트</h2><p>체크한 항목은 이 기기 브라우저에 저장됩니다.</p></div>
+    <div class="grid3" id="checklist"></div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section id="history">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">11</div><h2>도입 연혁</h2><p>연구학교에서 시작해 전면 시행과 첫 보완까지의 흐름입니다.</p></div>
+    <div class="tl">
+      <div class="tl-item"><div class="d">2018 ~</div><h4>연구·선도학교 운영</h4><p>일부 고등학교에서 학점제 모델을 시범 운영하며 과목 선택·이수 기준을 연구했습니다.</p></div>
+      <div class="tl-item"><div class="d">2021.02</div><h4>고교학점제 종합 추진계획 발표</h4><p>204단위에서 192학점으로 수업량 조정, 과목별 이수 기준(출석 2/3·성취율 40%)과 미이수 제도 도입을 예고했습니다.</p></div>
+      <div class="tl-item"><div class="d">2022 ~ 2024</div><h4>단계적 이행</h4><p>마이스터고 우선 도입 후 일반계고로 확대, 2023년부터 공통 국·수·영 최소 성취수준 보장지도를 시범 시행했습니다.</p></div>
+      <div class="tl-item"><div class="d">2023.12</div><h4>2028 대입 개편 확정</h4><p>내신 5등급제와 선택과목 없는 통합형 수능이 확정되었습니다.</p></div>
+      <div class="tl-item"><div class="d">2025.03</div><h4>전면 시행</h4><p>2022 개정 교육과정과 함께 모든 고등학교 1학년부터 고교학점제가 적용되었습니다.</p></div>
+      <div class="tl-item"><div class="d">2025.09</div><h4>운영 개선 대책 논의</h4><p>최성보 업무 부담과 학생부 기재 부담 등을 줄이는 개선안이 마련되어 국가교육위원회 논의로 이어졌습니다.</p></div>
+      <div class="tl-item now"><div class="d">2026.01</div><h4>이수 기준 완화 · 안착 지원 대책</h4><p>국교위 의결(1.15.)과 교육부 지원 대책(1.28.)으로 선택과목 출석률 기준만 적용, 창체 이수 인정 기준 명확화, 온라인 보충과정 개편 등이 확정되었습니다.</p></div>
+      <div class="tl-item"><div class="d">2027.11</div><h4>첫 학점제 세대 수능</h4><p>2025년 입학생이 2028학년도 대입 통합형 수능을 처음 치릅니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">12</div><h2>자주 묻는 질문</h2></div>
+    <div id="faqList"></div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section id="glossary">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">13</div><h2>용어 사전</h2><p>낯선 용어를 검색해 보세요.</p></div>
+    <input class="search" id="glSearch" placeholder="예: 최성보, 공강, 성취율…" aria-label="용어 검색">
+    <dl class="gl" id="glList"></dl>
+  </div>
+</section>
+
+<!-- sources -->
+<section id="sources">
+  <div class="wrap">
+    <div class="sec-head"><div class="num">REF</div><h2>참고 자료</h2><p>세부 운영은 학교와 시·도교육청 지침에 따라 다를 수 있습니다. 최신 내용은 아래 공식 자료를 확인하세요.</p></div>
+    <ul class="src">
+      <li><a href="https://eiec.kdi.re.kr/policy/materialView.do?num=276324" target="_blank" rel="noopener">교육부, 「고교학점제 안착을 위한 지원 대책」(2026.1.)</a></li>
+      <li><a href="https://www.goe.go.kr/resource/goe/na/bbs_2675/2026/04/e2b13ae0-cb1b-49f0-a7d0-9d90c781c606.pdf" target="_blank" rel="noopener">경기도교육청, 「2026 고교학점제 및 학점 이수 인정 방안」</a></li>
+      <li><a href="https://www.gne.go.kr/h-creditsystem/highschool/credit/credit_01.jsp" target="_blank" rel="noopener">경상남도교육청 고교학점제 누리집 — 고교학점제 이해</a></li>
+      <li><a href="https://www.ebsi.co.kr/ebs/lms/lmsx/retriveAchievementLevel.ebs" target="_blank" rel="noopener">EBSi 최소 성취수준 보장지도 안내</a></li>
+      <li><a href="https://www.nocutnews.co.kr/news/6462938" target="_blank" rel="noopener">노컷뉴스, 고교학점제 1년 만에 대폭 손질(2026.1.)</a></li>
+      <li><a href="https://hangyo.com/news/article.html?no=106487" target="_blank" rel="noopener">한국교육신문, 고교학점제 대책 현장 반응(2026)</a></li>
+      <li><a href="https://www.localnaeil.com/News/View/651939" target="_blank" rel="noopener">내일교육, 2028 대학입시제도 개편 확정안 정리</a></li>
+      <li><a href="https://news.tf.co.kr/read/life/2191358.htm" target="_blank" rel="noopener">더팩트, 교육부 학부모 설명회 Q&amp;A(2025.3.)</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">HTRO EDU · 고교학점제 길잡이 — 2026년 10월 기준으로 정리한 안내 자료입니다.</div>
+</footer>
+
+<script>
+/* ---------- theme ---------- */
+(function(){
+  var root=document.documentElement,key='gogyo-theme';
+  try{var t=localStorage.getItem(key);if(t)root.setAttribute('data-theme',t);}catch(e){}
+  document.getElementById('themeBtn').onclick=function(){
+    var cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    var nxt=cur==='dark'?'light':'dark';root.setAttribute('data-theme',nxt);
+    try{localStorage.setItem(key,nxt);}catch(e){}
+  };
+})();
+
+/* ---------- subjects ---------- */
+var SUBJ={
+  '국어':{g:['화법과 언어','독서와 작문','문학'],j:['주제 탐구 독서','문학과 영상','직무 의사소통'],y:['독서 토론과 글쓰기','매체 의사소통','언어생활 탐구']},
+  '수학':{g:['대수','미적분Ⅰ','확률과 통계'],j:['기하','미적분Ⅱ','경제 수학','인공지능 수학','직무 수학'],y:['수학과 문화','실용 통계','수학과제 탐구']},
+  '영어':{g:['영어Ⅰ','영어Ⅱ','영어 독해와 작문'],j:['직무 영어','영미 문학 읽기','영어 발표와 토론','심화 영어','심화 영어 독해와 작문'],y:['실생활 영어 회화','미디어 영어','세계 문화와 영어']},
+  '사회':{g:['세계시민과 지리','세계사','사회와 문화','현대사회와 윤리'],j:['한국지리 탐구','도시의 미래 탐구','동아시아 역사 기행','정치','법과 사회','경제','윤리와 사상','인문학과 윤리','국제 관계의 이해'],y:['여행지리','역사로 탐구하는 현대 세계','사회문제 탐구','금융과 경제생활','윤리문제 탐구','기후변화와 지속가능한 세계']},
+  '과학':{g:['물리학','화학','생명과학','지구과학'],j:['역학과 에너지','전자기와 양자','물질과 에너지','화학 반응의 세계','세포와 물질대사','생물의 유전','지구시스템과학','행성우주과학'],y:['과학의 역사와 문화','기후변화와 환경생태','융합과학 탐구']},
+  '정보':{g:['정보'],j:['인공지능 기초','데이터 과학'],y:['소프트웨어와 생활']}
+};
+function chips(arr,cls){return '<div class="chips">'+arr.map(function(s){return '<span class="chip '+cls+'">'+s+'</span>'}).join('')+'</div>'}
+function renderSubj(k){
+  var d=SUBJ[k];
+  document.getElementById('subjBody').innerHTML=
+    '<div class="grid3">'+
+    '<div><p style="font-weight:700;margin:0 0 8px">일반 선택</p>'+chips(d.g,'g')+'</div>'+
+    '<div><p style="font-weight:700;margin:0 0 8px">진로 선택</p>'+chips(d.j,'j')+'</div>'+
+    '<div><p style="font-weight:700;margin:0 0 8px">융합 선택</p>'+chips(d.y,'y')+'</div></div>';
+  [].forEach.call(document.querySelectorAll('#subjTabs button'),function(b){b.classList.toggle('on',b.dataset.k===k)});
+}
+(function(){
+  var t=document.getElementById('subjTabs');
+  Object.keys(SUBJ).forEach(function(k){var b=document.createElement('button');b.textContent=k;b.dataset.k=k;b.onclick=function(){renderSubj(k)};t.appendChild(b)});
+  renderSubj('국어');
+})();
+
+/* ---------- career ---------- */
+var CAREER={
+  '공학·IT':{d:'수학의 깊이와 물리·정보 교과의 연결이 핵심입니다.',g:['대수','미적분Ⅰ','확률과 통계','물리학','화학'],j:['미적분Ⅱ','기하','역학과 에너지','전자기와 양자','인공지능 기초','데이터 과학','인공지능 수학'],y:['소프트웨어와 생활','융합과학 탐구','수학과제 탐구']},
+  '의약·생명':{d:'화학·생명과학 계열을 깊이 있게, 통계 소양도 함께 챙기세요.',g:['미적분Ⅰ','확률과 통계','화학','생명과학'],j:['물질과 에너지','화학 반응의 세계','세포와 물질대사','생물의 유전','미적분Ⅱ'],y:['과학의 역사와 문화','융합과학 탐구','실용 통계']},
+  '자연·환경':{d:'지구·환경 과학과 데이터 분석 역량을 함께 쌓아 보세요.',g:['지구과학','화학','생명과학','확률과 통계'],j:['지구시스템과학','행성우주과학','물질과 에너지','데이터 과학'],y:['기후변화와 환경생태','기후변화와 지속가능한 세계','실용 통계']},
+  '경영·경제':{d:'경제·사회 교과와 수학(통계·경제 수학)의 조합이 중요합니다.',g:['확률과 통계','대수','사회와 문화','미적분Ⅰ'],j:['경제','경제 수학','국제 관계의 이해','법과 사회','데이터 과학'],y:['금융과 경제생활','실용 통계','사회문제 탐구']},
+  '인문·어문':{d:'읽고 쓰고 말하는 힘, 역사·윤리적 사고를 깊게 키워 보세요.',g:['독서와 작문','문학','화법과 언어','세계사','영어 독해와 작문'],j:['주제 탐구 독서','문학과 영상','영미 문학 읽기','동아시아 역사 기행','인문학과 윤리','윤리와 사상'],y:['독서 토론과 글쓰기','역사로 탐구하는 현대 세계','세계 문화와 영어']},
+  '사회·법·행정':{d:'정치·법·사회 교과와 토론·글쓰기 역량을 함께 보여 주세요.',g:['사회와 문화','현대사회와 윤리','독서와 작문','확률과 통계'],j:['정치','법과 사회','국제 관계의 이해','도시의 미래 탐구','영어 발표와 토론'],y:['사회문제 탐구','윤리문제 탐구','매체 의사소통']},
+  '교육':{d:'희망 교과의 심화 과목에 더해 교육·심리 관련 교양 과목을 고려하세요.',g:['독서와 작문','사회와 문화','확률과 통계'],j:['주제 탐구 독서','윤리와 사상','인문학과 윤리'],y:['독서 토론과 글쓰기','사회문제 탐구','언어생활 탐구']}
+};
+function renderCareer(k){
+  var d=CAREER[k];
+  document.getElementById('careerBody').innerHTML='<p style="margin:0 0 14px;color:var(--muted)">'+d.d+'</p>'+
+    '<div class="chips">'+d.g.map(function(s){return '<span class="chip g">'+s+'</span>'}).join('')+d.j.map(function(s){return '<span class="chip j">'+s+'</span>'}).join('')+d.y.map(function(s){return '<span class="chip y">'+s+'</span>'}).join('')+'</div>';
+  [].forEach.call(document.querySelectorAll('#careerTabs button'),function(b){b.classList.toggle('on',b.dataset.k===k)});
+}
+(function(){
+  var t=document.getElementById('careerTabs');
+  Object.keys(CAREER).forEach(function(k){var b=document.createElement('button');b.textContent=k;b.dataset.k=k;b.onclick=function(){renderCareer(k)};t.appendChild(b)});
+  renderCareer('공학·IT');
+})();
+
+/* ---------- calculator ---------- */
+(function(){
+  var ids=['g1','g2','g3','ch'],outs=['o1','o2','o3','oc'];
+  function upd(){
+    var v=ids.map(function(i){return +document.getElementById(i).value});
+    v.forEach(function(x,i){document.getElementById(outs[i]).textContent=x});
+    var sub=v[0]+v[1]+v[2],cr=v[3],tot=sub+cr;
+    document.getElementById('total').textContent=tot;
+    document.getElementById('sub').textContent=sub;
+    document.getElementById('cr').textContent=cr;
+    document.getElementById('gauge').style.width=Math.min(100,tot/192*100)+'%';
+    var vd=document.getElementById('verdict'),msg=[];
+    if(sub<174)msg.push('교과 '+(174-sub)+'학점 부족');
+    if(cr<18)msg.push('창체 '+(18-cr)+'학점 부족');
+    if(tot<192&&!msg.length)msg.push('총 '+(192-tot)+'학점 부족');
+    if(msg.length){vd.className='verdict no';vd.textContent='⚠ '+msg.join(' · ');}
+    else{vd.className='verdict ok';vd.textContent='✓ 졸업 학점 요건을 충족합니다.';}
+  }
+  ids.forEach(function(i){document.getElementById(i).addEventListener('input',upd)});upd();
+})();
+
+/* ---------- checklist ---------- */
+var CHECK={
+  '1학년':['진로 탐색 검사·상담 참여하기','학교 교육과정 편제표와 과목 선택 가이드북 읽기','공통과목 이수 기준(출석 2/3·성취율 40%) 챙기기','관심 학과의 대학 권장 과목 찾아보기','2학년 선택과목 수강신청 계획 세우기'],
+  '2학년':['선택과목 출석률 2/3 이상 유지하기','진로와 연결되는 진로·융합 선택과목 이수하기','공동교육과정·온라인학교 과목 필요 여부 확인','과목 세특에 드러날 탐구 활동 기록하기','3학년 과목 선택 및 진로 재점검하기'],
+  '3학년':['누적 학점(192학점) 졸업 요건 점검하기','미이수 과목 보충 이수 여부 확인','희망 대학 전형별 반영 요소 확인','통합형 수능 대비 계획 세우기','학년 수업일수 2/3 출석 확인']
+};
+(function(){
+  var box=document.getElementById('checklist'),key='gogyo-check',st={};
+  try{st=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){st={}}
+  function save(){try{localStorage.setItem(key,JSON.stringify(st))}catch(e){}}
+  Object.keys(CHECK).forEach(function(g){
+    var col=document.createElement('div');col.className='card check-col';
+    var h=document.createElement('h3');col.appendChild(h);
+    function count(){var n=CHECK[g].filter(function(_,i){return st[g+i]}).length;h.innerHTML=g+' <small>'+n+'/'+CHECK[g].length+'</small>'}
+    CHECK[g].forEach(function(t,i){
+      var l=document.createElement('label');var c=document.createElement('input');c.type='checkbox';c.checked=!!st[g+i];
+      c.onchange=function(){st[g+i]=c.checked;save();count()};
+      var s=document.createElement('span');s.textContent=t;l.appendChild(c);l.appendChild(s);col.appendChild(l);
+    });
+    count();box.appendChild(col);
+  });
+})();
+
+/* ---------- FAQ ---------- */
+var FAQ=[
+  ['선택과목은 시험을 못 봐도 학점을 받나요?','2026학년도부터 선택과목은 과목 출석률 2/3 이상만 충족하면 학점을 취득합니다. 다만 성적(성취도·석차 등급)은 그대로 학생부에 기록되고 대입에 반영되므로 학업 관리는 여전히 중요합니다.'],
+  ['공통과목에서 성취율 40%를 넘지 못하면 졸업을 못 하나요?','바로 졸업이 막히지는 않습니다. 학교가 운영하는 보충지도(최소 성취수준 보장지도)를 이수하면 해당 과목 학점을 받을 수 있고, 개편된 온라인 보충과정을 활용하는 방법도 있습니다.'],
+  ['우리 학교에 듣고 싶은 과목이 없으면요?','공동교육과정(인근 학교 연합), 시·도교육청 온라인학교, 교육청이 승인한 학교 밖 교육 기관을 통해 수강하고 학점을 인정받을 수 있습니다.'],
+  ['공강 시간에는 무엇을 하나요?','자율학습, 최소 성취수준 보장지도, 진로·학업 설계 상담 등에 활용합니다. 학교마다 공강 운영 공간과 규칙이 다르니 학교 안내를 확인하세요.'],
+  ['내신이 5등급이면 경쟁이 줄어드나요?','1등급 비율이 4%에서 10%로 넓어져 최상위권 부담은 줄었지만, 한 등급의 폭이 커져 등급 하락의 영향도 커졌습니다. 성취도(A~E)도 함께 기재되므로 과목별 성취 관리가 중요합니다.'],
+  ['과목 선택 때 대입 유불리만 따져도 될까요?','통합형 수능으로 수능만으로는 학업 이력이 잘 드러나지 않기 때문에, 대학은 학생부의 과목 이수 경로와 탐구 과정을 함께 봅니다. 진로와 연결된 일관된 선택이 장기적으로 유리합니다.'],
+  ['창의적 체험활동 학점은 어떻게 채우나요?','3년간 18학점(288시간)이 편성되며, 학년별 전체 수업일수의 2/3 이상 출석하면 그 학년에 편성된 창체 이수 학점을 충족한 것으로 인정됩니다.'],
+  ['수강신청 후 과목을 바꿀 수 있나요?','학교별로 정한 정정 기간 안에서 가능한 경우가 많지만, 시간표·교원 배정이 연동되어 있어 제한적입니다. 처음 선택할 때 충분히 상담받는 것이 가장 좋습니다.']
+];
+(function(){
+  var b=document.getElementById('faqList');
+  FAQ.forEach(function(q){var d=document.createElement('details');d.innerHTML='<summary>'+q[0]+'</summary><div class="a">'+q[1]+'</div>';b.appendChild(d)});
+})();
+
+/* ---------- glossary ---------- */
+var GL=[
+  ['학점','과목 이수 단위. 1학점은 50분 수업 16회 분량입니다.'],
+  ['공통과목','모든 학생이 이수하는 기초 과목(국·수·영·통합사회·한국사·통합과학·과탐실험). 총 48학점.'],
+  ['일반 선택','교과별 학문의 기본 이해를 위한 선택과목.'],
+  ['진로 선택','교과별 심화 학습과 진로 탐구를 위한 선택과목.'],
+  ['융합 선택','교과 내·교과 간 주제 융합과 실생활 적용을 위한 선택과목.'],
+  ['필수 이수 학점','교과(군)별로 반드시 이수해야 하는 최소 학점. 교과 합계 84학점.'],
+  ['자율 이수 학점','학교와 학생이 선택해 편성하는 학점. 교과 90학점.'],
+  ['학업성취율','평가 결과를 백분율로 환산한 값. 공통과목 이수 기준은 40% 이상.'],
+  ['성취도','성취율에 따른 A~E 단계. 40% 미만은 미이수(I).'],
+  ['미이수(I)','이수 기준에 도달하지 못해 학점을 취득하지 못한 상태.'],
+  ['최성보','최소 성취수준 보장지도. 예방지도와 보충지도로 학생의 이수를 돕는 제도.'],
+  ['예방지도','학기 중 미도달이 우려되는 학생을 대상으로 하는 사전 지원.'],
+  ['보충지도','학기 말 미이수 학생이 학점을 취득하도록 운영하는 보충 과정.'],
+  ['공강','개인 시간표상 수업이 없는 시간. 자율학습·상담 등에 활용.'],
+  ['공동교육과정','여러 학교가 함께 과목을 개설해 운영하는 교육과정.'],
+  ['온라인학교','시·도교육청이 운영하는 실시간 온라인 수업 학교.'],
+  ['학교 밖 교육','교육청 승인 기관(대학·공공기관 등)에서 받은 교육의 학점 인정.'],
+  ['내신 5등급제','상대평가 등급을 5단계(10/24/32/24/10%)로 산출하는 방식.'],
+  ['통합형 수능','국어·수학·사회·과학 선택과목 없이 모든 수험생이 같은 범위로 응시하는 수능.'],
+  ['창체','창의적 체험활동. 자율·자치, 동아리, 진로 활동 등. 3년 18학점.']
+];
+(function(){
+  var list=document.getElementById('glList'),inp=document.getElementById('glSearch');
+  function r(q){
+    q=(q||'').trim();
+    var f=GL.filter(function(g){return !q||g[0].indexOf(q)>-1||g[1].indexOf(q)>-1});
+    list.innerHTML=f.length?f.map(function(g){return '<div class="card"><dt>'+g[0]+'</dt><dd>'+g[1]+'</dd></div>'}).join(''):'<p style="color:var(--muted)">검색 결과가 없습니다.</p>';
+  }
+  inp.addEventListener('input',function(){r(inp.value)});r('');
+})();
+
+/* ---------- nav highlight ---------- */
+(function(){
+  var links=[].slice.call(document.querySelectorAll('#navlinks a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'))});
+  if(!('IntersectionObserver' in window))return;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var i=secs.indexOf(e.target);links.forEach(function(l,j){l.classList.toggle('on',i===j)});if(links[i])links[i].scrollIntoView({block:'nearest',inline:'center'})}})},{rootMargin:'-45% 0px -50% 0px'});
+  secs.forEach(function(s){if(s)io.observe(s)});
+})();
+</script>
+</body>
+</html>
