@@ -45,7 +45,7 @@ nav.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 
 nav.top .wrap{display:flex;align-items:center;gap:16px;height:60px}
 .brand{font-weight:800;letter-spacing:-.02em;white-space:nowrap}
 .brand b{color:var(--accent)}
-.links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
+.links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;position:relative}
 .links::-webkit-scrollbar{display:none}
 .links a{color:var(--muted);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:8px;white-space:nowrap}
 .links a:hover,.links a.on{background:var(--accent-soft);color:var(--accent-ink)}
@@ -146,6 +146,23 @@ td.c{text-align:center}
 .dist .b{width:100%;border-radius:10px 10px 4px 4px;background:var(--accent);opacity:.85;display:flex;align-items:flex-start;justify-content:center;color:#fff;font-weight:700;font-size:13px;padding-top:6px}
 .dist .lb{font-size:13px;color:var(--muted)}
 
+/* 9→5 grade */
+.gbar-label{font-size:13px;color:var(--muted);margin:10px 0 4px;font-weight:600}
+.gbar{display:flex;height:40px;border-radius:10px;overflow:hidden;gap:2px;background:var(--line)}
+.gbar div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12.5px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden}
+.gscale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--faint);margin-top:6px;font-family:"JetBrains Mono",monospace}
+ul.plain{margin:0;padding-left:18px;color:var(--muted);font-size:14.5px}
+ul.plain li{margin:5px 0}
+.conv{margin-top:18px;background:var(--surface-2);border-radius:14px;padding:16px}
+.conv-out{display:flex;align-items:center;gap:12px;margin-top:12px}
+.conv-out>div:not(.arrow){flex:1;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.conv-out span{display:block;font-size:13px;color:var(--muted)}
+.conv-out b{font-size:34px;line-height:1.1}
+.conv-out small{color:var(--muted);margin-left:2px}
+.conv-out .hi{border-color:var(--accent)!important}
+.conv-out .hi b{color:var(--accent)}
+.conv-out .arrow{color:var(--faint);font-size:20px}
+
 /* calc */
 .calc{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
 .row{display:flex;align-items:center;gap:12px;margin:12px 0}
@@ -193,6 +210,8 @@ footer{padding:36px 0 60px;color:var(--faint);font-size:13px;border-top:1px soli
   .steps{grid-template-columns:repeat(2,1fr)}
   .calc,.grid2,.compare,.gl{grid-template-columns:1fr}
   .brand span{display:none}
+  .calc>*,.grid2>*,.grid3>*{min-width:0}
+  .row label{width:64px}
 }
 @media print{nav.top,.theme-btn{display:none}section{break-inside:avoid}}
 </style>
@@ -449,6 +468,65 @@ footer{padding:36px 0 60px;color:var(--faint);font-size:13px;border-top:1px soli
         <div class="note"><span>🎯</span><div>통합형 수능으로 학업 이력 정보가 줄어드는 만큼, 대학들은 <b>학생부에 드러난 과목 선택과 학업 과정</b>을 더 꼼꼼히 보는 흐름입니다. 희망 대학·학과의 권장 과목을 꼭 확인하세요.</div></div>
       </div>
     </div>
+
+    <!-- 9 → 5 등급 -->
+    <div class="card" style="margin-top:16px" id="grade95">
+      <span class="tag new">2025 고1부터</span>
+      <h3 style="margin-top:10px">내신 9등급제 → 5등급제, 무엇이 달라졌나</h3>
+      <p>2005년부터 쓰이던 9등급 상대평가가 고교학점제 첫 세대(2025학년도 고1, 2028학년도 대입)부터 5등급으로 바뀌었습니다. 등급 구간이 넓어진 만큼 같은 등급 안에 더 많은 학생이 들어갑니다.</p>
+
+      <p style="font-weight:700;margin:18px 0 6px;color:var(--text)">등급 구간 비교 (누적 비율 기준)</p>
+      <div class="gbar-label">9등급제</div>
+      <div class="gbar" id="bar9"></div>
+      <div class="gbar-label">5등급제</div>
+      <div class="gbar" id="bar5"></div>
+      <div class="gscale"><span>상위 0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+
+      <div class="tbl-wrap" style="margin-top:18px">
+        <table style="min-width:0">
+          <thead><tr><th>구분</th><th>9등급제 (~2024 입학생)</th><th>5등급제 (2025 입학생~)</th></tr></thead>
+          <tbody>
+            <tr><td><b>등급 비율</b></td><td class="mono">4 · 7 · 12 · 17 · 20 · 17 · 12 · 7 · 4 (%)</td><td class="mono">10 · 24 · 32 · 24 · 10 (%)</td></tr>
+            <tr><td><b>1등급 컷</b></td><td>상위 <b class="mono">4%</b> (30명 중 1명)</td><td>상위 <b class="mono">10%</b> (30명 중 3명)</td></tr>
+            <tr><td><b>2등급까지</b></td><td>누적 <span class="mono">11%</span></td><td>누적 <span class="mono">34%</span></td></tr>
+            <tr><td><b>성적 표기</b></td><td>공통·일반선택: 석차등급 + 원점수·평균·표준편차<br>진로선택: 성취도(A·B·C)만, 석차등급 없음</td><td>거의 모든 과목: <b>석차등급 + 성취도(A~E)</b> 병기<br>사회·과학 융합선택 일부: 성취도만</td></tr>
+            <tr><td><b>진로선택 과목</b></td><td>절대평가(3단계)로 등급 부담 없음</td><td>상대평가 5등급 적용 → 수강 인원과 과목 선택이 등급에 영향</td></tr>
+            <tr><td><b>대입 적용</b></td><td>2027학년도 대입까지</td><td>2028학년도 대입부터</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid2" style="margin-top:16px">
+        <div>
+          <p style="font-weight:700;margin:0 0 6px;color:var(--text)">기대하는 효과</p>
+          <ul class="plain">
+            <li>극소수 1등급 경쟁 완화, 소수점 차이로 등급이 갈리는 부담 감소</li>
+            <li>소인수 과목에서도 1등급이 나올 수 있어 과목 선택의 폭 확대</li>
+            <li>성취도(절대평가)와 석차등급을 함께 보여 줘 학습 수준 파악이 쉬워짐</li>
+          </ul>
+        </div>
+        <div>
+          <p style="font-weight:700;margin:0 0 6px;color:var(--text)">함께 나오는 우려</p>
+          <ul class="plain">
+            <li>한 등급 폭이 넓어져 등급이 하나만 떨어져도 영향이 큼(예: 2등급 → 3등급)</li>
+            <li>1등급 안의 변별력이 낮아져 대학이 면접·수능 최저·학생부 내용을 더 봄</li>
+            <li>수강 인원이 많은 과목, 학생 수가 많은 학교로 쏠림이 생길 수 있음</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="conv">
+        <p style="font-weight:700;margin:0 0 4px;color:var(--text)">내 석차 백분위로 비교해 보기</p>
+        <p style="font-size:13.5px;margin:0 0 10px">과목 석차가 상위 몇 %인지 넣으면 두 제도에서의 등급을 보여 줍니다. (수강자 수, 동점자 처리에 따라 실제 등급은 달라질 수 있어요.)</p>
+        <div class="row" style="margin:0"><label style="width:auto">상위</label><input type="range" min="0.5" max="100" step="0.5" value="8" id="pct"><output id="pctOut" class="mono" style="width:64px">8%</output></div>
+        <div class="conv-out">
+          <div><span>9등급제</span><b class="mono" id="g9">2</b><small>등급</small></div>
+          <div class="arrow">→</div>
+          <div class="hi"><span>5등급제</span><b class="mono" id="g5">1</b><small>등급</small></div>
+        </div>
+        <p style="font-size:13.5px;margin:10px 0 0" id="convMsg"></p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -615,6 +693,32 @@ function renderCareer(k){
   renderCareer('공학·IT');
 })();
 
+/* ---------- 9 vs 5 grades ---------- */
+(function(){
+  var P9=[4,7,12,17,20,17,12,7,4],P5=[10,24,32,24,10];
+  var C9=['#2238C9','#3654F4','#4F6BFF','#6F86FF','#8A9BFF','#A3B1FF','#B8C3FF','#CBD3FF','#DCE2FF'];
+  var C5=['#2238C9','#3654F4','#6F86FF','#A3B1FF','#CBD3FF'];
+  function draw(id,P,C){
+    var el=document.getElementById(id);
+    el.innerHTML=P.map(function(p,i){var dark=i<(P.length===9?5:3);return '<div style="flex:'+p+';background:'+C[i]+';color:'+(dark?'#fff':'#1D2A6B')+'" title="'+(i+1)+'등급 '+p+'%">'+(P.length===9?(i+1):(i+1)+'등급')+'</div>'}).join('');
+  }
+  draw('bar9',P9,C9);draw('bar5',P5,C5);
+  function grade(P,x){var c=0;for(var i=0;i<P.length;i++){c+=P[i];if(x<=c)return i+1}return P.length}
+  var r=document.getElementById('pct');
+  function upd(){
+    var x=+r.value,a=grade(P9,x),b=grade(P5,x);
+    document.getElementById('pctOut').textContent=x+'%';
+    document.getElementById('g9').textContent=a;
+    document.getElementById('g5').textContent=b;
+    var m;
+    if(b===1&&a>1)m='9등급제에서는 '+a+'등급이지만, 5등급제에서는 1등급(상위 10%) 안에 들어갑니다.';
+    else if(b===1)m='두 제도 모두 1등급입니다. 다만 5등급제 1등급에는 30명 중 3명이 함께 들어갑니다.';
+    else m='5등급제 '+b+'등급은 9등급제의 여러 등급을 묶은 넓은 구간이라, 같은 등급 안에서도 실력 차이가 클 수 있습니다.';
+    document.getElementById('convMsg').textContent=m;
+  }
+  r.addEventListener('input',upd);upd();
+})();
+
 /* ---------- calculator ---------- */
 (function(){
   var ids=['g1','g2','g3','ch'],outs=['o1','o2','o3','oc'];
@@ -694,7 +798,8 @@ var GL=[
   ['공동교육과정','여러 학교가 함께 과목을 개설해 운영하는 교육과정.'],
   ['온라인학교','시·도교육청이 운영하는 실시간 온라인 수업 학교.'],
   ['학교 밖 교육','교육청 승인 기관(대학·공공기관 등)에서 받은 교육의 학점 인정.'],
-  ['내신 5등급제','상대평가 등급을 5단계(10/24/32/24/10%)로 산출하는 방식.'],
+  ['내신 5등급제','상대평가 등급을 5단계(10/24/32/24/10%)로 산출하는 방식. 2025 고1부터 적용.'],
+  ['내신 9등급제','2005년 도입된 기존 상대평가(4/7/12/17/20/17/12/7/4%). 2024 입학생까지 적용.'],
   ['통합형 수능','국어·수학·사회·과학 선택과목 없이 모든 수험생이 같은 범위로 응시하는 수능.'],
   ['창체','창의적 체험활동. 자율·자치, 동아리, 진로 활동 등. 3년 18학점.']
 ];
@@ -713,7 +818,7 @@ var GL=[
   var links=[].slice.call(document.querySelectorAll('#navlinks a'));
   var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'))});
   if(!('IntersectionObserver' in window))return;
-  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var i=secs.indexOf(e.target);links.forEach(function(l,j){l.classList.toggle('on',i===j)});if(links[i])links[i].scrollIntoView({block:'nearest',inline:'center'})}})},{rootMargin:'-45% 0px -50% 0px'});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var i=secs.indexOf(e.target);links.forEach(function(l,j){l.classList.toggle('on',i===j)});var a=links[i];if(a){var box=a.parentNode;var target=a.offsetLeft-(box.clientWidth-a.offsetWidth)/2;box.scrollTo({left:Math.max(0,target),behavior:'smooth'})}}})},{rootMargin:'-45% 0px -50% 0px'});
   secs.forEach(function(s){if(s)io.observe(s)});
 })();
 </script>
