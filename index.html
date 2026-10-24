@@ -162,6 +162,8 @@
   .dropdown-panel a:hover{background:var(--bg-alt);}
   .dropdown-panel a b{font-size:13.5px;font-weight:700;letter-spacing:-0.01em;}
   .dropdown-panel a small{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);}
+  .dropdown-panel a.is-soon b{color:#A3A6B3;font-weight:500;}
+  .dropdown-panel a.is-soon small{color:#B8BBC6;}
 
   /* Mobile accordion (다운로드) */
   .mm-accordion button{
@@ -688,9 +690,9 @@
         </button>
         <div class="dropdown-panel">
           <a href="#/teacher-quiz" data-route="teacher-quiz"><b>AI Quiz Teacher</b><small>AVAILABLE</small></a>
-          <a href="#/teacher-material" data-route="teacher-material"><b>수업자료</b><small>COMING SOON</small></a>
-          <a href="#/teacher-assessment" data-route="teacher-assessment"><b>수행평가</b><small>COMING SOON</small></a>
-          <a href="#/teacher-record" data-route="teacher-record"><b>생기부 AI</b><small>COMING SOON</small></a>
+          <a class="is-soon" href="#/teacher-material" data-route="teacher-material"><b>수업설계</b><small>COMING SOON</small></a>
+          <a class="is-soon" href="#/teacher-assessment" data-route="teacher-assessment"><b>수행평가</b><small>COMING SOON</small></a>
+          <a class="is-soon" href="#/teacher-record" data-route="teacher-record"><b>생기부 AI</b><small>COMING SOON</small></a>
         </div>
       </div>
 
@@ -701,9 +703,9 @@
         </button>
         <div class="dropdown-panel">
           <a href="#/tutor-quiz" data-route="tutor-quiz"><b>AI Quiz Student</b><small>AVAILABLE</small></a>
-          <a href="#/tutor-teacher" data-route="tutor-teacher"><b>AI 튜터</b><small>COMING SOON</small></a>
-          <a href="#/tutor-plan" data-route="tutor-plan"><b>AI 학습 플랜</b><small>COMING SOON</small></a>
-          <a href="#/ai-interview" data-route="ai-interview"><b>AI 면접</b><small>COMING SOON</small></a>
+          <a class="is-soon" href="#/tutor-teacher" data-route="tutor-teacher"><b>AI 튜터</b><small>COMING SOON</small></a>
+          <a class="is-soon" href="#/tutor-plan" data-route="tutor-plan"><b>AI 학습 플랜</b><small>COMING SOON</small></a>
+          <a class="is-soon" href="#/ai-interview" data-route="ai-interview"><b>AI 면접</b><small>COMING SOON</small></a>
         </div>
       </div>
 
@@ -774,7 +776,7 @@
       </button>
       <div class="mm-sub">
         <a href="#/teacher-quiz" data-route="teacher-quiz">AI Quiz Teacher</a>
-        <a href="#/teacher-material" data-route="teacher-material">수업자료</a>
+        <a href="#/teacher-material" data-route="teacher-material">수업설계</a>
         <a href="#/teacher-assessment" data-route="teacher-assessment">수행평가</a>
         <a href="#/teacher-record" data-route="teacher-record">생기부 AI</a>
       </div>
@@ -913,7 +915,7 @@
 
         <a href="#/teacher-material" data-route="teacher-material" class="feat-card reveal">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
-          <h3>수업자료</h3>
+          <h3>수업설계</h3>
           <p>수업 주제와 학습 수준을 입력하면 수업자료와 활동 아이디어를 생성합니다.</p>
           <span class="status-tag soon"><i></i>Coming Soon</span>
         </a>
@@ -1256,7 +1258,7 @@
     'teacher-quiz':        { eyebrow: 'TEACHER AI',  title: 'AI Quiz Teacher' },
     'tutor-quiz':          { eyebrow: 'AI TUTOR',    title: 'AI Quiz Student' },
     'tutor-teacher':       { eyebrow: 'AI TUTOR',    title: 'AI 튜터' },
-    'teacher-material':    { eyebrow: 'TEACHER AI',  title: '수업자료' },
+    'teacher-material':    { eyebrow: 'TEACHER AI',  title: '수업설계' },
     'teacher-assessment':  { eyebrow: 'TEACHER AI',  title: '수행평가' },
     'teacher-record':      { eyebrow: 'TEACHER AI',  title: '생기부 AI' },
     'tutor-plan':          { eyebrow: 'AI TUTOR',    title: 'AI 학습 플랜' },
