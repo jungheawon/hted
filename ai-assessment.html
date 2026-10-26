@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI 수행평가 설계 · HTRO EDU</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 왼쪽 요청 패널(sticky) + 오른쪽 배점 구성 바와 5단계 수행평가 계획안 */
+:root{
+  --bg:#FAFAFB; --surface:#FFFFFF; --sunk:#F1F2F7; --line:#E3E5EE;
+  --fg:#15172A; --muted:#62667E; --faint:#9A9DB2;
+  --accent:#3654F4; --accent-soft:#E8ECFF; --accent-ink:#FFFFFF;
+  --c-task:#F2A33A; --c-rubric:#12A07A; --c-notice:#3654F4; --c-record:#8B5CF6;
+  --warn:#B4541A;
+  --sans:"Pretendard Variable",Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.3}
+button,select{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1180px;margin:0 auto;padding-block:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em}
+.brand .mark{width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:600}
+.brand small{font-weight:500;color:var(--muted);font-size:13px}
+.top .tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+
+.shell{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:880px){.shell{grid-template-columns:minmax(0,1fr)}}
+
+/* 요청 패널 */
+.chat{position:sticky;top:16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-width:0}
+@media (max-width:880px){.chat{position:static}}
+.chat-log{padding:18px;display:flex;flex-direction:column;gap:14px}
+.who{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+.bubble-user{align-self:flex-end;max-width:92%;background:var(--accent);color:var(--accent-ink);padding:10px 14px;border-radius:14px 14px 4px 14px;font-size:14.5px;white-space:pre-wrap;word-break:keep-all}
+.msg-ai{display:flex;flex-direction:column;gap:8px}
+.msg-ai p{margin:0;font-size:14.5px}
+.toc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.toc a{display:flex;align-items:center;gap:12px;padding:10px 12px;color:var(--fg);text-decoration:none;font-weight:500;font-size:14.5px;border-top:1px solid var(--line)}
+.toc li:first-child a{border-top:0}
+.toc a:hover{background:var(--sunk)}
+.toc .n{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;width:20px}
+.toc .m{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.thinking{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px}
+.dots{display:inline-flex;gap:4px}.dots i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:b 1.2s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.err{color:var(--warn);font-size:14px}
+
+.composer{border-top:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:10px}
+.composer > label,.opt label{font-size:12.5px;font-weight:700;color:var(--muted)}
+.composer textarea{width:100%;min-height:92px;resize:vertical;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:10px;padding:10px 12px;font:inherit;font-size:14.5px;line-height:1.55}
+.composer textarea:focus,.opt select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.opt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.opt select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:7px 8px;font-size:13.5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 10px;font-size:12.5px}
+.chip:hover{color:var(--fg);border-color:var(--faint)}
+.row{display:flex;gap:8px;align-items:center}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14.5px}
+.btn-primary{background:var(--accent);color:var(--accent-ink);flex:1}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:var(--sunk);color:var(--fg)}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+
+/* 결과 */
+.plan{min-width:0;display:flex;flex-direction:column;gap:22px}
+.plan-head{display:flex;flex-direction:column;gap:10px}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.meta span{font-size:12.5px;font-weight:500;background:var(--sunk);color:var(--muted);padding:3px 10px;border-radius:6px}
+.plan-head h1{font-size:clamp(24px,3.2vw,32px);font-weight:800;letter-spacing:-.025em}
+.plan-head .sum{color:var(--muted);margin:0;max-width:62ch}
+.head-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* 배점 구성 바 */
+.timeline{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px}
+.tl-label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.tl-label b{color:var(--fg);font-family:var(--mono);font-weight:600}
+.bar{display:flex;height:34px;border-radius:8px;overflow:hidden;gap:2px}
+.seg{display:flex;align-items:center;padding:0 8px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.legend b{font-family:var(--mono);font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums}
+
+/* 섹션 */
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;scroll-margin-top:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sec-h .n{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--sc,var(--accent))}
+.sec-h h2{font-size:19px;font-weight:800;letter-spacing:-.015em}
+.sec-h .min{margin-left:auto;font-family:var(--mono);font-size:12.5px;color:var(--sc,var(--muted));font-variant-numeric:tabular-nums;border:1px solid currentColor;border-radius:6px;padding:1px 8px}
+.sec-act{margin-left:auto}
+.sec-h .min + .sec-act{margin-left:0}
+.icon-btn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:600}
+.icon-btn:hover{color:var(--fg);border-color:var(--faint)}
+
+.kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 14px;margin:0}
+.kv dt{font-size:13px;font-weight:700;color:var(--muted)}
+.kv dd{margin:0}
+.std{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.std li{background:var(--accent-soft);border-radius:8px;padding:6px 10px;font-size:14px}
+.mats{display:flex;flex-wrap:wrap;gap:6px}
+.mats span{font-size:12.5px;border:1px solid var(--line);border-radius:6px;padding:2px 8px;color:var(--muted)}
+
+.prompt-box{border-left:3px solid var(--c-task);background:var(--sunk);border-radius:0 10px 10px 0;padding:12px 16px;white-space:pre-wrap}
+.steps{display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:12px 0;border-top:1px dashed var(--line)}
+.step:first-child{border-top:0;padding-top:0}
+.step .t{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:2px}
+.step h3{font-size:15.5px;font-weight:700;margin-bottom:2px}
+.step p{margin:0;color:var(--muted);font-size:14.5px}
+.sub{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+
+/* 채점 기준표 */
+.rubric-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.rubric{border-collapse:collapse;width:100%;min-width:640px;font-size:13.5px}
+.rubric th,.rubric td{border-bottom:1px solid var(--line);border-left:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+.rubric tr > :first-child{border-left:0}
+.rubric tbody tr:last-child > *{border-bottom:0}
+.rubric thead th{background:var(--sunk);font-size:12.5px;color:var(--muted);font-weight:700;white-space:nowrap}
+.rubric tbody th{font-weight:700;width:150px}
+.rubric tbody th .pt{display:block;font-family:var(--mono);font-size:12px;color:var(--c-rubric);font-weight:600;margin-top:2px}
+.rubric .sc{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--c-rubric);background:#E3F6EF;border-radius:5px;padding:0 6px;margin-bottom:4px}
+.rubric td p{margin:0;color:var(--fg)}
+.tip{background:var(--sunk);border-radius:10px;padding:10px 14px;font-size:14px;color:var(--muted)}
+.tip b{color:var(--fg)}
+
+.notice{border:1px solid var(--line);border-radius:10px;padding:16px 18px;white-space:pre-wrap;font-size:14.5px;background:var(--bg)}
+.recs{display:flex;flex-direction:column;gap:10px}
+.rec{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.rec-top{display:flex;align-items:center;gap:8px}
+.lv{font-size:12px;font-weight:700;color:var(--c-record);background:#F1EBFE;border-radius:6px;padding:1px 8px}
+.bytes{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.rec-top .icon-btn{margin-left:auto}
+.rec p{margin:0}
+
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:28px 24px;display:flex;flex-direction:column;gap:14px}
+.empty-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.empty-list li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--sunk);color:var(--muted);font-weight:500}
+.empty-list .n{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:500}
+@media (prefers-reduced-motion:reduce){.dots i{animation:none}html{scroll-behavior:auto}}
+html{scroll-behavior:smooth}
+@media (max-width:560px){.opts{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.kv{grid-template-columns:minmax(0,1fr);gap:2px}.kv dd{margin-bottom:8px}.sec{padding:18px 16px}}
+
+/* 인쇄: 계획안만 */
+@media print{
+  body{background:#fff;padding:0;font-size:12.5px}
+  .top,.chat,.head-actions,.sec-act,.rec-top .icon-btn,.toast{display:none!important}
+  .shell{display:block}
+  .sec,.timeline{break-inside:avoid;border-color:#ccc}
+  .plan{gap:14px}
+  .rubric{min-width:0}
+  .rubric-wrap{overflow:visible}
+  .seg,.legend i,.rubric .sc,.lv{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><span class="mark">H</span>HTRO EDU <small>AI 수행평가</small></div>
+  <span class="tag">Assessment Designer</span>
+</header>
+
+<main class="shell">
+  <aside class="chat" aria-label="AI 수행평가 설계 요청">
+    <div class="chat-log" id="log"></div>
+    <form class="composer" id="form">
+      <label for="prompt">어떤 수행평가를 만들까요?</label>
+      <textarea id="prompt" name="prompt" placeholder="예: 고1 정보 데이터 분석 단원, 공공데이터로 문제를 정하고 분석 보고서를 쓰는 수행평가"></textarea>
+      <div class="opts">
+        <div class="opt"><label for="method">평가 방법</label>
+          <select id="method">
+            <option value="">AI가 정하기</option>
+            <option>논술형</option><option>프로젝트</option><option>실험·실습</option>
+            <option>발표·토론</option><option>포트폴리오</option><option>프로그래밍</option>
+          </select></div>
+        <div class="opt"><label for="levels">채점 단계</label>
+          <select id="levels">
+            <option value="5">5단계 (A~E)</option>
+            <option value="3">3단계 (상·중·하)</option>
+            <option value="4">4단계</option>
+          </select></div>
+        <div class="opt"><label for="score">만점</label>
+          <select id="score">
+            <option>100</option><option>50</option><option>30</option><option selected>20</option><option>10</option>
+          </select></div>
+      </div>
+      <div class="chips" id="chips">
+        <button type="button" class="chip">고1 국어 매체 비판적 읽기, 기사 비교 논술</button>
+        <button type="button" class="chip">고1 영어 자기소개 발표, 2차시</button>
+        <button type="button" class="chip">고1 수학 이차함수 활용 문제 만들기</button>
+        <button type="button" class="chip">고1 통합사회 인권 침해 사례 탐구 보고서, 모둠</button>
+        <button type="button" class="chip">고1 통합과학 산화·환원 실험 보고서</button>
+        <button type="button" class="chip">고1 정보 파이썬 리스트 활용 프로그램 만들기</button>
+      </div>
+      <div class="row">
+        <button type="submit" class="btn btn-primary" id="go">수행평가 만들기</button>
+        <button type="button" class="btn btn-ghost" id="stop" hidden>중지</button>
+      </div>
+      <p class="note">학년·과목·단원·평가 아이디어를 적으면 더 정확해요. <kbd>Ctrl</kbd>+<kbd>Enter</kbd>로 바로 보낼 수 있어요.</p>
+    </form>
+  </aside>
+
+  <section class="plan" id="plan" aria-live="polite"></section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ================================================================
+   ★ 설정 ★
+   AI 수업 설계와 같은 Apps Script 주소를 써요.
+   (서버가 type:"assessment"를 보고 수행평가로 처리해요.)
+   ================================================================ */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyP0vig94A0Y_BwEOeCqiSYPcp1aen7oBtE-Ei8IVWkhxRb9ZGtY28ORBO2YWRpLPqUFg/exec";
+/* ================================================================ */
+
+const SECTIONS = [
+  {key:"overview", n:"01", name:"평가 개요"},
+  {key:"task",     n:"02", name:"과제·수행 절차", color:"var(--c-task)"},
+  {key:"rubric",   n:"03", name:"채점 기준표",   color:"var(--c-rubric)"},
+  {key:"notice",   n:"04", name:"학생 안내문",   color:"var(--c-notice)"},
+  {key:"records",  n:"05", name:"세특 기재 예시", color:"var(--c-record)"}
+];
+const PALETTE = ["#12A07A","#3654F4","#F2A33A","#8B5CF6","#E2557B","#1E9BD7","#6B7A2F"];
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const arr = v => Array.isArray(v) ? v : [];
+let current = null, ctl = null;
+
+/* NEIS 기준 바이트(한글 3byte) — 세특 글자 수 확인용 */
+function neisBytes(s){ let b=0; for(const ch of String(s)){ const c=ch.codePointAt(0); b += c<=0x7F ? 1 : c<=0x7FF ? 2 : 3; } return b; }
+
+function renderPlan(p){
+  const o = p.overview, t = p.task, r = p.rubric;
+  const total = p.totalScore;
+
+  const segs = r.criteria.map((c,i)=>`<div class="seg" style="flex:${Math.max(c.points,0.0001)};background:${PALETTE[i%PALETTE.length]}" title="${esc(c.name)} ${c.points}점">${esc(c.name)}</div>`).join("");
+  const legend = r.criteria.map((c,i)=>`<span><i style="background:${PALETTE[i%PALETTE.length]}"></i>${esc(c.name)} <b>${c.points}</b></span>`).join("");
+
+  const head = (s, extra="") => `<div class="sec-h" style="--sc:${s.color||"var(--accent)"}"><span class="n">${s.n}</span><h2>${s.name}</h2>${extra}</div>`;
+  const copyBtn = (what,label="복사") => `<span class="sec-act"><button type="button" class="icon-btn" data-copy="${what}">${label}</button></span>`;
+
+  const body = {
+    overview: `
+      ${arr(o.standards).length?`<div class="sub">성취기준</div><ul class="std">${o.standards.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`:""}
+      <dl class="kv">
+        ${o.method?`<dt>평가 방법</dt><dd>${esc(o.method)}</dd>`:""}
+        ${o.type?`<dt>수행 형태</dt><dd>${esc(o.type)}</dd>`:""}
+        ${o.sessions?`<dt>소요 차시</dt><dd>${esc(o.sessions)}차시</dd>`:""}
+        ${o.weight?`<dt>반영 비율</dt><dd>${esc(o.weight)}</dd>`:""}
+        <dt>만점</dt><dd>${total}점</dd>
+        ${arr(o.elements).length?`<dt>평가 요소</dt><dd><div class="mats">${o.elements.map(x=>`<span>${esc(x)}</span>`).join("")}</div></dd>`:""}
+      </dl>`,
+    task: `
+      ${t.prompt?`<div class="sub">학생에게 제시할 과제</div><div class="prompt-box">${esc(t.prompt)}</div>`:""}
+      ${arr(t.steps).length?`<div class="sub">수행 절차</div><div class="steps">${t.steps.map(st=>`<div class="step"><div class="t">${esc(st.session)}</div><div><h3>${esc(st.title)}</h3><p>${esc(st.detail)}</p></div></div>`).join("")}</div>`:""}
+      ${arr(t.materials).length?`<div class="sub">준비물·제출물</div><div class="mats">${t.materials.map(m=>`<span>${esc(m)}</span>`).join("")}</div>`:""}
+      ${arr(t.rules).length?`<div class="sub">유의 사항</div><ul class="list">${t.rules.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}`,
+    rubric: `
+      <div class="rubric-wrap"><table class="rubric">
+        <thead><tr><th>평가 요소</th>${r.levels.map(l=>`<th>${esc(l)}</th>`).join("")}</tr></thead>
+        <tbody>${r.criteria.map(c=>`<tr><th>${esc(c.name)}<span class="pt">${c.points}점</span></th>${r.levels.map((_,i)=>{const s=c.scores[i]||{};return `<td>${s.score!=null&&s.score!==""?`<span class="sc">${esc(s.score)}점</span>`:""}<p>${esc(s.desc)}</p></td>`;}).join("")}</tr>`).join("")}</tbody>
+      </table></div>
+      ${r.fallback?`<div class="tip"><b>미응시·미제출</b> · ${esc(r.fallback)}</div>`:""}`,
+    notice: `<div class="notice">${esc(p.notice)}</div>`,
+    records: `<div class="recs">${arr(p.records).map((x,i)=>`<div class="rec"><div class="rec-top"><span class="lv">${esc(x.level)}</span><span class="bytes">${x.text.length}자 · ${neisBytes(x.text)}byte</span><button type="button" class="icon-btn" data-copy="rec-${i}">복사</button></div><p>${esc(x.text)}</p></div>`).join("")}</div>
+      <p class="note">학생 이름 없이 쓴 예시예요. 실제 관찰한 내용으로 고쳐 써 주세요.</p>`
+  };
+  const extra = {
+    rubric: `<span class="min">${total}점</span>${copyBtn("rubric","표 복사")}`,
+    notice: copyBtn("notice"),
+    records: ""
+  };
+
+  $("#plan").innerHTML = `
+    <div class="plan-head">
+      <div class="meta">${[p.grade,p.subject,p.unit,o.method,total+"점 만점"].filter(Boolean).map(x=>`<span>${esc(x)}</span>`).join("")}</div>
+      <h1>${esc(p.title)}</h1>
+      <p class="sum">${esc(p.summary)}</p>
+      <div class="head-actions">
+        <button class="btn btn-ghost" type="button" data-copy="all">전체 텍스트 복사</button>
+        <button class="btn btn-ghost" type="button" id="print">인쇄 · PDF</button>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="tl-label"><span>배점 구성</span><span>총 <b>${total}</b>점</span></div>
+      <div class="bar">${segs}</div>
+      <div class="legend">${legend}</div>
+    </div>
+    ${SECTIONS.map(s=>`<article class="sec" id="s-${s.key}">${head(s, extra[s.key]||"")}${body[s.key]}</article>`).join("")}
+  `;
+  $("#print").addEventListener("click", ()=>window.print());
+}
+
+function aiReply(p){
+  const right = {overview:p.overview.method||"", task:(p.overview.sessions?p.overview.sessions+"차시":""), rubric:p.totalScore+"점", notice:"", records:arr(p.records).length?arr(p.records).length+"개":""};
+  return `<div class="msg-ai"><div class="who">AI</div><p>수행평가 계획안을 구성했습니다.</p>
+    <ul class="toc">${SECTIONS.map(s=>`<li><a href="#s-${s.key}"><span class="n">${s.n}</span>${s.name}${right[s.key]?`<span class="m">${esc(right[s.key])}</span>`:""}</a></li>`).join("")}</ul></div>`;
+}
+function userBubble(text){ return `<div style="display:flex;flex-direction:column;align-items:flex-end"><div class="who">입력</div><div class="bubble-user">${esc(text)}</div></div>`; }
+function setLog(text, aiHtml){ $("#log").innerHTML = userBubble(text) + aiHtml; }
+
+/* ── 복사용 텍스트 ── */
+function rubricTSV(p){
+  const r = p.rubric, clean = s => String(s??"").replace(/[\t\n]+/g," ");
+  const rows = [["평가 요소","배점",...r.levels].join("\t")];
+  r.criteria.forEach(c=>rows.push([clean(c.name), c.points, ...r.levels.map((_,i)=>{const s=c.scores[i]||{};return clean((s.score!=null&&s.score!==""?s.score+"점: ":"")+(s.desc||""));})].join("\t")));
+  return rows.join("\n");
+}
+function planToText(p){
+  const o=p.overview, t=p.task, r=p.rubric, L=[];
+  L.push(`[${p.title}]`, [p.grade,p.subject,p.unit].filter(Boolean).join(" · ")+` · ${p.totalScore}점 만점`, p.summary||"", "");
+  L.push("01 평가 개요");
+  arr(o.standards).forEach(s=>L.push(`  성취기준: ${s}`));
+  if(o.method) L.push(`  평가 방법: ${o.method}`); if(o.type) L.push(`  수행 형태: ${o.type}`);
+  if(o.sessions) L.push(`  소요 차시: ${o.sessions}차시`); if(o.weight) L.push(`  반영 비율: ${o.weight}`);
+  if(arr(o.elements).length) L.push(`  평가 요소: ${o.elements.join(", ")}`); L.push("");
+  L.push("02 과제·수행 절차"); if(t.prompt) L.push(`  과제: ${t.prompt}`);
+  arr(t.steps).forEach(s=>L.push(`  - [${s.session}] ${s.title}: ${s.detail}`));
+  if(arr(t.materials).length) L.push(`  준비물·제출물: ${t.materials.join(", ")}`);
+  arr(t.rules).forEach(x=>L.push(`  * ${x}`)); L.push("");
+  L.push(`03 채점 기준표 (${p.totalScore}점)`);
+  r.criteria.forEach(c=>{ L.push(`  ■ ${c.name} (${c.points}점)`); r.levels.forEach((lv,i)=>{const s=c.scores[i]||{}; L.push(`    ${lv}${s.score!=null&&s.score!==""?` ${s.score}점`:""}: ${s.desc||""}`);}); });
+  if(r.fallback) L.push(`  미응시·미제출: ${r.fallback}`); L.push("");
+  L.push("04 학생 안내문", p.notice||"", "");
+  L.push("05 세특 기재 예시"); arr(p.records).forEach(x=>L.push(`  [${x.level}] ${x.text}`));
+  return L.join("\n");
+}
+
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,1800); }
+async function copyText(text, msg){
+  try{ await navigator.clipboard.writeText(text); toast(msg); }
+  catch{ const ta=document.createElement("textarea"); ta.value=text; ta.style.cssText="position:fixed;opacity:0"; document.body.append(ta); ta.select(); try{document.execCommand("copy"); toast(msg);}catch{toast("복사하지 못했어요. 직접 선택해 복사해 주세요");} ta.remove(); }
+}
+$("#plan").addEventListener("click", e=>{
+  const b = e.target.closest("[data-copy]"); if(!b || !current) return;
+  const w = b.dataset.copy;
+  if(w==="all") copyText(planToText(current), "계획안 전체를 복사했어요");
+  else if(w==="rubric") copyText(rubricTSV(current), "채점 기준표를 복사했어요 · 엑셀·한글 표에 붙여 넣으세요");
+  else if(w==="notice") copyText(current.notice||"", "학생 안내문을 복사했어요");
+  else if(w.startsWith("rec-")) copyText(current.records[+w.slice(4)]?.text||"", "세특 예시를 복사했어요");
+});
+
+/* ── 응답 정리 ── */
+const ERR = {
+  invalid_json:"계획안 형식이 어긋났어요. 다시 한 번 눌러 주세요.",
+  refused:"이 요청으로는 수행평가를 만들 수 없어요. 내용을 바꿔 주세요.",
+  auth:"AI 키 설정에 문제가 있어요. 관리자에게 알려 주세요.",
+  no_key:"서버에 AI 키가 아직 등록되지 않았어요. 관리자에게 알려 주세요.",
+  no_url:"아직 서버 주소가 들어 있지 않아요. 파일 안의 APPS_SCRIPT_URL에 주소를 넣어 주세요.",
+  rate_limited:"지금 사용하는 선생님이 많아요. 1분쯤 뒤에 다시 눌러 주세요.",
+  overloaded:"AI 서버가 바빠요. 잠시 후 다시 눌러 주세요.",
+  too_long:"요청이 너무 길어요. 500자 안으로 줄여 주세요.",
+  network:"서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요."
+};
+
+function normalize(p){
+  if(!p || typeof p!=="object" || !p.rubric || !Array.isArray(p.rubric.criteria) || !p.rubric.criteria.length) throw {code:"invalid_json"};
+  p.overview = p.overview || {}; p.task = p.task || {};
+  const r = p.rubric;
+  r.criteria = r.criteria.map(c=>({name:c.name||"평가 요소", points:Number(c.points)||0, scores:arr(c.scores)}));
+  const maxLv = Math.max(...r.criteria.map(c=>c.scores.length), 1);
+  r.levels = arr(r.levels).length ? r.levels.slice(0,maxLv) : Array.from({length:maxLv},(_,i)=>`${i+1}단계`);
+  while(r.levels.length < maxLv) r.levels.push(`${r.levels.length+1}단계`);
+  p.totalScore = r.criteria.reduce((a,c)=>a+c.points,0);
+  p.records = arr(p.records).filter(x=>x && x.text).map(x=>({level:x.level||"", text:String(x.text)}));
+  if(Array.isArray(p.notice)) p.notice = p.notice.join("\n");
+  return p;
+}
+
+function buildRequest(text){
+  const method = $("#method").value, lv = $("#levels").value, sc = $("#score").value;
+  const lvText = lv==="5" ? "5단계(A~E)" : lv==="3" ? "3단계(상·중·하)" : "4단계";
+  return `${text}\n[조건] ${method?`평가 방법: ${method}, `:""}채점 단계: ${lvText}, 만점: ${sc}점`;
+}
+
+$("#chips").addEventListener("click", e=>{ const b=e.target.closest(".chip"); if(b){ $("#prompt").value=b.textContent; $("#prompt").focus(); }});
+$("#stop").addEventListener("click", ()=>ctl?.abort());
+$("#prompt").addEventListener("keydown", e=>{ if(e.key==="Enter" && (e.metaKey||e.ctrlKey)) $("#form").requestSubmit(); });
+
+$("#form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const text = $("#prompt").value.trim();
+  if(!text) return;
+  if(text.length > 500){ setLog(text, `<div class="msg-ai"><div class="who">AI</div><p class="err">${ERR.too_long}</p></div>`); return; }
+  ctl = new AbortController();
+  $("#go").disabled = true; $("#stop").hidden = false;
+  setLog(text, `<div class="msg-ai"><div class="who">AI</div><div class="thinking"><span class="dots"><i></i><i></i><i></i></span>수행평가를 설계하고 있어요…</div></div>`);
+  try{
+    const p = normalize(await callServer(buildRequest(text), ctl.signal));
+    current = p;
+    renderPlan(p); setLog(text, aiReply(p));
+  }catch(err){
+    const code = err?.code;
+    if(code === "cancelled") setLog(text, `<div class="msg-ai"><div class="who">AI</div><p class="note">생성을 중지했어요.</p></div>`);
+    else setLog(text, `<div class="msg-ai"><div class="who">AI</div><p class="err">${esc(ERR[code] || "잠시 연결이 끊겼어요. 다시 눌러 주세요.")}</p></div>`);
+  }finally{
+    $("#go").disabled = false; $("#stop").hidden = true;
+  }
+});
+
+function renderEmpty(){
+  $("#log").innerHTML = `<div class="msg-ai"><div class="who">AI</div><p>어떤 수행평가를 만들까요? 학년·과목·단원과 평가하고 싶은 활동을 알려 주시면 채점 기준표와 학생 안내문, 세특 예시까지 만들어 드릴게요.</p></div>`;
+  $("#plan").innerHTML = `<div class="empty">
+    <div class="sub">수행평가 계획안이 여기에 만들어져요</div>
+    <ol class="empty-list">${SECTIONS.map(s=>`<li><span class="n">${s.n}</span>${s.name}</li>`).join("")}</ol>
+    <p class="note">왼쪽에 요청을 적거나 예시 버튼을 누른 뒤 ‘수행평가 만들기’를 눌러 주세요.</p>
+  </div>`;
+}
+renderEmpty();
+
+/* ── 서버(Apps Script) 연결 ── */
+async function callServer(request, signal){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("여기에")) throw {code:"no_url"};
+  let res;
+  try{
+    // text/plain으로 보내야 Apps Script가 브라우저 요청을 받아 줘요.
+    res = await fetch(APPS_SCRIPT_URL, {
+      method:"POST", signal, redirect:"follow",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify({ type:"assessment", request })
+    });
+  }catch(e){ throw {code: e?.name==="AbortError" ? "cancelled" : "network"}; }
+  let data = {};
+  try{ data = await res.json(); }catch{ throw {code:"http"}; }
+  if(data.error) throw {code:data.error};
+  return data.plan;
+}
+</script>
+</body>
+</html>
