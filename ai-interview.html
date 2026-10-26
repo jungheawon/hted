@@ -303,8 +303,8 @@ textarea.inp{resize:vertical;min-height:90px;line-height:1.6}
         </div>
         <div class="field">
           <span>자료 첨부 <small style="color:var(--muted);font-weight:500">— 생기부, 자기소개서, 탐구 보고서, 전공 자료</small></span>
-          <div class="drop" id="drop"><b>PDF·TXT 파일을 끌어다 놓거나 눌러서 선택</b><br><small>한 파일당 10MB 이하</small></div>
-          <input type="file" id="file" accept=".pdf,.txt,.md,text/plain,application/pdf" hidden>
+          <div class="drop" id="drop"><b>PDF·사진·TXT 파일을 끌어다 놓거나 눌러서 선택</b><br><small>여러 개 가능 · 용량 걱정 없이 올려도 돼요 (글자만 뽑아서 보내요)</small></div>
+          <input type="file" id="file" accept=".pdf,.txt,.md,text/plain,application/pdf,image/jpeg,image/png,image/webp" multiple hidden>
           <div id="fileInfo"></div>
         </div>
         <details style="margin-bottom:14px">
@@ -357,7 +357,7 @@ textarea.inp{resize:vertical;min-height:90px;line-height:1.6}
 /* ================================================================
    설정 — Apps Script 웹 앱 주소(…/exec)를 붙여 넣어요.
    ================================================================ */
-const APPS_SCRIPT_URL = "";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyP0vig94A0Y_BwEOeCqiSYPcp1aen7oBtE-Ei8IVWkhxRb9ZGtY28ORBO2YWRpLPqUFg/exec";
 const ANSWER_SEC = 60;
 const HISTORY_KEY = "htro-interview-history";
 
@@ -420,7 +420,7 @@ function load(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); retur
 /* ---------------- 상태 ---------------- */
 const S = {
   cat: "전체", asked: new Set(), cur: null, phase: "idle",
-  majorQs: [], majorDoc: null, majorSummary: null,
+  majorQs: [], majorSummary: null,
   lastMetrics: null, history: load(HISTORY_KEY, []), clips: [], tts: true
 };
 
@@ -751,60 +751,134 @@ $("#btnCommon").onclick = startCommon;
    전공 질문 (자료 첨부 → 질문 생성)
    ================================================================ */
 const drop = $("#drop"), fileIn = $("#file");
+const DOC_MAX_CHARS = 60000;     // AI에 보내는 글자 수 한도 (생기부 전체가 대부분 들어가요)
+const MAX_IMAGES = 24;           // 사진·스캔 쪽 최대 장수
+const IMG_MAX_W = 1400;          // 사진을 이 너비로 줄여서 보내요 (글자는 충분히 읽혀요)
+S.docs = [];                     // 첨부한 파일들 [{id, name, kind, text, images, pages, note}]
+
 drop.onclick = () => fileIn.click();
 ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
 ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
-drop.addEventListener("drop", e => e.dataTransfer.files[0] && readDoc(e.dataTransfer.files[0]));
-fileIn.onchange = () => fileIn.files[0] && readDoc(fileIn.files[0]);
+drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+fileIn.onchange = () => { addFiles(fileIn.files); fileIn.value = ""; };
+
+async function addFiles(list) {
+  for (const f of Array.from(list || [])) await readDoc(f);
+}
+
+/* 개인정보 가리기: 주민번호, 전화번호, 성명·주소·보호자 칸 */
+function maskPrivate(t) {
+  return t
+    .replace(/\b\d{6}\s*-\s*[1-8]\d{6}\b/g, "******-*******")
+    .replace(/\b\d{6}\s*-\s*[1-8]\*{6}/g, "******-*******")
+    .replace(/\b0\d{1,2}[-\s.]?\d{3,4}[-\s.]?\d{4}\b/g, "***-****-****")
+    .replace(/(성\s*명|학생\s*이름|보호자|부\s*성명|모\s*성명)\s*[:：]?\s*[가-힣]{2,5}/g, "$1 ○○○")
+    .replace(/(주\s*소)\s*[:：]?\s*[^\n]{4,80}/g, "$1 (가림)");
+}
+
+function fileCard(d) {
+  const ico = d.kind === "image" ? '<path d="M3 5h18v14H3z"/><circle cx="8.5" cy="10" r="1.5"/><path d="m21 16-5-5L5 19"/>' : '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>';
+  return `<div class="file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">${ico}</svg><span class="nm" title="${esc(d.name)}">${esc(d.name)}</span><span class="meta">${esc(d.note)}</span><button class="btn ghost" data-rm="${d.id}" style="padding:2px 6px">✕</button></div>`;
+}
+function renderDocs(loadingName) {
+  const total = S.docs.reduce((a, d) => a + d.text.length, 0);
+  const imgs = S.docs.reduce((a, d) => a + d.images.length, 0);
+  let html = S.docs.map(fileCard).join("");
+  if (loadingName) html += `<div class="file"><span class="spinner" style="width:14px;height:14px;border-width:2px"></span><span class="nm">${esc(loadingName)}</span><span class="meta" id="docProg">읽는 중…</span></div>`;
+  if (S.docs.length) html += `<div class="hint">글 ${total.toLocaleString()}자${imgs ? ` · 사진 ${imgs}장` : ""}${total > DOC_MAX_CHARS ? ` · 앞 ${DOC_MAX_CHARS / 10000}만 자만 보내요` : ""} · 주민번호·전화번호·이름·주소는 가려서 보내요</div>`;
+  $("#fileInfo").innerHTML = html;
+}
+$("#fileInfo").addEventListener("click", e => {
+  const id = e.target.closest("[data-rm]")?.dataset.rm; if (!id) return;
+  S.docs = S.docs.filter(d => String(d.id) !== id); renderDocs();
+});
+const setProg = t => { const p = $("#docProg"); if (p) p.textContent = t; };
 
 async function readDoc(f) {
-  if (f.size > 10 * 1024 * 1024) return toast("10MB 이하 파일만 올릴 수 있어요.");
   const isPdf = /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name);
-  $("#fileInfo").innerHTML = `<div class="file"><span class="spinner" style="width:14px;height:14px;border-width:2px"></span><span class="nm">${esc(f.name)}</span><span class="meta">읽는 중…</span></div>`;
+  const isImg = /^image\/(jpeg|png|webp|gif|bmp)$/i.test(f.type) || /\.(jpe?g|png|webp|bmp)$/i.test(f.name);
+  const isText = /^text\//.test(f.type) || /\.(txt|md|csv)$/i.test(f.name);
+  if (/\.(heic|heif)$/i.test(f.name)) return toast("아이폰 HEIC 사진은 열 수 없어요. 카메라 설정 → 포맷 → '높은 호환성'으로 찍거나 JPG로 바꿔 주세요.", 5000);
+  if (!isPdf && !isImg && !isText) return toast(`${f.name}: PDF, 사진(JPG·PNG), TXT만 올릴 수 있어요.`);
+  if (f.size > 200 * 1024 * 1024) return toast(`${f.name}: 200MB보다 큰 파일은 열 수 없어요.`);
+  const usedImgs = () => S.docs.reduce((a, d) => a + d.images.length, 0);
+  const doc = { id: Date.now() + Math.random(), name: f.name, kind: isPdf ? "pdf" : isImg ? "image" : "text", text: "", images: [], pages: 0, note: "" };
+  renderDocs(f.name);
   try {
-    let text = "", pdfBase64 = null, pages = 0;
     if (isPdf) {
       if (!window.pdfjsLib) throw new Error("PDF 도구를 불러오지 못했어요");
       pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      const buf = await f.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buf.slice(0) }).promise; pages = pdf.numPages;
-      for (let i = 1; i <= Math.min(pages, 40); i++) {
-        const c = await (await pdf.getPage(i)).getTextContent();
-        text += c.items.map(it => it.str + (it.hasEOL ? "\n" : " ")).join("") + "\n";
+      const pdf = await pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise;
+      doc.pages = pdf.numPages;
+      const scanPages = [];
+      // 1) 쪽마다 글자를 뽑아요. 글자가 거의 없는 쪽(스캔·사진)은 따로 모아 둬요.
+      for (let i = 1; i <= Math.min(doc.pages, 150); i++) {
+        setProg(`글자 읽는 중 ${i}/${doc.pages}쪽`);
+        const page = await pdf.getPage(i);
+        const c = await page.getTextContent();
+        const t = c.items.map(it => it.str + (it.hasEOL ? "\n" : " ")).join("").replace(/[ \t]+/g, " ").trim();
+        if (t.replace(/\s/g, "").length < 40) scanPages.push(i); else doc.text += t + "\n\n";
       }
-      text = text.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
-      // 스캔본(글자가 거의 없는 PDF)은 파일 자체를 AI에게 보내 읽게 해요
-      if (text.replace(/\s/g, "").length < 80) {
-        if (f.size > 7 * 1024 * 1024) throw new Error("스캔된 PDF는 7MB 이하만 읽을 수 있어요");
-        pdfBase64 = await toBase64(buf); text = "";
+      // 2) 스캔된 쪽은 작게 줄인 사진으로 바꿔 AI가 직접 읽게 해요
+      const room = Math.max(0, MAX_IMAGES - usedImgs());
+      const take = scanPages.slice(0, room);
+      for (let k = 0; k < take.length; k++) {
+        setProg(`스캔 쪽 변환 중 ${k + 1}/${take.length}`);
+        doc.images.push(await pageToJpeg(await pdf.getPage(take[k])));
       }
+      const skipped = scanPages.length - take.length;
+      doc.note = [doc.text ? `${doc.text.length.toLocaleString()}자` : "", `${doc.pages}쪽`, take.length ? `스캔 ${take.length}쪽은 사진으로` : "", skipped ? `스캔 ${skipped}쪽 제외` : ""].filter(Boolean).join(" · ");
+      if (skipped) toast(`스캔된 쪽이 많아 앞 ${take.length}쪽만 사용해요. 중요한 쪽만 따로 올리면 더 정확해요.`, 4500);
+    } else if (isImg) {
+      if (usedImgs() >= MAX_IMAGES) throw new Error(`사진은 모두 합쳐 ${MAX_IMAGES}장까지 올릴 수 있어요`);
+      doc.images.push(await imageToJpeg(f));
+      doc.note = "사진 · AI가 직접 읽어요";
     } else {
-      text = (await f.text()).trim();
+      doc.text = (await f.text()).trim();
+      doc.note = `${doc.text.length.toLocaleString()}자`;
     }
-    S.majorDoc = { name: f.name, text: text.slice(0, 20000), pdfBase64, pages, cut: text.length > 20000 };
-    const info = pdfBase64 ? "스캔본 · AI가 직접 읽어요" : `${text.length.toLocaleString()}자${pages ? " · " + pages + "쪽" : ""}${S.majorDoc.cut ? " · 앞 2만 자만 사용" : ""}`;
-    $("#fileInfo").innerHTML = `<div class="file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="nm">${esc(f.name)}</span><span class="meta">${info}</span><button class="btn ghost" id="fileX" style="padding:2px 6px">✕</button></div>`;
-    $("#fileX").onclick = () => { S.majorDoc = null; $("#fileInfo").innerHTML = ""; fileIn.value = ""; };
+    doc.text = maskPrivate(doc.text.replace(/\n{3,}/g, "\n\n").trim());
+    if (!doc.text && !doc.images.length) throw new Error("읽을 수 있는 내용이 없어요");
+    S.docs.push(doc);
   } catch (e) {
-    S.majorDoc = null; $("#fileInfo").innerHTML = ""; fileIn.value = "";
-    toast("파일을 읽지 못했어요: " + e.message, 4000);
+    toast(`${f.name}: ${e.message}`, 4000);
   }
+  renderDocs();
 }
-function toBase64(buf) {
-  return new Promise(res => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.readAsDataURL(new Blob([buf])); });
+
+function canvasToJpeg(cv) {
+  return cv.toDataURL("image/jpeg", 0.72).split(",")[1];
+}
+async function pageToJpeg(page) {
+  const v1 = page.getViewport({ scale: 1 });
+  const vp = page.getViewport({ scale: Math.min(2, IMG_MAX_W / v1.width) });
+  const cv = document.createElement("canvas"); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+  const ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
+  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  return canvasToJpeg(cv);
+}
+async function imageToJpeg(f) {
+  const url = URL.createObjectURL(f);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("사진을 열 수 없어요")); i.src = url; });
+    const k = Math.min(1, IMG_MAX_W / Math.max(img.width, img.height) * 1.4);   // 세로 사진도 글자가 읽히게 긴 변 기준
+    const cv = document.createElement("canvas"); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+    const ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height); ctx.drawImage(img, 0, 0, cv.width, cv.height);
+    return canvasToJpeg(cv);
+  } finally { URL.revokeObjectURL(url); }
 }
 
 async function genMajor() {
   const major = $("#major").value.trim();
   const pasted = $("#docPaste").value.trim();
-  const doc = S.majorDoc;
-  if (!doc && !pasted) return toast("자료 파일을 첨부하거나 내용을 붙여 넣어 주세요.");
+  if (!S.docs.length && !pasted) return toast("자료 파일을 첨부하거나 내용을 붙여 넣어 주세요.");
   if (!APPS_SCRIPT_URL) return toast("서버 주소(APPS_SCRIPT_URL)를 먼저 설정해 주세요.", 3500);
   const btn = $("#btnGen"); btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;border-color:#ffffff66;border-top-color:#fff"></span> 자료 읽는 중';
   $("#majorOut").innerHTML = `<div class="loading"><span class="spinner"></span>자료를 읽고 면접관이 물어볼 질문을 고르고 있어요…</div>`;
   try {
-    const text = [doc?.text, pasted].filter(Boolean).join("\n\n").slice(0, 22000);
-    const r = await api({ action: "questions", major, level: $("#mLevel").value, docText: text, pdfBase64: doc?.pdfBase64 || null });
+    const text = [...S.docs.filter(d => d.text).map(d => `[${d.name}]\n${d.text}`), pasted ? maskPrivate(pasted) : ""].filter(Boolean).join("\n\n").slice(0, DOC_MAX_CHARS);
+    const images = S.docs.flatMap(d => d.images).slice(0, MAX_IMAGES);
+    const r = await api({ action: "questions", major, level: $("#mLevel").value, docText: text, images });
     S.majorQs = (r.questions || []).map(q => ({ text: q.q, intent: q.intent, basis: q.basis, done: false }));
     S.majorSummary = { summary: r.summary, keywords: r.keywords || [] };
     if (!S.majorQs.length) throw new Error("질문을 만들지 못했어요");
@@ -845,7 +919,7 @@ function startMajor(i) {
    AI 분석
    ================================================================ */
 async function api(payload) {
-  const r = await fetch(APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+  const r = await fetch(APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ type: "interview", ...payload }) });
   if (!r.ok) throw new Error("http_" + r.status);
   const j = await r.json();
   if (j.error) throw new Error(j.error);
@@ -856,6 +930,12 @@ function errMsg(e) {
   if (m === "no_key") return "서버에 GEMINI_API_KEY가 없어요. Apps Script 스크립트 속성을 확인해 주세요.";
   if (m === "rate_limited") return "지금 사용하는 사람이 많아요. 30초 뒤에 다시 눌러 주세요.";
   if (m === "too_short") return "답변이 너무 짧아 분석할 수 없어요.";
+  if (m === "no_document") return "자료 내용을 읽지 못했어요. 다른 파일을 올리거나 내용을 붙여 넣어 주세요.";
+  if (m === "overloaded") return "AI 서버가 붐벼요. 잠시 뒤 다시 시도해 주세요.";
+  if (m === "auth") return "서버의 API 키가 올바르지 않아요. 선생님께 알려 주세요.";
+  if (m === "refused") return "AI가 이 내용에는 답하지 않았어요. 내용을 바꿔 다시 시도해 주세요.";
+  if (m === "invalid_json" || m === "ai_failed") return "AI 응답을 읽지 못했어요. 한 번 더 눌러 주세요.";
+  if (m === "bad_request") return "요청 형식이 맞지 않아요. 서버 코드가 최신인지 확인해 주세요.";
   if (/Failed to fetch|NetworkError|http_/.test(m)) return "서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.";
   return "분석하지 못했어요: " + m;
 }
