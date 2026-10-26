@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI 튜터 · HTRO EDU</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 왼쪽 학습 설정·기록 패널 + 오른쪽 튜터 대화(문제 카드·오답 분석 포함) */
+:root{
+  --bg:#FAFAFB; --surface:#FFFFFF; --sunk:#F1F2F7; --line:#E3E5EE;
+  --fg:#15172A; --muted:#62667E; --faint:#9A9DB2;
+  --accent:#3654F4; --accent-soft:#E8ECFF; --accent-ink:#FFFFFF;
+  --ok:#12A07A; --ok-soft:#E3F6EF; --no:#D9483B; --no-soft:#FDECEA;
+  --warn:#B4541A;
+  --code-bg:#15172A; --code-fg:#E7E9F5;
+  --sans:"Pretendard Variable",Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:16px;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{text-wrap:balance;margin:0;line-height:1.3}
+button{font:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1180px;margin:0 auto;padding-block:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em}
+.brand .mark{width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:600}
+.brand small{font-weight:500;color:var(--muted);font-size:13px}
+.top .tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+
+.shell{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,290px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.shell{grid-template-columns:minmax(0,1fr)} .side{order:2} }
+
+/* 왼쪽 패널 */
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:16px}
+@media (max-width:880px){.side{position:static}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card h2{font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.02em}
+select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:9px;padding:9px 11px;font:inherit;font-size:14.5px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mode{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:10px;padding:9px 8px;font-size:13.5px;font-weight:600;text-align:left;display:flex;flex-direction:column;gap:1px}
+.mode small{font-weight:500;font-size:11.5px;color:var(--faint)}
+.mode[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.mode[aria-pressed="true"] small{color:var(--accent);opacity:.8}
+.levels{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.lv{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:8px;padding:7px 0;font-size:12.5px;font-weight:700}
+.lv[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.lv-desc{font-size:12.5px;color:var(--muted);margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.stat{background:var(--sunk);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column}
+.stat b{font-family:var(--mono);font-size:18px;font-variant-numeric:tabular-nums}
+.stat span{font-size:11.5px;color:var(--muted)}
+.wrong-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto}
+.wrong-list button{width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 10px;font-size:13px;color:var(--fg);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wrong-list button:hover{border-color:var(--no);}
+.empty-note{font-size:12.5px;color:var(--faint);margin:0}
+.btn-reset{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:10px;padding:9px;font-size:13.5px;font-weight:600}
+.btn-reset:hover{color:var(--fg);border-color:var(--faint)}
+
+/* 튜터 대화 */
+.tutor{background:var(--surface);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;height:calc(100dvh - 92px);min-height:540px;min-width:0}
+.tutor-h{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line)}
+.ai-badge{width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;display:grid;place-items:center}
+.tutor-h .t{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted)}
+.tutor-h .ctx{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tutor-h .ctx span{font-size:12px;background:var(--sunk);color:var(--muted);padding:2px 9px;border-radius:6px;font-weight:500}
+
+.log{flex:1;overflow-y:auto;padding:20px 18px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+.who{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+.m-user{align-self:flex-end;max-width:82%;display:flex;flex-direction:column;align-items:flex-end}
+.m-user .b{background:var(--accent);color:var(--accent-ink);padding:10px 14px;border-radius:14px 14px 4px 14px;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.m-ai{max-width:92%;display:flex;flex-direction:column;gap:8px}
+.m-ai .b{background:var(--sunk);padding:12px 16px;border-radius:4px 14px 14px 14px;word-break:keep-all;overflow-wrap:anywhere}
+.b p{margin:0 0 8px}.b p:last-child{margin-bottom:0}
+.b ul,.b ol{margin:0 0 8px;padding-left:20px}
+.b h4{font-size:15px;margin:4px 0 6px}
+.b code{font-family:var(--mono);font-size:.88em;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+.code{background:var(--code-bg);border-radius:10px;margin:6px 0 10px;overflow:hidden}
+.code-h{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;font-family:var(--mono);font-size:11px;color:#9A9DB2}
+.code-h button{background:transparent;border:1px solid #3a3d55;color:#C9CCE0;border-radius:6px;padding:1px 8px;font-size:11px}
+.code pre{margin:0;padding:4px 14px 12px;overflow-x:auto}
+.code pre code{background:none;border:0;padding:0;color:var(--code-fg);font-size:13.5px;line-height:1.55;white-space:pre}
+.err{color:var(--warn)}
+
+.thinking{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px}
+.dots{display:inline-flex;gap:4px}.dots i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bo 1.2s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bo{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+
+/* 문제 카드 */
+.prob{border:1.5px solid var(--accent);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:var(--surface)}
+.prob-top{display:flex;align-items:center;gap:8px}
+.prob-top .lab{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--accent);letter-spacing:.04em}
+.prob-top .ty{margin-left:auto;font-size:12px;color:var(--muted)}
+.prob .q{font-weight:600}
+.choices{display:flex;flex-direction:column;gap:6px}
+.choice{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:9px 12px;display:flex;gap:10px;align-items:baseline;color:var(--fg)}
+.choice:hover:not(:disabled){border-color:var(--accent)}
+.choice .k{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.choice.sel{border-color:var(--accent);background:var(--accent-soft)}
+.prob textarea{width:100%;min-height:60px;resize:vertical;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:9px;padding:9px 11px;font:inherit;font-size:14.5px}
+.prob textarea.codein{font-family:var(--mono);font-size:13.5px;min-height:110px}
+.prob-actions{display:flex;gap:8px;flex-wrap:wrap}
+.hint{background:#FFF6E8;color:#7A4A0E;border-radius:9px;padding:8px 12px;font-size:14px}
+.result{border-radius:9px;padding:8px 12px;font-weight:700;font-size:14px}
+.result.ok{background:var(--ok-soft);color:#0B7A5C}
+.result.no{background:var(--no-soft);color:#B13428}
+
+.grade-ok .b{background:var(--ok-soft)}
+.grade-no .b{background:var(--no-soft)}
+.grade-tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em}
+.grade-ok .grade-tag{color:var(--ok)} .grade-no .grade-tag{color:var(--no)}
+
+.sugs{display:flex;flex-wrap:wrap;gap:6px}
+.sug{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:500}
+.sug:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.sys{align-self:center;background:var(--accent-soft);color:var(--accent);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;text-align:center}
+.sys button{border:0;background:var(--accent);color:#fff;border-radius:8px;padding:5px 12px;font-size:13px;font-weight:700}
+.sys button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+
+/* 입력창 */
+.composer{border-top:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.quick{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.quick::-webkit-scrollbar{display:none}
+.quick button{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 11px;font-size:12.5px}
+.quick button:hover:not(:disabled){color:var(--fg);border-color:var(--faint)}
+.inrow{display:flex;gap:8px;align-items:flex-end}
+.inrow textarea{flex:1;min-height:46px;max-height:180px;resize:none;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:12px;padding:11px 13px;font:inherit;font-size:15px;line-height:1.5}
+.inrow textarea:focus,.prob textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;font-size:14.5px}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-ghost{background:var(--sunk);color:var(--fg)}
+.btn-sm{padding:7px 13px;font-size:13.5px}
+.note{font-size:12px;color:var(--faint);margin:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:500;z-index:10}
+@media (prefers-reduced-motion:reduce){.dots i{animation:none}.log{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><span class="mark">H</span>HTRO EDU <small>AI 튜터</small></div>
+  <span class="tag">Student AI Tutor</span>
+</header>
+
+<main class="shell">
+  <aside class="side" aria-label="학습 설정과 기록">
+    <section class="card">
+      <h2>과목</h2>
+      <select id="subject" aria-label="과목 선택">
+        <option>정보</option><option>수학</option><option>국어</option><option>영어</option>
+        <option>통합사회</option><option>통합과학</option><option>한국사</option>
+      </select>
+    </section>
+
+    <section class="card">
+      <h2>학습 모드</h2>
+      <div class="modes" id="modes">
+        <button class="mode" data-mode="question" aria-pressed="false">질문 답변<small>궁금한 것 묻기</small></button>
+        <button class="mode" data-mode="concept" aria-pressed="false">개념 설명<small>처음부터 차근차근</small></button>
+        <button class="mode" data-mode="practice" aria-pressed="false">개인별 문제<small>내 수준 문제 풀기</small></button>
+        <button class="mode" data-mode="review" aria-pressed="false">오답 분석<small>틀린 이유 찾기</small></button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>학습 수준</h2>
+      <div class="levels" id="levels"></div>
+      <p class="lv-desc" id="lvDesc"></p>
+    </section>
+
+    <section class="card">
+      <h2>오늘의 기록</h2>
+      <div class="stats">
+        <div class="stat"><b id="stSolved">0</b><span>푼 문제</span></div>
+        <div class="stat"><b id="stRate">–</b><span>정답률</span></div>
+        <div class="stat"><b id="stStreak">0</b><span>연속 정답</span></div>
+      </div>
+      <h2 style="margin-top:4px">오답 노트</h2>
+      <ul class="wrong-list" id="wrongList"></ul>
+    </section>
+
+    <button class="btn-reset" id="reset" type="button">새로 시작하기</button>
+  </aside>
+
+  <section class="tutor" aria-label="AI 튜터 대화">
+    <div class="tutor-h">
+      <span class="ai-badge">AI</span>
+      <span class="t">STUDENT_TUTOR · SESSION</span>
+      <div class="ctx" id="ctx"></div>
+    </div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <form class="composer" id="form">
+      <div class="quick" id="quick">
+        <button type="button" data-q="조금 더 쉽게 설명해 주세요.">더 쉽게</button>
+        <button type="button" data-q="예제를 하나 더 보여 주세요.">예제 더</button>
+        <button type="button" data-q="지금 배운 내용으로 제 수준에 맞는 문제를 하나 내 주세요." data-mode="practice">문제 내줘</button>
+        <button type="button" data-q="답은 말하지 말고 힌트만 주세요.">힌트만</button>
+        <button type="button" data-q="지금까지 배운 내용을 세 줄로 정리해 주세요.">정리해줘</button>
+      </div>
+      <div class="inrow">
+        <textarea id="input" rows="1" maxlength="800" placeholder="궁금한 것을 물어보세요" aria-label="질문 입력"></textarea>
+        <button type="submit" class="btn btn-primary" id="send">보내기</button>
+        <button type="button" class="btn btn-ghost" id="stop" hidden>중지</button>
+      </div>
+      <p class="note">Enter로 보내기 · Shift+Enter 줄바꿈 · AI도 틀릴 수 있어요. 헷갈리면 선생님께 확인해요.</p>
+    </form>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ================================================================
+   ★ 설정 ★
+   AI 수업 설계·수행평가와 같은 Apps Script 주소를 써요.
+   (서버가 type:"tutor"를 보고 튜터로 처리해요.)
+   ================================================================ */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyP0vig94A0Y_BwEOeCqiSYPcp1aen7oBtE-Ei8IVWkhxRb9ZGtY28ORBO2YWRpLPqUFg/exec";
+/* ================================================================ */
+
+const LEVELS = [
+  {n:1, name:"기초", desc:"아주 쉬운 말과 일상 예시로, 한 번에 하나씩 배워요."},
+  {n:2, name:"쉬움", desc:"기본 개념 위주로 짧은 예제와 함께 배워요."},
+  {n:3, name:"보통", desc:"교과서 수준으로 설명하고 문제를 내요."},
+  {n:4, name:"심화", desc:"응용 예제와 조금 더 생각해야 하는 문제를 풀어요."},
+  {n:5, name:"도전", desc:"여러 개념을 엮은 어려운 문제에 도전해요."}
+];
+const MODES = {
+  question:{name:"질문 답변", ph:"궁금한 것을 물어보세요"},
+  concept:{name:"개념 설명", ph:"배우고 싶은 개념을 적어 주세요 (예: for문)"},
+  practice:{name:"개인별 문제", ph:"어떤 내용의 문제를 풀어볼까요? (예: 반복문)"},
+  review:{name:"오답 분석", ph:"틀린 문제와 내가 쓴 답을 적어 주세요"}
+};
+const STARTERS = {
+  "정보":["for문이 아직 잘 이해되지 않아요.","변수가 정확히 뭐예요?","리스트 문제 하나 내 주세요."],
+  "수학":["이차함수 꼭짓점 구하는 법을 모르겠어요.","인수분해를 쉽게 설명해 주세요.","방정식 문제 하나 내 주세요."],
+  "국어":["비유법 종류를 헷갈려요.","시의 화자와 청자가 뭐예요?","문법 문제 하나 내 주세요."],
+  "영어":["관계대명사 who와 which 차이가 뭐예요?","현재완료를 쉽게 설명해 주세요.","영어 문법 문제 하나 내 주세요."],
+  "통합사회":["인권이 왜 중요한지 설명해 주세요.","시장 경제가 뭐예요?","사회 개념 문제 하나 내 주세요."],
+  "통합과학":["산화와 환원이 뭐예요?","뉴턴 운동 법칙을 쉽게 설명해 주세요.","과학 문제 하나 내 주세요."],
+  "한국사":["조선 건국 과정을 정리해 주세요.","갑오개혁을 쉽게 설명해 주세요.","한국사 문제 하나 내 주세요."]
+};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2,10);
+const STORE = "htro-tutor-v1";
+
+function fresh(){ return {subject:"정보", level:3, mode:"question", msgs:[], stats:{solved:0,correct:0,streak:0,miss:0}, wrong:[]}; }
+let S = (()=>{ try{ const v = JSON.parse(localStorage.getItem(STORE)); if(v && Array.isArray(v.msgs)) return Object.assign(fresh(), v); }catch{} return fresh(); })();
+function save(){ try{ localStorage.setItem(STORE, JSON.stringify(S)); }catch{} }
+
+let busy = false, ctl = null;
+
+/* ── 간단한 마크다운 → HTML (코드 블록, 목록, 굵게, 인라인 코드) ── */
+function md(src){
+  const blocks = [];
+  src = String(src||"").replace(/```([\w+#-]*)[^\n]*\n?([\s\S]*?)```/g, (m, lang, code) => {
+    blocks.push({lang, code: code.replace(/\n$/,"")});
+    return `\n\u0000${blocks.length-1}\u0000\n`;
+  });
+  const inline = s => esc(s).replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>");
+  let html = "", list = null;
+  const close = () => { if(list){ html += `</${list}>`; list = null; } };
+  for(const raw of src.split("\n")){
+    const line = raw.trimEnd(); let m;
+    if((m = line.trim().match(/^\u0000(\d+)\u0000$/))){
+      close(); const b = blocks[+m[1]];
+      html += `<div class="code"><div class="code-h"><span>${esc(b.lang||"code")}</span><button type="button" data-copy>복사</button></div><pre><code>${esc(b.code)}</code></pre></div>`;
+      continue;
+    }
+    if((m = line.match(/^\s*[-*•]\s+(.*)/))){ if(list!=="ul"){close(); html+="<ul>"; list="ul";} html += `<li>${inline(m[1])}</li>`; continue; }
+    if((m = line.match(/^\s*\d+[.)]\s+(.*)/))){ if(list!=="ol"){close(); html+="<ol>"; list="ol";} html += `<li>${inline(m[1])}</li>`; continue; }
+    close();
+    if((m = line.match(/^#{1,4}\s+(.*)/))){ html += `<h4>${inline(m[1])}</h4>`; continue; }
+    if(!line.trim()) continue;
+    html += `<p>${inline(line)}</p>`;
+  }
+  close();
+  return html;
+}
+
+/* ── 화면 그리기 ── */
+function renderSide(){
+  $("#subject").value = S.subject;
+  document.querySelectorAll(".mode").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
+  $("#levels").innerHTML = LEVELS.map(l => `<button type="button" class="lv" data-lv="${l.n}" aria-pressed="${l.n===S.level}" title="${l.name}">${l.name}</button>`).join("");
+  $("#lvDesc").textContent = LEVELS[S.level-1].desc;
+  $("#input").placeholder = MODES[S.mode].ph;
+  $("#ctx").innerHTML = [S.subject, MODES[S.mode].name, "수준 " + LEVELS[S.level-1].name].map(x => `<span>${esc(x)}</span>`).join("");
+  const st = S.stats;
+  $("#stSolved").textContent = st.solved;
+  $("#stRate").textContent = st.solved ? Math.round(st.correct / st.solved * 100) + "%" : "–";
+  $("#stStreak").textContent = st.streak;
+  $("#wrongList").innerHTML = S.wrong.length
+    ? S.wrong.slice().reverse().map(w => `<li><button type="button" data-wrong="${w.id}" title="다시 설명 듣기">${esc(w.question)}</button></li>`).join("")
+    : `<li><p class="empty-note">틀린 문제가 여기에 모여요. 누르면 다시 설명해 줘요.</p></li>`;
+}
+
+function welcome(){
+  const starters = STARTERS[S.subject] || [];
+  return `<div class="m-ai"><div class="who">AI</div><div class="b"><p>안녕하세요! 저는 여러분의 AI 튜터예요.</p><p>모르는 개념을 물어보거나, 내 수준에 맞는 문제를 풀어보거나, 틀린 문제의 이유를 함께 찾아볼 수 있어요. 무엇부터 해볼까요?</p></div>
+    <div class="sugs">${starters.map(s => `<button type="button" class="sug" data-say="${esc(s)}">${esc(s)}</button>`).join("")}</div></div>`;
+}
+
+function probCard(m){
+  const p = m.problem, done = !!m.answered, dis = (done || busy) ? "disabled" : "";
+  const type = p.type || "단답형";
+  let body;
+  if(Array.isArray(p.choices) && p.choices.length){
+    body = `<div class="choices">${p.choices.map((c,i) => `<button type="button" class="choice${m.answer===String(i+1)?" sel":""}" data-pick="${m.id}" data-i="${i+1}" ${dis}><span class="k">${i+1}</span><span>${esc(c)}</span></button>`).join("")}</div>`;
+  }else{
+    const isCode = type.includes("코드");
+    body = `<textarea class="${isCode?"codein":""}" id="ans-${m.id}" placeholder="${isCode?"코드를 적어 보세요":"답을 적어 보세요"}" ${dis}>${esc(m.answer||"")}</textarea>`;
+  }
+  const actions = done ? "" : `<div class="prob-actions">
+      ${!(p.choices&&p.choices.length) ? `<button type="button" class="btn btn-primary btn-sm" data-submit="${m.id}" ${dis}>제출하기</button>` : ""}
+      ${p.hint ? `<button type="button" class="btn btn-ghost btn-sm" data-hint="${m.id}" ${m.showHint?"disabled":""}>힌트 보기</button>` : ""}
+      <button type="button" class="btn btn-ghost btn-sm" data-giveup="${m.id}" ${dis}>모르겠어요</button></div>`;
+  const result = done && m.result != null ? `<div class="result ${m.result?"ok":"no"}">${m.result?"정답이에요!":"아쉬워요, 아래 분석을 확인해 봐요."}</div>` : "";
+  return `<div class="prob"><div class="prob-top"><span class="lab">PROBLEM</span><span class="ty">${esc(type)} · ${esc(LEVELS[(m.level||S.level)-1].name)}</span></div>
+    <div class="q">${md(p.question)}</div>${body}
+    ${m.showHint && p.hint ? `<div class="hint"><b>힌트</b> · ${esc(p.hint)}</div>` : ""}${result}${actions}</div>`;
+}
+
+function renderLog(){
+  const last = S.msgs.length - 1;
+  let html = welcome();
+  S.msgs.forEach((m, i) => {
+    if(m.role === "user"){
+      html += `<div class="m-user"><div class="who">나</div><div class="b">${esc(m.text)}</div></div>`;
+    }else if(m.role === "sys"){
+      html += `<div class="sys">${esc(m.text)}${m.used ? "" : m.lvTo ? ` <button type="button" data-setlv="${m.lvTo}" data-sys="${m.id}">${m.lvTo > S.level ? "수준 올리기" : "수준 낮추기"}</button><button type="button" class="ghost" data-dismiss="${m.id}">지금 그대로</button>` : ""}</div>`;
+    }else{
+      const g = m.grade != null ? (m.grade ? " grade-ok" : " grade-no") : "";
+      html += `<div class="m-ai${g}"><div class="who">AI</div>
+        ${m.grade != null ? `<span class="grade-tag">${m.grade ? "CORRECT · 정답 확인" : "REVIEW · 오답 분석"}</span>` : ""}
+        ${m.error ? `<div class="b"><p class="err">${esc(m.text)}</p></div>` : (m.text ? `<div class="b">${md(m.text)}</div>` : "")}
+        ${m.problem ? probCard(m) : ""}
+        ${i === last && !busy && m.suggestions?.length ? `<div class="sugs">${m.suggestions.map(s => `<button type="button" class="sug" data-say="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : ""}
+        ${m.error && m.retry && i === last ? `<div class="sugs"><button type="button" class="sug" data-retry>다시 시도</button></div>` : ""}
+      </div>`;
+    }
+  });
+  if(busy) html += `<div class="m-ai"><div class="who">AI</div><div class="thinking"><span class="dots"><i></i><i></i><i></i></span>생각하고 있어요…</div></div>`;
+  const log = $("#log");
+  log.innerHTML = html;
+  log.scrollTop = log.scrollHeight;
+}
+
+function render(){ renderSide(); renderLog(); setBusyUI(); }
+function setBusyUI(){
+  $("#send").hidden = busy; $("#stop").hidden = !busy;
+  document.querySelectorAll("#quick button").forEach(b => b.disabled = busy);
+}
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,1800); }
+
+/* ── 서버 통신 ── */
+const ERR = {
+  no_url:"아직 서버 주소가 들어 있지 않아요. 선생님께 알려 주세요.",
+  no_key:"서버에 AI 키가 아직 등록되지 않았어요. 선생님께 알려 주세요.",
+  auth:"AI 키 설정에 문제가 있어요. 선생님께 알려 주세요.",
+  rate_limited:"지금 질문하는 친구들이 많아요. 30초쯤 뒤에 다시 눌러 주세요.",
+  overloaded:"AI 서버가 바빠요. 잠시 후 다시 눌러 주세요.",
+  too_long:"질문이 너무 길어요. 조금 줄여 주세요.",
+  refused:"이 질문에는 답하기 어려워요. 공부와 관련된 질문으로 바꿔 볼까요?",
+  network:"서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.",
+  bad_response:"답을 제대로 받지 못했어요. 다시 눌러 주세요."
+};
+
+function history(){
+  const out = [];
+  for(const m of S.msgs){
+    if(m.role === "sys" || m.error) continue;
+    if(m.role === "user"){ out.push({role:"user", text:m.text}); continue; }
+    let t = m.text || "";
+    if(m.problem) t += `\n[출제한 문제] ${m.problem.question}${m.problem.choices?.length ? "\n보기: " + m.problem.choices.map((c,i)=>`${i+1}) ${c}`).join(" / ") : ""}`;
+    out.push({role:"model", text:t});
+  }
+  return out.slice(-14);
+}
+
+async function callServer(payload){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("여기에")) throw {code:"no_url"};
+  ctl = new AbortController();
+  let res;
+  try{
+    res = await fetch(APPS_SCRIPT_URL, {
+      method:"POST", signal:ctl.signal, redirect:"follow",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(Object.assign({type:"tutor", subject:S.subject, level:S.level, studyMode:S.mode}, payload))
+    });
+  }catch(e){ throw {code: e?.name === "AbortError" ? "cancelled" : "network"}; }
+  let data;
+  try{ data = await res.json(); }catch{ throw {code:"bad_response"}; }
+  if(data.error) throw {code:data.error};
+  return data;
+}
+
+let lastJob = null;
+async function run(job){
+  lastJob = job;
+  busy = true; render();
+  try{
+    const d = await callServer(job.payload);
+    busy = false;
+    job.onDone(d);
+  }catch(err){
+    busy = false;
+    if(err.code === "cancelled"){ S.msgs.push({id:uid(), role:"ai", text:"답변을 멈췄어요.", error:true}); job.onFail?.(); }
+    else{ S.msgs.push({id:uid(), role:"ai", text: ERR[err.code] || "잠시 연결이 끊겼어요. 다시 눌러 주세요.", error:true, retry:!job.noRetry}); job.onFail?.(); }
+  }
+  save(); render();
+}
+
+function aiMsg(d){
+  const p = d.problem && d.problem.question ? d.problem : null;
+  return {id:uid(), role:"ai", text:d.reply || "", problem:p, level:S.level, suggestions:(d.suggestions||[]).slice(0,3)};
+}
+
+function say(text, modeOverride){
+  text = String(text||"").trim();
+  if(!text || busy) return;
+  if(modeOverride && modeOverride !== S.mode){ S.mode = modeOverride; }
+  S.msgs.push({id:uid(), role:"user", text: text.slice(0,800)});
+  save();
+  run({payload:{action:"chat", history:history()}, onDone:d => S.msgs.push(aiMsg(d))});
+}
+
+function submitAnswer(id, answer){
+  const m = S.msgs.find(x => x.id === id);
+  if(!m || m.answered || busy) return;
+  answer = String(answer||"").trim();
+  if(!answer){ toast("답을 먼저 적어 주세요"); return; }
+  m.answer = answer; m.answered = true;
+  const p = m.problem;
+  const shown = p.choices?.length ? `${answer}번 · ${p.choices[+answer-1] ?? ""}` : answer;
+  const ansMsg = {id:uid(), role:"user", text:`내 답: ${shown}`};
+  S.msgs.push(ansMsg);
+  save();
+  run({
+    noRetry:true,
+    payload:{action:"grade", problem:p, answer:shown, history:history().slice(-6)},
+    onDone:d => {
+      const ok = !!d.correct;
+      m.result = ok;
+      S.msgs.push({id:uid(), role:"ai", text:d.reply||"", grade:ok, suggestions:(d.suggestions||[]).slice(0,3)});
+      const st = S.stats; st.solved++;
+      if(ok){ st.correct++; st.streak++; st.miss = 0; }
+      else{ st.streak = 0; st.miss++; S.wrong.push({id:uid(), question:p.question.slice(0,200), mine:shown}); if(S.wrong.length > 30) S.wrong.shift(); }
+      levelNudge();
+    },
+    onFail:() => { m.answered = false; S.msgs = S.msgs.filter(x => x !== ansMsg); }   // 채점 실패 시 카드에서 다시 제출
+  });
+}
+
+function giveUp(id){
+  const m = S.msgs.find(x => x.id === id);
+  if(!m || m.answered || busy) return;
+  submitAnswer(id, "모르겠어요");
+}
+
+/* 학습 수준 자동 조절 제안 */
+function levelNudge(){
+  const st = S.stats;
+  if(st.streak > 0 && st.streak % 3 === 0 && S.level < 5){
+    S.msgs.push({id:uid(), role:"sys", text:`${st.streak}문제 연속 정답! 한 단계 어려운 수준에 도전해 볼까요?`, lvTo:S.level+1});
+  }else if(st.miss >= 2 && S.level > 1){
+    st.miss = 0;
+    S.msgs.push({id:uid(), role:"sys", text:"조금 어려웠죠? 한 단계 쉬운 수준으로 다시 다져 볼까요?", lvTo:S.level-1});
+  }
+}
+
+/* ── 이벤트 ── */
+$("#subject").addEventListener("change", e => { S.subject = e.target.value; save(); render(); });
+$("#modes").addEventListener("click", e => { const b = e.target.closest(".mode"); if(!b) return; S.mode = b.dataset.mode; save(); render(); $("#input").focus(); });
+$("#levels").addEventListener("click", e => { const b = e.target.closest(".lv"); if(!b) return; S.level = +b.dataset.lv; save(); render(); });
+$("#reset").addEventListener("click", () => {
+  if(busy) ctl?.abort();
+  if(!confirm("대화와 기록을 모두 지우고 새로 시작할까요?")) return;
+  const keep = {subject:S.subject, level:S.level, mode:S.mode};
+  S = Object.assign(fresh(), keep); save(); render();
+});
+$("#stop").addEventListener("click", () => ctl?.abort());
+$("#quick").addEventListener("click", e => { const b = e.target.closest("button"); if(b) say(b.dataset.q, b.dataset.mode); });
+
+const input = $("#input");
+function grow(){ input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 180) + "px"; }
+input.addEventListener("input", grow);
+input.addEventListener("keydown", e => {
+  if(e.key === "Enter" && !e.shiftKey && !e.isComposing && e.keyCode !== 229){ e.preventDefault(); $("#form").requestSubmit(); }
+});
+$("#form").addEventListener("submit", e => {
+  e.preventDefault();
+  if(busy) return;
+  const t = input.value.trim(); if(!t) return;
+  input.value = ""; grow();
+  say(t);
+});
+
+$("#wrongList").addEventListener("click", e => {
+  const b = e.target.closest("[data-wrong]"); if(!b) return;
+  const w = S.wrong.find(x => x.id === b.dataset.wrong); if(!w) return;
+  say(`이 문제를 다시 설명해 주세요. 문제: ${w.question} / 그때 내 답: ${w.mine}`, "review");
+});
+
+$("#log").addEventListener("click", async e => {
+  const t = e.target;
+  const c = t.closest("[data-copy]");
+  if(c){
+    const code = c.closest(".code").querySelector("code").textContent;
+    try{ await navigator.clipboard.writeText(code); toast("코드를 복사했어요"); }catch{ toast("복사하지 못했어요"); }
+    return;
+  }
+  const s = t.closest("[data-say]"); if(s){ say(s.dataset.say); return; }
+  if(t.closest("[data-retry]")){
+    if(!lastJob || busy) return;
+    S.msgs.pop();               // 오류 메시지 지우고 다시
+    run(lastJob); return;
+  }
+  const pick = t.closest("[data-pick]"); if(pick){ submitAnswer(pick.dataset.pick, pick.dataset.i); return; }
+  const sub = t.closest("[data-submit]"); if(sub){ submitAnswer(sub.dataset.submit, document.getElementById("ans-" + sub.dataset.submit)?.value); return; }
+  const h = t.closest("[data-hint]"); if(h){ const m = S.msgs.find(x => x.id === h.dataset.hint); if(m){ m.showHint = true; save(); renderLog(); } return; }
+  const g = t.closest("[data-giveup]"); if(g){ giveUp(g.dataset.giveup); return; }
+  const lv = t.closest("[data-setlv]");
+  if(lv){ S.level = +lv.dataset.setlv; const m = S.msgs.find(x => x.id === lv.dataset.sys); if(m) m.used = true; save(); render(); toast(`수준을 ‘${LEVELS[S.level-1].name}’(으)로 바꿨어요`); return; }
+  const dm = t.closest("[data-dismiss]"); if(dm){ const m = S.msgs.find(x => x.id === dm.dataset.dismiss); if(m) m.used = true; save(); render(); }
+});
+
+/* 답안 입력칸 내용 유지 (다시 그려도 지워지지 않게) */
+$("#log").addEventListener("input", e => {
+  if(e.target.id?.startsWith("ans-")){ const m = S.msgs.find(x => x.id === e.target.id.slice(4)); if(m) m.answer = e.target.value; save(); }
+});
+
+render();
+</script>
+</body>
+</html>
