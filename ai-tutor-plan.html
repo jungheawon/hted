@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 학습 플랜 · HTRO EDU</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAFAFB;--card:#fff;--ink:#14161F;--sub:#5B6072;--mute:#9298A8;--line:#E8E9EE;--soft:#F3F4F7;
+  --accent:#3654F4;--accent-soft:#EEF1FF;--accent-ink:#2238C9;
+  --good:#12A26B;--good-soft:#E7F7F0;--warn:#D97706;--warn-soft:#FFF4E5;--bad:#E5484D;--bad-soft:#FDECEC;
+  --r:14px;--sh:0 1px 2px rgba(20,22,31,.04),0 6px 20px rgba(20,22,31,.05);
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55;word-break:keep-all}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:rgba(250,250,251,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.topin{display:flex;align-items:center;gap:10px;height:58px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-.01em;text-decoration:none;color:var(--ink)}
+.mark{width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:14px;font-weight:600}
+.crumb{color:var(--mute);font-weight:500}
+.spacer{flex:1}
+.ghost{padding:7px 12px;border-radius:9px;color:var(--sub);font-weight:600;font-size:14px;text-decoration:none}
+.ghost:hover{background:var(--soft);color:var(--ink)}
+
+.hero{padding:34px 0 22px}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:99px;letter-spacing:.02em}
+.hero h1{font-size:clamp(26px,4vw,34px);font-weight:800;letter-spacing:-.025em;margin:12px 0 6px}
+.hero p{color:var(--sub)}
+
+.grid{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:20px;align-items:start;padding-bottom:60px}
+@media (max-width:960px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.pad{padding:20px}
+.input{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto}
+@media (max-width:960px){.input{position:static;max-height:none}}
+.out{display:flex;flex-direction:column;gap:20px;min-width:0}
+
+h2{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.sec{padding:18px 20px;border-bottom:1px solid var(--line)}
+.sec:last-child{border-bottom:0}
+.sech{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--sub);margin-bottom:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fld{width:100%;height:40px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 11px;outline:none;transition:border-color .15s,box-shadow .15s}
+select.fld{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239298A8' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;padding-right:28px}
+textarea.fld{height:auto;min-height:74px;padding:10px 11px;resize:vertical;line-height:1.5}
+.fld:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.fld::placeholder{color:#B4B8C5}
+.mt{margin-top:12px}
+
+.seg{display:flex;background:var(--soft);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;height:32px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--sub)}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(20,22,31,.1)}
+
+/* score rows */
+.rows{display:flex;flex-direction:column;gap:6px}
+.rh,.rw{display:grid;gap:6px;align-items:center}
+.unit .rh,.unit .rw{grid-template-columns:minmax(0,1fr) 54px 54px 92px 28px}
+.item .rh,.item .rw{grid-template-columns:26px minmax(0,1fr) 50px 42px 92px 28px}
+.rh{font-size:11.5px;color:var(--mute);font-weight:600;padding:0 2px}
+.rw .fld{height:36px;padding:0 8px;font-size:14px;border-radius:8px}
+.rw select.fld{padding-right:22px;background-position:right 6px center;font-size:12.5px}
+.rw input[type=number]{font-family:var(--mono);font-size:13px;text-align:center;padding:0 4px}
+.rw input[type=number]::-webkit-inner-spin-button{display:none}
+.no{font-family:var(--mono);font-size:12px;color:var(--mute);text-align:center}
+.ox{height:36px;border-radius:8px;font-weight:800;font-size:15px;border:1px solid var(--line)}
+.ox.o{background:var(--good-soft);color:var(--good);border-color:transparent}
+.ox.x{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.del{width:28px;height:28px;border-radius:7px;color:var(--mute);display:grid;place-items:center}
+.del:hover{background:var(--bad-soft);color:var(--bad)}
+.addrow{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.chipbtn{height:32px;padding:0 11px;border-radius:8px;font-size:13px;font-weight:600;color:var(--sub);background:var(--soft)}
+.chipbtn:hover{color:var(--ink);background:#ECEDF1}
+.chipbtn.ac{color:var(--accent);background:var(--accent-soft)}
+.paste{margin-top:10px;display:none}
+.paste.show{display:block}
+.hint{font-size:12px;color:var(--mute);margin-top:6px;line-height:1.5}
+.hint code{font-family:var(--mono);font-size:11.5px;background:var(--soft);padding:1px 5px;border-radius:5px;color:var(--sub)}
+
+.go{width:100%;height:48px;border-radius:12px;background:var(--accent);color:#fff;font-weight:700;font-size:15.5px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,transform .05s}
+.go:hover{background:var(--accent-ink)}
+.go:active{transform:scale(.99)}
+.go:disabled{opacity:.6;cursor:default}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.foot{display:flex;justify-content:space-between;gap:8px;margin-top:10px}
+.link{font-size:13px;color:var(--mute);font-weight:600}
+.link:hover{color:var(--ink)}
+
+/* analysis */
+.empty{padding:46px 24px;text-align:center;color:var(--mute)}
+.empty .ic{width:46px;height:46px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin:0 auto 12px}
+.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--soft);border-radius:12px;padding:12px 14px}
+.stat .k{font-size:12px;color:var(--sub);font-weight:600}
+.stat .v{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-.02em;margin-top:2px}
+.stat .v small{font-size:13px;color:var(--mute);font-weight:400}
+.stat .s{font-size:12px;color:var(--mute);margin-top:1px}
+.stat.hl{background:var(--accent-soft)}
+.stat.hl .v{color:var(--accent-ink)}
+
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar{display:grid;grid-template-columns:minmax(80px,170px) minmax(0,1fr) 92px;gap:12px;align-items:center}
+.bar .n{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track{height:10px;background:var(--soft);border-radius:99px;overflow:hidden;position:relative}
+.fill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.t-good .fill{background:var(--good)}
+.t-mid .fill{background:var(--accent)}
+.t-weak .fill{background:var(--bad)}
+.bar .p{font-family:var(--mono);font-size:12.5px;text-align:right;color:var(--sub);white-space:nowrap}
+.bar .p b{color:var(--ink);font-weight:600}
+@media (max-width:520px){.bar{grid-template-columns:1fr 84px}.bar .track{grid-column:1/-1;grid-row:2}}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--mute)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:1px}
+
+.prio{display:flex;flex-direction:column;gap:8px}
+.pi{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px}
+.rk{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:13px;background:var(--soft);color:var(--sub)}
+.pi:first-child .rk{background:var(--bad-soft);color:var(--bad)}
+.pi .t{font-weight:700;font-size:14.5px}
+.pi .d{font-size:12.5px;color:var(--sub);margin-top:1px}
+.lost{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--bad);white-space:nowrap}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:11.5px;font-weight:700;background:var(--soft);color:var(--sub);margin-left:6px;vertical-align:1px}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.good{background:var(--good-soft);color:var(--good)}
+.tag.ac{background:var(--accent-soft);color:var(--accent-ink)}
+.insight{margin-top:12px;padding:12px 14px;background:var(--accent-soft);border-radius:12px;font-size:14px;color:#1F2A6B}
+.insight b{color:var(--accent-ink)}
+
+/* plan */
+.planhead{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.summary{font-size:15px;line-height:1.7;margin-top:10px}
+.prog{display:flex;align-items:center;gap:12px;margin-top:14px}
+.prog .track{flex:1;height:8px}
+.prog .fill{background:var(--accent)}
+.prog span{font-family:var(--mono);font-size:12.5px;color:var(--sub);white-space:nowrap}
+.notice{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:13px;background:var(--warn-soft);color:#8A4B06}
+.stale{background:var(--soft);color:var(--sub)}
+
+.wk{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.wc{border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+.wc .t{font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.wc .c{font-size:13px;color:var(--sub);margin-top:6px}
+.wc .s{font-size:13.5px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.wc .s::before{content:"공부법 ";font-weight:700;color:var(--accent)}
+
+.days{display:flex;flex-direction:column;gap:10px}
+.day{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.day.done{border-color:#BFE8D6}
+.dh{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--soft)}
+.day.done .dh{background:var(--good-soft)}
+.dn{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);background:#fff;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.day.done .dn{color:var(--good)}
+.df{flex:1;font-weight:700;font-size:14.5px;min-width:0}
+.dm{font-family:var(--mono);font-size:12px;color:var(--mute);white-space:nowrap}
+.task{display:flex;align-items:center;gap:11px;padding:10px 14px;border-top:1px solid var(--line);cursor:pointer;user-select:none}
+.task:hover{background:#FCFCFD}
+.cb{width:20px;height:20px;border-radius:6px;border:1.5px solid #C9CCD6;display:grid;place-items:center;flex:none;transition:all .12s}
+.task.on .cb{background:var(--accent);border-color:var(--accent)}
+.cb svg{opacity:0}
+.task.on .cb svg{opacity:1}
+.tt{flex:1;font-size:14px;min-width:0}
+.task.on .tt{color:var(--mute);text-decoration:line-through}
+.ty{font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:6px;white-space:nowrap}
+.ty-개념{background:var(--accent-soft);color:var(--accent-ink)}
+.ty-문제{background:#F1ECFF;color:#5B3CC4}
+.ty-오답{background:var(--bad-soft);color:var(--bad)}
+.ty-복습{background:var(--good-soft);color:var(--good)}
+.ty-모의{background:var(--warn-soft);color:var(--warn)}
+.tm{font-family:var(--mono);font-size:12px;color:var(--mute);white-space:nowrap;width:42px;text-align:right}
+
+.list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.list li{position:relative;padding-left:18px;font-size:14px}
+.list li::before{content:"";position:absolute;left:3px;top:9px;width:6px;height:6px;border-radius:2px;background:var(--accent)}
+.tip{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--good-soft);color:#0B5E3E;font-size:14px}
+
+.loading{padding:28px 20px}
+.sk{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--soft),#ECEDF2,var(--soft));background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.lmsg{font-size:14px;color:var(--sub);margin-bottom:14px;display:flex;gap:8px;align-items:center}
+.lmsg .spin{border-color:var(--accent-soft);border-top-color:var(--accent)}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:all .2s;z-index:50;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media print{
+  .top,.input,.acts,.notice.stale,.toast{display:none!important}
+  body{background:#fff}
+  .grid{display:block}
+  .card{box-shadow:none;break-inside:avoid-page}
+  .out{gap:12px}
+  .day{break-inside:avoid}
+  .hero{padding:0 0 12px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap topin">
+    <a class="brand" href="./"><span class="mark">H</span>HTRO EDU</a>
+    <span class="crumb">/ AI 학습 플랜</span>
+    <span class="spacer"></span>
+    <a class="ghost" href="./">홈</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <span class="eyebrow">학생 학습 분석</span>
+    <h1>AI 학습 플랜</h1>
+    <p>시험 점수로 취약점을 분석하고 학습 플랜을 제안합니다.</p>
+  </section>
+
+  <div class="grid">
+    <!-- ============ 입력 ============ -->
+    <section class="card input" aria-label="시험 결과 입력">
+      <div class="sec">
+        <div class="sech"><h2>시험 정보</h2></div>
+        <div class="row2">
+          <div>
+            <label class="lbl" for="subject">과목</label>
+            <select class="fld" id="subject" data-k="subject">
+              <option>국어</option><option>수학</option><option>영어</option><option>한국사</option>
+              <option>사회</option><option>과학</option><option>정보</option><option>기타</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl" for="grade">학년</label>
+            <select class="fld" id="grade" data-k="grade">
+              <option>중3</option><option>고1</option><option>고2</option><option>고3</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt">
+          <label class="lbl" for="exam">시험 이름 <span style="color:var(--mute);font-weight:500">(선택)</span></label>
+          <input class="fld" id="exam" data-k="exam" maxlength="40" placeholder="예: 2학기 중간고사">
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sech">
+          <h2>점수 입력</h2>
+          <div class="seg" role="tablist" style="width:190px">
+            <button data-mode="unit" role="tab">단원별</button>
+            <button data-mode="item" role="tab">문항별</button>
+          </div>
+        </div>
+        <div id="rowsWrap"></div>
+        <div class="addrow">
+          <button class="chipbtn" id="addRow">＋ 줄 추가</button>
+          <button class="chipbtn" id="pasteBtn">붙여넣기로 입력</button>
+        </div>
+        <div class="paste" id="paste">
+          <textarea class="fld" id="pasteTxt" placeholder=""></textarea>
+          <div class="hint" id="pasteHint"></div>
+          <div class="addrow"><button class="chipbtn ac" id="pasteApply">적용하기</button><button class="chipbtn" id="pasteClose">닫기</button></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sech"><h2>목표와 공부 시간</h2></div>
+        <div class="row3">
+          <div>
+            <label class="lbl" for="target">목표 총점</label>
+            <input class="fld" id="target" data-k="target" type="number" min="0" inputmode="decimal" placeholder="예: 85">
+          </div>
+          <div>
+            <label class="lbl" for="days">플랜 기간</label>
+            <select class="fld" id="days" data-k="days">
+              <option value="3">3일</option><option value="5">5일</option><option value="7">7일</option>
+              <option value="10">10일</option><option value="14">14일</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl" for="minutes">하루 공부</label>
+            <select class="fld" id="minutes" data-k="minutes">
+              <option value="30">30분</option><option value="45">45분</option><option value="60">1시간</option>
+              <option value="90">1시간 30분</option><option value="120">2시간</option><option value="150">2시간 30분</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt">
+          <label class="lbl" for="memo">메모 <span style="color:var(--mute);font-weight:500">(선택)</span></label>
+          <textarea class="fld" id="memo" data-k="memo" maxlength="400" placeholder="어렵게 느낀 부분, 공부 습관 등을 적으면 플랜에 반영돼요. 이름 같은 개인정보는 적지 마세요."></textarea>
+        </div>
+      </div>
+
+      <div class="sec">
+        <button class="go" id="goBtn">AI 학습 플랜 만들기</button>
+        <div class="foot">
+          <button class="link" id="sampleBtn">예시 불러오기</button>
+          <button class="link" id="resetBtn">모두 지우기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 결과 ============ -->
+    <div class="out">
+      <section class="card" id="analysis" aria-live="polite"></section>
+      <section class="card" id="planCard" hidden></section>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ================================================================
+   ★ 설정 — 여기만 바꾸면 돼요 ★
+   수업 설계·수행평가·튜터·생기부와 같은 통합 Apps Script 주소를 써요.
+   (서버가 type:"plan"을 보고 학습 플랜으로 처리해요.)
+   주소를 넣기 전에도 페이지는 '기본 규칙 플랜'으로 동작해요.
+   ================================================================ */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyP0vig94A0Y_BwEOeCqiSYPcp1aen7oBtE-Ei8IVWkhxRb9ZGtY28ORBO2YWRpLPqUFg/exec";
+/* ================================================================ */
+
+const STORE = "htro_tutor_plan_v1";
+const REASONS = ["개념 부족", "실수·계산", "시간 부족", "문제 이해", "잘 모름"];
+const STRATEGY = {
+  "개념 부족": "교과서 개념을 다시 읽고 핵심 정의·공식을 안 보고 써 본 뒤, 기본 예제로 이해했는지 확인해요.",
+  "실수·계산": "풀이를 끝까지 쓰고 마지막에 검산해요. 자주 하는 실수를 오답 노트 맨 위에 적어 두고 풀기 전에 한 번 봐요.",
+  "시간 부족": "타이머를 켜고 문제당 시간을 정해 풀어요. 막히는 문제는 표시하고 넘어가는 연습을 해요.",
+  "문제 이해": "조건과 묻는 것에 밑줄을 긋고, 문제를 내 말로 한 줄 요약한 다음 풀어요.",
+  "잘 모름": "기본 예제부터 다시 시작해요. 풀이를 보며 따라 쓴 뒤, 같은 유형을 혼자 풀어 봐요.",
+  "": "틀린 문제를 다시 풀면서 왜 틀렸는지 먼저 찾아보고, 같은 유형 문제로 확인해요."
+};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : NaN; };
+const r5 = n => Math.max(5, Math.round(n / 5) * 5);
+const fmt = n => (Math.round(n * 10) / 10).toString();
+const blankUnit = () => ({ name: "", score: "", max: "", reason: "" });
+const blankItem = () => ({ unit: "", pts: "", ok: true, reason: "" });
+
+function fresh() {
+  return { v: 1, subject: "수학", grade: "고1", exam: "", mode: "unit",
+    units: [blankUnit(), blankUnit(), blankUnit(), blankUnit()],
+    items: Array.from({ length: 6 }, blankItem),
+    target: "", days: "7", minutes: "60", memo: "", plan: null, planFor: "", checks: {} };
+}
+let S = (() => { try { const s = JSON.parse(localStorage.getItem(STORE) || "null"); if (s && s.v === 1) return Object.assign(fresh(), s); } catch (e) {} return fresh(); })();
+function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
+
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+/* ---------------- 입력 영역 ---------------- */
+function renderFields() {
+  document.querySelectorAll("[data-k]").forEach(el => { el.value = S[el.dataset.k] ?? ""; });
+  document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("on", b.dataset.mode === S.mode));
+}
+
+function reasonSelect(list, i, val, disabled) {
+  return `<select class="fld" data-l="${list}" data-i="${i}" data-f="reason"${disabled ? " disabled" : ""} aria-label="틀린 이유">
+    <option value="">${disabled ? "—" : "이유(선택)"}</option>
+    ${REASONS.map(r => `<option${r === val ? " selected" : ""}>${r}</option>`).join("")}</select>`;
+}
+const X_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
+
+function renderRows() {
+  const w = $("#rowsWrap");
+  if (S.mode === "unit") {
+    w.className = "unit";
+    w.innerHTML = `<div class="rows">
+      <div class="rh"><span>단원</span><span style="text-align:center">점수</span><span style="text-align:center">만점</span><span>잃은 이유</span><span></span></div>
+      ${S.units.map((u, i) => `<div class="rw">
+        <input class="fld" data-l="units" data-i="${i}" data-f="name" value="${esc(u.name)}" placeholder="예: 이차방정식" maxlength="40" aria-label="단원">
+        <input class="fld" type="number" inputmode="decimal" min="0" data-l="units" data-i="${i}" data-f="score" value="${esc(u.score)}" aria-label="받은 점수">
+        <input class="fld" type="number" inputmode="decimal" min="0" data-l="units" data-i="${i}" data-f="max" value="${esc(u.max)}" aria-label="만점">
+        ${reasonSelect("units", i, u.reason, false)}
+        <button class="del" data-del="${i}" aria-label="줄 삭제">${X_ICON}</button>
+      </div>`).join("")}</div>`;
+  } else {
+    w.className = "item";
+    const names = [...new Set(S.items.map(x => x.unit.trim()).filter(Boolean))];
+    w.innerHTML = `<datalist id="unitNames">${names.map(n => `<option value="${esc(n)}">`).join("")}</datalist>
+    <div class="rows">
+      <div class="rh"><span>번호</span><span>단원</span><span style="text-align:center">배점</span><span style="text-align:center">정답</span><span>틀린 이유</span><span></span></div>
+      ${S.items.map((it, i) => `<div class="rw">
+        <span class="no">${i + 1}</span>
+        <input class="fld" list="unitNames" data-l="items" data-i="${i}" data-f="unit" value="${esc(it.unit)}" placeholder="단원" maxlength="40" aria-label="${i + 1}번 단원">
+        <input class="fld" type="number" inputmode="decimal" min="0" data-l="items" data-i="${i}" data-f="pts" value="${esc(it.pts)}" aria-label="${i + 1}번 배점">
+        <button class="ox ${it.ok ? "o" : "x"}" data-ox="${i}" aria-label="${i + 1}번 ${it.ok ? "맞음" : "틀림"}">${it.ok ? "O" : "X"}</button>
+        ${reasonSelect("items", i, it.reason, it.ok)}
+        <button class="del" data-del="${i}" aria-label="줄 삭제">${X_ICON}</button>
+      </div>`).join("")}</div>`;
+  }
+  const ph = $("#pasteTxt"), hint = $("#pasteHint");
+  if (S.mode === "unit") {
+    ph.placeholder = "다항식의 연산\t18\t20\n복소수\t10\t20\t개념 부족";
+    hint.innerHTML = "엑셀·구글 시트에서 <code>단원 | 점수 | 만점 | 이유(선택)</code> 순서의 칸을 복사해 붙여 넣으세요. 쉼표로 구분해도 돼요.";
+  } else {
+    ph.placeholder = "1\t복소수\t4\tO\n2\t복소수\t4\tX\t개념 부족";
+    hint.innerHTML = "<code>번호 | 단원 | 배점 | O/X | 이유(선택)</code> 순서로 붙여 넣으세요. 번호 칸은 없어도 돼요.";
+  }
+}
+
+const listOf = () => S.mode === "unit" ? S.units : S.items;
+
+$("#rowsWrap").addEventListener("input", e => {
+  const el = e.target; if (!el.dataset.l) return;
+  S[el.dataset.l][+el.dataset.i][el.dataset.f] = el.value;
+  save(); refresh();
+});
+$("#rowsWrap").addEventListener("change", e => {
+  if (e.target.dataset.f === "unit") { // 단원 이름 자동완성 목록 갱신
+    const names = [...new Set(S.items.map(x => x.unit.trim()).filter(Boolean))];
+    const dl = $("#unitNames"); if (dl) dl.innerHTML = names.map(n => `<option value="${esc(n)}">`).join("");
+  }
+});
+$("#rowsWrap").addEventListener("click", e => {
+  const d = e.target.closest("[data-del]"), o = e.target.closest("[data-ox]");
+  if (d) {
+    const L = listOf(); L.splice(+d.dataset.del, 1);
+    if (!L.length) L.push(S.mode === "unit" ? blankUnit() : blankItem());
+    save(); renderRows(); refresh();
+  } else if (o) {
+    const it = S.items[+o.dataset.ox]; it.ok = !it.ok; if (it.ok) it.reason = "";
+    save(); renderRows(); refresh();
+  }
+});
+$("#rowsWrap").addEventListener("keydown", e => {
+  // 마지막 줄에서 Enter → 새 줄
+  if (e.key !== "Enter" || !e.target.dataset.l || e.isComposing) return;
+  const L = listOf(); if (+e.target.dataset.i !== L.length - 1) return;
+  e.preventDefault(); addRow(e.target.dataset.f);
+});
+function addRow(focusField) {
+  const L = listOf();
+  if (S.mode === "unit") L.push(blankUnit());
+  else { const last = L[L.length - 1]; L.push({ ...blankItem(), unit: last ? last.unit : "", pts: last ? last.pts : "" }); }
+  save(); renderRows();
+  const f = focusField || (S.mode === "unit" ? "name" : "unit");
+  const el = document.querySelector(`[data-l][data-i="${L.length - 1}"][data-f="${f}"]`); if (el) el.focus();
+}
+$("#addRow").onclick = () => addRow();
+
+document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
+  if (S.mode === b.dataset.mode) return;
+  S.mode = b.dataset.mode; save(); renderFields(); renderRows(); refresh();
+});
+document.querySelectorAll("[data-k]").forEach(el => el.addEventListener("input", () => {
+  S[el.dataset.k] = el.value; save(); refresh();
+}));
+
+/* 붙여넣기 */
+$("#pasteBtn").onclick = () => { $("#paste").classList.toggle("show"); $("#pasteTxt").focus(); };
+$("#pasteClose").onclick = () => $("#paste").classList.remove("show");
+$("#pasteApply").onclick = () => {
+  const lines = $("#pasteTxt").value.split(/\r?\n/).map(l => l.split(/\t|,/).map(s => s.trim())).filter(c => c.some(Boolean));
+  const fixReason = r => REASONS.find(x => r && (x === r || x.startsWith(r.slice(0, 2)))) || "";
+  let rows = [];
+  if (S.mode === "unit") {
+    rows = lines.filter(c => c[0] && !isNaN(num(c[1]))).map(c => ({ name: c[0], score: c[1], max: c[2] || "", reason: fixReason(c[3]) }));
+  } else {
+    rows = lines.map(c => (/^\d+$/.test(c[0]) && c.length >= 4) ? c.slice(1) : c)
+      .filter(c => c[0] && !isNaN(num(c[1])))
+      .map(c => { const ok = !/^(x|×|틀|0|오답|false)/i.test(c[2] || "o"); return { unit: c[0], pts: c[1], ok, reason: ok ? "" : fixReason(c[3]) }; });
+  }
+  if (!rows.length) { toast("읽을 수 있는 줄이 없어요. 칸 순서를 확인해 주세요."); return; }
+  if (S.mode === "unit") S.units = rows; else S.items = rows;
+  save(); renderRows(); refresh();
+  $("#paste").classList.remove("show"); $("#pasteTxt").value = "";
+  toast(`${rows.length}줄을 불러왔어요.`);
+};
+
+/* ---------------- 분석 ---------------- */
+function analyze() {
+  const map = new Map();
+  const get = name => { if (!map.has(name)) map.set(name, { name, score: 0, max: 0, wrong: 0, reasons: {} }); return map.get(name); };
+  if (S.mode === "unit") {
+    S.units.forEach(u => {
+      const name = u.name.trim(), max = num(u.max), sc = num(u.score);
+      if (!name || !(max > 0) || isNaN(sc)) return;
+      const g = get(name), score = Math.min(max, Math.max(0, sc));
+      g.score += score; g.max += max;
+      if (max - score > 0 && u.reason) g.reasons[u.reason] = (g.reasons[u.reason] || 0) + (max - score);
+    });
+  } else {
+    S.items.forEach(it => {
+      const pts = num(it.pts); if (!(pts > 0)) return;
+      const g = get(it.unit.trim() || "미분류");
+      g.max += pts;
+      if (it.ok) g.score += pts;
+      else { g.wrong++; if (it.reason) g.reasons[it.reason] = (g.reasons[it.reason] || 0) + pts; }
+    });
+  }
+  const units = [...map.values()].map(u => {
+    const rate = u.score / u.max, lost = u.max - u.score;
+    const top = Object.entries(u.reasons).sort((a, b) => b[1] - a[1])[0];
+    return { ...u, rate, lost, priority: lost * (1.15 - rate), reason: top ? top[0] : "",
+      tier: rate >= .85 ? "good" : rate >= .65 ? "mid" : "weak" };
+  });
+  const total = units.reduce((s, u) => s + u.score, 0), totalMax = units.reduce((s, u) => s + u.max, 0);
+  const target = num(S.target);
+  const weak = units.filter(u => u.lost > 0).sort((a, b) => b.priority - a.priority);
+  const byReason = {};
+  units.forEach(u => Object.entries(u.reasons).forEach(([k, v]) => byReason[k] = (byReason[k] || 0) + v));
+  const topReason = Object.entries(byReason).sort((a, b) => b[1] - a[1])[0];
+  return { units, total, totalMax, pct: totalMax ? total / totalMax : 0,
+    target: target > 0 ? target : null, gap: target > 0 ? target - total : null,
+    weak, topReason, byReason };
+}
+
+const EMPTY_ICON = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>`;
+
+function renderAnalysis(A) {
+  const el = $("#analysis");
+  if (!A.units.length) {
+    el.innerHTML = `<div class="empty"><div class="ic">${EMPTY_ICON}</div><b>점수를 입력하면 바로 분석이 나와요</b>
+      단원별 점수나 문항별 정답 여부를 넣어 보세요. <button class="link" style="color:var(--accent)" onclick="loadSample()">예시로 먼저 보기</button></div>`;
+    return;
+  }
+  const pct = Math.round(A.pct * 100);
+  const weakN = A.units.filter(u => u.tier === "weak").length;
+  const goalStat = A.target == null
+    ? `<div class="stat"><div class="k">목표 총점</div><div class="v">—</div><div class="s">왼쪽에서 입력</div></div>`
+    : A.gap <= 0
+      ? `<div class="stat hl"><div class="k">목표 ${fmt(A.target)}점</div><div class="v">달성</div><div class="s">+${fmt(-A.gap)}점 여유</div></div>`
+      : `<div class="stat hl"><div class="k">목표 ${fmt(A.target)}점까지</div><div class="v">+${fmt(A.gap)}<small>점</small></div><div class="s">${A.gap > A.totalMax - A.total ? "만점보다 높아요" : "올려야 할 점수"}</div></div>`;
+
+  const sorted = [...A.units].sort((a, b) => a.rate - b.rate);
+  const bars = sorted.map(u => `<div class="bar t-${u.tier}">
+      <div class="n" title="${esc(u.name)}">${esc(u.name)}</div>
+      <div class="track"><div class="fill" style="width:${Math.round(u.rate * 100)}%"></div></div>
+      <div class="p"><b>${Math.round(u.rate * 100)}%</b> · ${fmt(u.score)}/${fmt(u.max)}</div></div>`).join("");
+
+  const prio = A.weak.slice(0, 5).map((u, i) => {
+    const lvl = i === 0 || u.tier === "weak" ? ["bad", "집중"] : u.tier === "mid" ? ["warn", "보완"] : ["good", "점검"];
+    return `<div class="pi"><div class="rk">${i + 1}</div>
+      <div><div class="t">${esc(u.name)}<span class="tag ${lvl[0]}">${lvl[1]}</span>${u.reason ? `<span class="tag">${esc(u.reason)}</span>` : ""}</div>
+      <div class="d">정답률 ${Math.round(u.rate * 100)}%${u.wrong ? ` · 틀린 문항 ${u.wrong}개` : ""}</div></div>
+      <div class="lost">−${fmt(u.lost)}점</div></div>`;
+  }).join("");
+
+  // 핵심 인사이트
+  const ins = [];
+  if (A.weak.length) {
+    const top3 = A.weak.slice(0, 3), lost3 = top3.reduce((s, u) => s + u.lost, 0);
+    const totalLost = A.totalMax - A.total;
+    ins.push(`잃은 점수 ${fmt(totalLost)}점 중 <b>${fmt(lost3)}점(${Math.round(lost3 / totalLost * 100)}%)</b>이 ${top3.map(u => esc(u.name)).join(", ")}에서 나왔어요.`);
+    if (A.gap > 0 && A.gap <= lost3) ins.push(`이 단원들에서 잃은 점수의 <b>${Math.ceil(A.gap / lost3 * 100)}%</b>만 되찾으면 목표에 닿아요.`);
+    else if (A.gap > 0 && A.gap <= totalLost) ins.push(`목표까지는 상위 약점 단원 외에 다른 단원 점수도 함께 올려야 해요.`);
+  } else ins.push(`모든 단원에서 만점이에요. 지금 실력을 유지하는 복습 위주로 플랜을 만들게요.`);
+  if (A.topReason) ins.push(`가장 많이 점수를 잃은 이유는 <b>${esc(A.topReason[0])}</b>예요.`);
+
+  el.innerHTML = `
+    <div class="sec">
+      <div class="sech"><h2>점수 분석</h2>${S.exam ? `<span class="tag ac">${esc(S.exam)}</span>` : ""}</div>
+      <div class="stats">
+        <div class="stat"><div class="k">총점</div><div class="v">${fmt(A.total)}<small>/${fmt(A.totalMax)}</small></div><div class="s">${esc(S.subject)} · ${esc(S.grade)}</div></div>
+        <div class="stat"><div class="k">득점률</div><div class="v">${pct}<small>%</small></div><div class="s">${A.units.length}개 단원</div></div>
+        ${goalStat}
+        <div class="stat"><div class="k">약점 단원</div><div class="v">${weakN}<small>개</small></div><div class="s">정답률 65% 미만</div></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sech"><h2>단원별 정답률</h2>
+        <div class="legend"><span><i style="background:var(--bad)"></i>65% 미만</span><span><i style="background:var(--accent)"></i>65~84%</span><span><i style="background:var(--good)"></i>85% 이상</span></div></div>
+      <div class="bars">${bars}</div>
+    </div>
+    ${prio ? `<div class="sec"><div class="sech"><h2>먼저 공부할 순서</h2><span class="hint" style="margin:0">잃은 점수 × 낮은 정답률 기준</span></div>
+      <div class="prio">${prio}</div>
+      <div class="insight">${ins.join(" ")}</div></div>`
+      : `<div class="sec"><div class="insight">${ins.join(" ")}</div></div>`}`;
+}
+
+/* ---------------- 플랜 ---------------- */
+function payloadOf(A) {
+  return {
+    type: "plan", subject: S.subject, grade: S.grade, exam: S.exam.trim(),
+    target: A.target, days: +S.days, minutes: +S.minutes, memo: S.memo.trim(),
+    total: A.total, totalMax: A.totalMax,
+    units: A.units.map(u => ({ name: u.name, score: u.score, max: u.max, wrong: u.wrong, reasons: u.reasons }))
+  };
+}
+
+/* AI 연결 전·실패 시 쓰는 기본 규칙 플랜 */
+function rulePlan(A) {
+  const days = +S.days, mins = +S.minutes;
+  let focus = A.weak.slice(0, Math.min(4, Math.max(1, Math.ceil(days / 2))));
+  if (!focus.length) focus = [...A.units].sort((a, b) => a.rate - b.rate).slice(0, 3);
+  const reviewDay = i => days >= 5 && (i + 1) % 4 === 0;
+  const lastMock = days >= 3;
+  const studyDays = [...Array(days).keys()].filter(i => !(lastMock && i === days - 1) && !reviewDay(i));
+
+  // 우선도에 비례해 날짜 배분 → 같은 단원이 몰리지 않게 섞기
+  const wsum = focus.reduce((s, u) => s + Math.max(u.priority, .5), 0);
+  const n = studyDays.length;
+  let counts = focus.map(u => Math.round(n * Math.max(u.priority, .5) / wsum));
+  counts[0] = Math.max(1, counts[0]);
+  for (let k = counts.length - 1; counts.reduce((a, b) => a + b, 0) > n && k >= 0; k--) { // 우선도 낮은 단원부터 줄이기
+    while (counts[k] > (k === 0 ? 1 : 0) && counts.reduce((a, b) => a + b, 0) > n) counts[k]--;
+  }
+  while (counts.reduce((a, b) => a + b, 0) < n) counts[0]++;
+  focus = focus.filter((u, k) => counts[k] > 0); counts = counts.filter(c => c > 0);
+  let seq = [];
+  focus.forEach((u, k) => { for (let j = 0; j < counts[k]; j++) seq.push({ u, key: (j + .5) / counts[k] + k * 1e-3 }); });
+  seq = seq.sort((a, b) => a.key - b.key).map(x => x.u).slice(0, studyDays.length);
+  for (let i = 1; i < seq.length; i++) if (seq[i] === seq[i - 1]) { const j = seq.findIndex((x, k) => k > i && x !== seq[i]); if (j > 0) [seq[i], seq[j]] = [seq[j], seq[i]]; }
+
+  const c1 = r5(mins * .3), c2 = r5(mins * .45), c3 = Math.max(5, mins - c1 - c2);
+  const done = [];
+  const plan = [...Array(days).keys()].map(i => {
+    if (lastMock && i === days - 1) return { day: i + 1, focus: "실전 점검",
+      tasks: [{ title: "시간을 재고 시험 범위 전체 모의 풀이", minutes: r5(mins * .6), type: "모의" },
+              { title: "모의 풀이에서 틀린 문제와 오답 노트 마지막 점검", minutes: Math.max(5, mins - r5(mins * .6)), type: "오답" }] };
+    if (reviewDay(i)) {
+      const names = [...new Set(done)].slice(-3).map(u => u.name).join(", ") || "약점 단원";
+      return { day: i + 1, focus: "되돌아보기",
+        tasks: [{ title: `${names} 오답 노트 다시 풀기`, minutes: r5(mins * .55), type: "복습" },
+                { title: "헷갈린 개념을 한 장에 요약하기", minutes: Math.max(5, mins - r5(mins * .55)), type: "개념" }] };
+    }
+    const u = seq[studyDays.indexOf(i)] || focus[0]; done.push(u);
+    const first = done.filter(x => x === u).length === 1;
+    const t1 = u.reason === "실수·계산" ? `${u.name} 자주 하는 실수 목록 만들기` :
+               u.reason === "문제 이해" ? `${u.name} 문제의 조건·묻는 것 표시 연습` :
+               first ? `${u.name} 핵심 개념·공식 다시 정리` : `${u.name} 개념 빈칸 채우기로 확인`;
+    const t2 = u.reason === "시간 부족" ? `${u.name} 유형 문제 타이머 켜고 풀기` : `${u.name} 유형 문제 풀기`;
+    return { day: i + 1, focus: u.name,
+      tasks: [{ title: t1, minutes: c1, type: "개념" }, { title: t2, minutes: c2, type: "문제" },
+              { title: `${u.name} 틀린 문제 다시 풀고 이유 적기`, minutes: c3, type: "오답" }] };
+  });
+
+  const pct = Math.round(A.pct * 100);
+  const lead = A.weak[0];
+  let summary = `총점 ${fmt(A.total)}/${fmt(A.totalMax)}점(${pct}%)이에요. `;
+  summary += lead ? `가장 많이 점수를 잃은 단원은 ${lead.name}(−${fmt(lead.lost)}점)이라 여기부터 시작해요.` : `모든 단원이 만점이라 유지 복습 위주로 짰어요.`;
+  if (A.gap > 0) summary += ` 목표까지 ${fmt(A.gap)}점, 약점 단원을 차례로 메워 가면 충분히 노려볼 만해요.`;
+  const strong = A.units.filter(u => u.tier === "good").map(u => `${u.name} (${Math.round(u.rate * 100)}%) — 지금처럼 가끔 복습해서 유지해요.`);
+
+  return { source: "rule", summary, strengths: strong.slice(0, 4),
+    weaknesses: focus.filter(u => u.lost > 0).map((u, i) => ({ unit: u.name,
+      level: i === 0 || u.tier === "weak" ? "높음" : u.tier === "mid" ? "보통" : "낮음",
+      cause: u.reason ? `${u.reason}로 ${fmt(u.reasons[u.reason])}점을 잃었어요.` : `정답률 ${Math.round(u.rate * 100)}%로 ${fmt(u.lost)}점을 잃었어요.`,
+      strategy: STRATEGY[u.reason || ""] })),
+    plan,
+    checkpoints: [
+      `${Math.ceil(days / 2)}일차가 끝나면 ${focus[0] ? focus[0].name : "약점 단원"} 문제를 답 안 보고 3개 풀어 보기`,
+      "오답 노트에 '왜 틀렸는지'가 한 줄씩 적혀 있는지 확인하기",
+      days >= 3 ? "마지막 날 모의 풀이 점수를 이번 시험 득점률과 비교하기" : "플랜이 끝나면 같은 유형 문제로 다시 확인하기"
+    ],
+    tip: "한 번에 오래 하기보다 매일 정한 시간을 지키는 게 더 효과적이에요. 끝낸 일은 바로 체크해 보세요." };
+}
+
+const LOAD_MSGS = ["점수를 살펴보는 중…", "약점 단원을 정리하는 중…", "하루 일정을 짜는 중…", "거의 다 됐어요…"];
+let busy = false;
+
+async function makePlan() {
+  if (busy) return;
+  const A = analyze();
+  if (!A.units.length) { toast("단원과 점수를 하나 이상 입력해 주세요."); return; }
+  const payload = payloadOf(A), key = JSON.stringify(payload);
+  const configured = /^https:\/\/script\.google\.com\//.test(APPS_SCRIPT_URL);
+
+  busy = true; setBtn(true);
+  const card = $("#planCard"); card.hidden = false;
+  let mi = 0;
+  card.innerHTML = `<div class="loading"><div class="lmsg"><span class="spin"></span><span id="lm">${LOAD_MSGS[0]}</span></div>
+    <div class="sk" style="width:70%"></div><div class="sk mt" style="width:92%"></div><div class="sk mt" style="width:55%"></div>
+    <div class="sk mt" style="height:64px"></div><div class="sk mt" style="height:64px"></div></div>`;
+  card.scrollIntoView({ behavior: "smooth", block: "start" });
+  const tick = setInterval(() => { const l = $("#lm"); if (l) l.textContent = LOAD_MSGS[Math.min(++mi, LOAD_MSGS.length - 1)]; }, 3500);
+
+  let plan = null, note = "";
+  if (configured) {
+    const ctrl = new AbortController(), to = setTimeout(() => ctrl.abort(), 70000);
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: key, signal: ctrl.signal });
+      const data = await res.json();
+      if (data.plan && Array.isArray(data.plan.plan) && data.plan.plan.length) plan = { ...data.plan, source: "ai" };
+      else note = ({ rate_limited: "지금 사용하는 사람이 많아요. 1분쯤 뒤에 다시 만들어 보세요.",
+        busy: "AI가 잠시 바빠요. 조금 뒤에 다시 만들어 보세요.",
+        overloaded: "AI가 잠시 바빠요. 조금 뒤에 다시 만들어 보세요.",
+        no_key: "서버에 API 키가 아직 없어요. 선생님께 알려 주세요." }[data.error]) || "AI 응답을 받지 못했어요.";
+    } catch (e) { note = e.name === "AbortError" ? "AI 응답이 너무 오래 걸렸어요." : "서버에 연결하지 못했어요."; }
+    clearTimeout(to);
+  } else {
+    await new Promise(r => setTimeout(r, 500));
+  }
+  clearInterval(tick);
+  if (!plan) { plan = rulePlan(A); if (note) plan.note = note + " 대신 기본 규칙으로 만든 플랜을 보여 드려요."; }
+
+  S.plan = plan; S.planFor = key; S.checks = {}; save();
+  busy = false; setBtn(false); renderPlan();
+}
+function setBtn(on) {
+  const b = $("#goBtn"); b.disabled = on;
+  b.innerHTML = on ? `<span class="spin"></span>만드는 중…` : (S.plan ? "플랜 다시 만들기" : "AI 학습 플랜 만들기");
+}
+
+const CHECK = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+
+function renderPlan() {
+  const card = $("#planCard"), P = S.plan;
+  if (!P) { card.hidden = true; return; }
+  card.hidden = false;
+  const all = P.plan.flatMap((d, i) => d.tasks.map((t, j) => ({ ...t, k: `${i}-${j}` })));
+  const doneN = all.filter(t => S.checks[t.k]).length;
+  const doneMin = all.filter(t => S.checks[t.k]).reduce((s, t) => s + t.minutes, 0);
+  const totMin = all.reduce((s, t) => s + t.minutes, 0);
+  const stale = S.planFor && S.planFor !== JSON.stringify(payloadOf(analyze()));
+  const lvlTag = l => l === "높음" ? "bad" : l === "보통" ? "warn" : "good";
+
+  card.innerHTML = `
+    <div class="sec">
+      <div class="planhead">
+        <div><h2 style="font-size:18px">${+S.days}일 학습 플랜</h2>
+          <span class="tag ${P.source === "ai" ? "ac" : ""}" style="margin:6px 0 0">${P.source === "ai" ? "AI가 만든 플랜" : "기본 규칙 플랜"}</span></div>
+        <div class="acts">
+          <button class="chipbtn" id="copyBtn">텍스트 복사</button>
+          <button class="chipbtn" id="printBtn">인쇄·PDF</button>
+        </div>
+      </div>
+      ${P.summary ? `<p class="summary">${esc(P.summary)}</p>` : ""}
+      <div class="prog"><div class="track"><div class="fill" style="width:${all.length ? doneN / all.length * 100 : 0}%"></div></div>
+        <span>${doneN}/${all.length}개 · ${doneMin}/${totMin}분</span></div>
+      ${P.note ? `<div class="notice">${esc(P.note)}</div>` : ""}
+      ${!P.note && P.source === "rule" && !/^https:\/\/script\.google\.com\//.test(APPS_SCRIPT_URL) ? `<div class="notice stale">AI 서버가 연결되면 단원 내용에 맞춘 더 구체적인 플랜이 만들어져요.</div>` : ""}
+      ${stale ? `<div class="notice stale">입력이 바뀌었어요. '플랜 다시 만들기'를 누르면 반영돼요.</div>` : ""}
+    </div>
+    ${P.weaknesses && P.weaknesses.length ? `<div class="sec"><div class="sech"><h2>취약점과 공부법</h2></div><div class="wk">
+      ${P.weaknesses.map(w => `<div class="wc"><div class="t">${esc(w.unit)}<span class="tag ${lvlTag(w.level)}">${esc(w.level)}</span></div>
+        ${w.cause ? `<div class="c">${esc(w.cause)}</div>` : ""}${w.strategy ? `<div class="s">${esc(w.strategy)}</div>` : ""}</div>`).join("")}
+    </div></div>` : ""}
+    <div class="sec"><div class="sech"><h2>날짜별 할 일</h2><span class="hint" style="margin:0">눌러서 체크</span></div>
+      <div class="days">${P.plan.map((d, i) => {
+        const dm = d.tasks.reduce((s, t) => s + t.minutes, 0);
+        const allDone = d.tasks.every((t, j) => S.checks[`${i}-${j}`]);
+        return `<div class="day${allDone ? " done" : ""}"><div class="dh"><span class="dn">${i + 1}일차</span><span class="df">${esc(d.focus || "")}</span><span class="dm">${dm}분</span></div>
+          ${d.tasks.map((t, j) => `<div class="task${S.checks[`${i}-${j}`] ? " on" : ""}" data-ck="${i}-${j}" role="checkbox" tabindex="0" aria-checked="${!!S.checks[`${i}-${j}`]}">
+            <span class="cb">${CHECK}</span><span class="tt">${esc(t.title)}</span><span class="ty ty-${esc(t.type)}">${esc(t.type)}</span><span class="tm">${t.minutes}분</span></div>`).join("")}</div>`;
+      }).join("")}</div></div>
+    ${(P.strengths && P.strengths.length) || (P.checkpoints && P.checkpoints.length) || P.tip ? `<div class="sec">
+      ${P.strengths && P.strengths.length ? `<div class="sech"><h2>강점 유지</h2></div><ul class="list">${P.strengths.map(s => `<li>${esc(s)}</li>`).join("")}</ul>` : ""}
+      ${P.checkpoints && P.checkpoints.length ? `<div class="sech" style="margin-top:${P.strengths && P.strengths.length ? 18 : 0}px"><h2>스스로 확인할 것</h2></div><ul class="list">${P.checkpoints.map(s => `<li>${esc(s)}</li>`).join("")}</ul>` : ""}
+      ${P.tip ? `<div class="tip">${esc(P.tip)}</div>` : ""}</div>` : ""}`;
+
+  $("#printBtn").onclick = () => window.print();
+  $("#copyBtn").onclick = copyPlan;
+}
+
+$("#planCard").addEventListener("click", e => { const t = e.target.closest("[data-ck]"); if (t) toggleCheck(t.dataset.ck); });
+$("#planCard").addEventListener("keydown", e => {
+  const t = e.target.closest("[data-ck]"); if (t && (e.key === " " || e.key === "Enter")) { e.preventDefault(); toggleCheck(t.dataset.ck); }
+});
+function toggleCheck(k) {
+  S.checks[k] = !S.checks[k]; save();
+  const y = window.scrollY; renderPlan(); window.scrollTo(0, y);
+  const el = document.querySelector(`[data-ck="${k}"]`); if (el) el.focus({ preventScroll: true });
+  const total = S.plan.plan.reduce((s, d) => s + d.tasks.length, 0);
+  if (S.checks[k] && Object.values(S.checks).filter(Boolean).length === total) toast("플랜을 모두 끝냈어요. 정말 수고했어요!");
+}
+
+function copyPlan() {
+  const P = S.plan; if (!P) return;
+  const L = [`[${S.subject}${S.exam ? " · " + S.exam : ""}] ${+S.days}일 학습 플랜`, ""];
+  if (P.summary) L.push(P.summary, "");
+  if (P.weaknesses?.length) { L.push("■ 취약점과 공부법"); P.weaknesses.forEach(w => L.push(`- ${w.unit}(${w.level}): ${w.strategy || w.cause}`)); L.push(""); }
+  L.push("■ 날짜별 할 일");
+  P.plan.forEach((d, i) => { L.push(`${i + 1}일차 ${d.focus || ""}`); d.tasks.forEach((t, j) => L.push(`  ${S.checks[`${i}-${j}`] ? "☑" : "☐"} [${t.type}] ${t.title} (${t.minutes}분)`)); });
+  if (P.checkpoints?.length) { L.push("", "■ 스스로 확인할 것"); P.checkpoints.forEach(c => L.push("- " + c)); }
+  if (P.tip) L.push("", P.tip);
+  const text = L.join("\n");
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject())
+    .then(() => toast("플랜을 복사했어요."))
+    .catch(() => { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast("플랜을 복사했어요."); });
+}
+
+/* ---------------- 공통 ---------------- */
+let rt;
+function refresh() {
+  clearTimeout(rt);
+  rt = setTimeout(() => { renderAnalysis(analyze()); if (S.plan) renderPlan(); }, 120);
+}
+
+function loadSample() {
+  Object.assign(S, { subject: "수학", grade: "고1", exam: "2학기 중간고사", mode: "unit", target: "85", days: "7", minutes: "60",
+    memo: "복소수 단원은 수업 때도 잘 이해가 안 됐어요. 시험 볼 때 마지막 문제들은 시간이 모자랐어요.",
+    units: [
+      { name: "다항식의 연산", score: "18", max: "20", reason: "실수·계산" },
+      { name: "나머지정리", score: "14", max: "20", reason: "실수·계산" },
+      { name: "인수분해", score: "16", max: "16", reason: "" },
+      { name: "복소수", score: "8", max: "20", reason: "개념 부족" },
+      { name: "이차방정식", score: "12", max: "24", reason: "시간 부족" }
+    ] });
+  save(); renderFields(); renderRows(); refresh();
+  toast("예시 점수를 불러왔어요.");
+}
+$("#sampleBtn").onclick = loadSample;
+$("#resetBtn").onclick = () => {
+  if (!confirm("입력한 점수와 플랜을 모두 지울까요?")) return;
+  S = fresh(); save(); renderFields(); renderRows(); renderAnalysis(analyze()); renderPlan(); setBtn(false);
+};
+$("#goBtn").onclick = makePlan;
+
+renderFields(); renderRows(); renderAnalysis(analyze()); renderPlan(); setBtn(false);
+</script>
+</body>
+</html>
