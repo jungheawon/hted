@@ -692,7 +692,7 @@
           <a href="#/teacher-quiz" data-route="teacher-quiz"><b>AI Quiz Teacher</b><small>AVAILABLE</small></a>
           <a href="#/teacher-material" data-route="teacher-material"><b>수업설계</b><small>AVAILABLE</small></a>
           <a href="#/teacher-assessment" data-route="teacher-assessment"><b>수행평가</b><small>AVAILABLE</small></a>
-          <a class="is-soon" href="#/teacher-record" data-route="teacher-record"><b>생기부 AI</b><small>COMING SOON</small></a>
+          <a href="#/teacher-record" data-route="teacher-record"><b>생기부 AI</b><small>AVAILABLE</small></a>
         </div>
       </div>
 
@@ -703,7 +703,7 @@
         </button>
         <div class="dropdown-panel">
           <a href="#/tutor-quiz" data-route="tutor-quiz"><b>AI Quiz Student</b><small>AVAILABLE</small></a>
-          <a class="is-soon" href="#/tutor-teacher" data-route="tutor-teacher"><b>AI 튜터</b><small>COMING SOON</small></a>
+          <a href="#/tutor-teacher" data-route="tutor-teacher"><b>AI 튜터</b><small>AVAILABLE</small></a>
           <a class="is-soon" href="#/tutor-plan" data-route="tutor-plan"><b>AI 학습 플랜</b><small>COMING SOON</small></a>
           <a class="is-soon" href="#/ai-interview" data-route="ai-interview"><b>AI 면접</b><small>COMING SOON</small></a>
         </div>
@@ -931,7 +931,7 @@
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V6a2 2 0 012-2h9l5 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M14 4v5h5"/></svg></div>
           <h3>학생기록 AI</h3>
           <p>교사가 입력한 실제 학생 활동 자료를 바탕으로 기록 정리를 보조합니다.</p>
-          <span class="status-tag soon"><i></i>Coming Soon</span>
+          <span class="status-tag avail"><i></i>Available</span>
         </a>
 
         <a href="#/tutor-plan" data-route="tutor-plan" class="feat-card reveal">
@@ -1292,11 +1292,13 @@
         { title: 'AI Quiz', icon: 'quiz', desc: '교과와 단원을 입력하면 AI가 다양한 형태의 퀴즈를 생성합니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'teacher-quiz', primary: true } ] },
         { title: 'AI 수업 설계', icon: 'lesson', desc: '수업 목표에 맞춘 수업안과 활동 아이디어를 설계합니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'teacher-material', primary: true } ] },
         { title: 'AI 수행평가', icon: 'assess', desc: '평가 기준과 루브릭을 빠르게 만들어 줍니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'teacher-assessment', primary: true } ] },
+        { title: '생기부 AI', icon: 'doc', desc: '학생 활동 자료를 바탕으로 기록 정리를 돕습니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'teacher-record', primary: true } ] },
+        { title: 'AI 튜터', icon: 'person', desc: '질문에 답하고 개념을 설명해 주는 학생용 AI 튜터입니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'tutor-teacher', primary: true } ] },
         { title: '학생 학습 분석', icon: 'chart', desc: '시험 점수로 취약점을 분석하고 학습 플랜을 제안합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'tutor-plan' } ] },
         { title: '개인화 학습', icon: 'person', desc: '학생 수준에 맞춘 문제와 설명을 제공합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'tutor-plan' } ] },
-        { title: '교사 AI Assistant', icon: 'spark', desc: '반복 업무를 덜어 주는 교사 전용 AI 비서입니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-record' } ] },
-        { title: '학교 데이터 분석', icon: 'bars', desc: '학교 데이터를 모아 한눈에 분석합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-record' } ] },
-        { title: '교육용 AI Agent', icon: 'bolt', desc: '여러 작업을 스스로 처리하는 교육용 에이전트입니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-record' } ] },
+        { title: '교사 AI Assistant', icon: 'spark', desc: '반복 업무를 덜어 주는 교사 전용 AI 비서입니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'tutor-plan' } ] },
+        { title: '학교 데이터 분석', icon: 'bars', desc: '학교 데이터를 모아 한눈에 분석합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'tutor-plan' } ] },
+        { title: '교육용 AI Agent', icon: 'bolt', desc: '여러 작업을 스스로 처리하는 교육용 에이전트입니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'tutor-plan' } ] },
         { title: 'AI 면접', icon: 'mic', desc: '면접 질문에 답하면 AI가 답변을 분석하고 피드백을 제공합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'ai-interview' } ] }
       ]
     },
@@ -1332,6 +1334,8 @@
     'class-lottery':      'https://hted.kr/number.html',  // 번호 추첨
     'class-vote':         'https://hted.kr/vote.html',    // 교실 투표
     'admissions-gradecut': 'https://hted.kr/kokyo.html',  // 고교학점제
+    'tutor-teacher':      'https://hted.kr/ai-tutor.html',  // AI 튜터 (로그인 필요)
+    'teacher-record':     'https://hted.kr/ai-record.html',  // 생기부 AI (로그인 필요)
     'teacher-assessment': 'https://hted.kr/ai-assessment.html',  // 수행평가 (로그인 필요)
     'teacher-material':   'https://hted.kr/ai-lesson.html',  // 수업설계 (로그인 필요)
     'teacher-quiz':       'https://hted.kr/ai-quiz-teacher.html',  // AI Quiz Teacher (로그인 필요)
@@ -1513,6 +1517,7 @@
     spark:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
     bars:'<path d="M5 21V10"/><path d="M12 21V4"/><path d="M19 21v-7"/>',
     bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+    doc:'<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
     mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0"/><path d="M12 18v4"/><path d="M8 22h8"/>'
   };
   const FV_ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>';
