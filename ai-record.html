@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI 생기부 작성 · HTRO EDU</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 왼쪽 입력 패널(메모·요청·제약, sticky) + 오른쪽 결과(편집 가능한 생기부 문장, 바이트 계량기, AI 사용 검토) */
+:root{
+  --bg:#FAFAFB; --surface:#FFFFFF; --sunk:#F1F2F7; --line:#E3E5EE;
+  --fg:#15172A; --muted:#62667E; --faint:#9A9DB2;
+  --accent:#3654F4; --accent-soft:#E8ECFF; --accent-ink:#FFFFFF;
+  --ok:#12A07A; --ok-soft:#E3F6EF; --mid:#D98A12; --mid-soft:#FDF1DC; --bad:#D2443B; --bad-soft:#FCE8E6;
+  --warn:#B4541A;
+  --sans:"Pretendard Variable",Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.3}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1180px;margin:0 auto;padding-block:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em}
+.brand .mark{width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:600}
+.brand small{font-weight:500;color:var(--muted);font-size:13px}
+.top .tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+
+.shell{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:900px){.shell{grid-template-columns:minmax(0,1fr)}}
+
+/* 입력 패널 */
+.panel{position:sticky;top:16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;min-width:0;max-height:calc(100vh - 32px);overflow:auto}
+@media (max-width:900px){.panel{position:static;max-height:none}}
+.panel form{padding:18px;display:flex;flex-direction:column;gap:18px}
+.group{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lbl{display:flex;align-items:baseline;gap:8px;font-size:13px;font-weight:700;color:var(--fg)}
+.lbl .n{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--accent)}
+.lbl small{margin-left:auto;font-weight:500;color:var(--faint);font-size:12px}
+.seg-pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.seg-pick label{position:relative}
+.seg-pick input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg-pick span{display:block;text-align:center;border:1px solid var(--line);border-radius:9px;padding:7px 4px;font-size:13px;font-weight:600;color:var(--muted);background:var(--surface);word-break:keep-all;line-height:1.3}
+.seg-pick input:checked+span{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.seg-pick input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+input[type=text],select,textarea{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:10px;padding:9px 12px;font:inherit;font-size:14.5px;line-height:1.55}
+textarea{resize:vertical}
+input[type=text]:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+#memo{min-height:170px}
+#req{min-height:64px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 10px;font-size:12.5px}
+.chip:hover{color:var(--fg);border-color:var(--faint)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.checks{display:flex;flex-direction:column;gap:6px}
+.checks label{display:flex;gap:9px;align-items:flex-start;font-size:14px;color:var(--fg);cursor:pointer}
+.checks input{margin-top:4px;accent-color:var(--accent);width:15px;height:15px;flex:none}
+.checks em{font-style:normal;color:var(--muted);font-size:12.5px}
+.inline{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.sample{align-self:flex-start;border:0;background:none;color:var(--accent);font-size:12.5px;font-weight:700;padding:0}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;font-size:14.5px}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:disabled,.btn-line:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:var(--sunk);color:var(--fg)}
+.btn-line{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.btn-line:hover:not(:disabled){border-color:var(--faint)}
+.submit-row{display:flex;gap:8px;position:sticky;bottom:0;background:var(--surface);padding-top:10px;margin-top:-6px}
+.submit-row .btn-primary{flex:1}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+
+/* 결과 */
+.out{min-width:0;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.card-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.card-h .n{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent)}
+.card-h h2{font-size:19px;font-weight:800;letter-spacing:-.015em}
+.card-h .r{margin-left:auto}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.meta span{font-size:12.5px;font-weight:500;background:var(--sunk);color:var(--muted);padding:3px 10px;border-radius:6px}
+#result{min-height:220px;font-size:15.5px;line-height:1.85;background:var(--surface);border:1px solid var(--line);padding:14px 16px;word-break:keep-all}
+.meter{display:flex;flex-direction:column;gap:6px}
+.meter-top{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.meter-top b{font-family:var(--mono);font-weight:600;color:var(--fg)}
+.meter-top b.over{color:var(--bad)}
+.track{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.fill{height:100%;background:var(--accent);border-radius:99px;transition:width .2s}
+.fill.over{background:var(--bad)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions .grow{flex:1}
+.btn-check{background:var(--fg);color:var(--bg)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:640px){.two{grid-template-columns:minmax(0,1fr)}}
+.sub{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.02em;margin-bottom:6px}
+.list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.list.muted{color:var(--muted)}
+.stale{font-size:12.5px;color:var(--warn);font-weight:600}
+
+/* 검토 */
+.score{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center}
+.ring{--v:0;--c:var(--ok);width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--v)*1%),var(--sunk) 0);display:grid;place-items:center}
+.ring div{width:76px;height:76px;border-radius:50%;background:var(--surface);display:grid;place-items:center;text-align:center;line-height:1.1}
+.ring b{font-family:var(--mono);font-size:24px;font-weight:600}
+.ring small{display:block;font-size:10.5px;color:var(--muted)}
+.lvl{display:inline-block;font-size:12.5px;font-weight:700;padding:2px 10px;border-radius:999px}
+.lvl.ok{background:var(--ok-soft);color:var(--ok)}.lvl.mid{background:var(--mid-soft);color:var(--mid)}.lvl.bad{background:var(--bad-soft);color:var(--bad)}
+.score p{margin:6px 0 0;color:var(--muted);font-size:14.5px}
+.preview{background:var(--sunk);border-radius:10px;padding:14px 16px;font-size:15px;line-height:1.9;white-space:pre-wrap;word-break:keep-all}
+.preview mark{background:#FFE7A8;color:inherit;border-radius:3px;padding:0 1px;cursor:pointer}
+.preview mark.rule{background:#FCD5D1}
+.preview mark.hot{outline:2px solid var(--mid)}
+.flags{display:flex;flex-direction:column;gap:8px}
+.flag{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.flag .ph{font-weight:700}
+.flag .ph::before{content:"“"}.flag .ph::after{content:"”"}
+.flag .why{font-size:13.5px;color:var(--muted)}
+.flag .fix{font-size:14px}
+.flag .fix b{color:var(--ok);font-size:12px;margin-right:6px}
+.flag .tag{align-self:flex-start;font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;background:var(--mid-soft);color:var(--mid)}
+.flag .tag.rule{background:var(--bad-soft);color:var(--bad)}
+.flag button{align-self:flex-start;margin-top:4px;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:3px 10px;font-size:12.5px;font-weight:600;color:var(--fg)}
+.flag button:hover{border-color:var(--faint)}
+.rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rules li{display:flex;gap:10px;align-items:baseline;font-size:14px}
+.rules .st{flex:none;font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;font-family:var(--mono)}
+.rules .st.ok{background:var(--ok-soft);color:var(--ok)}.rules .st.bad{background:var(--bad-soft);color:var(--bad)}
+.caveat{font-size:12.5px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:8px 12px;margin:0}
+
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:28px 24px;display:flex;flex-direction:column;gap:14px}
+.empty-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.empty-list li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--sunk);color:var(--muted);font-weight:500}
+.empty-list .n{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.thinking{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14.5px}
+.dots{display:inline-flex;gap:4px}.dots i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:b 1.2s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.err{color:var(--warn);font-size:14px;margin:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:500;z-index:10}
+@media (prefers-reduced-motion:reduce){.dots i{animation:none}.fill{transition:none}html{scroll-behavior:auto}}
+html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><span class="mark">H</span>HTRO EDU <small>AI 생기부 작성</small></div>
+  <span class="tag">Record Writer</span>
+</header>
+
+<main class="shell">
+  <aside class="panel" aria-label="생기부 입력">
+    <form id="form">
+      <div class="group">
+        <div class="lbl"><span class="n">01</span>영역</div>
+        <div class="seg-pick" id="area">
+          <label><input type="radio" name="area" value="교과 세부능력 및 특기사항" checked><span>교과 세특</span></label>
+          <label><input type="radio" name="area" value="행동특성 및 종합의견"><span>행동특성</span></label>
+          <label><input type="radio" name="area" value="창의적 체험활동 - 자율·자치활동"><span>자율·자치</span></label>
+          <label><input type="radio" name="area" value="창의적 체험활동 - 동아리활동"><span>동아리</span></label>
+          <label><input type="radio" name="area" value="창의적 체험활동 - 진로활동"><span>진로</span></label>
+          <label><input type="radio" name="area" value="개인별 세부능력 및 특기사항"><span>개인 세특</span></label>
+        </div>
+        <input type="text" id="subject" placeholder="과목·활동명 (예: 통합과학, 코딩동아리)" aria-label="과목 또는 활동명">
+      </div>
+
+      <div class="group">
+        <div class="lbl"><span class="n">02</span>학생 메모 <small>개떡같이 써도 괜찮아요</small></div>
+        <textarea id="memo" placeholder="생각나는 대로 적어 주세요. 띄어쓰기·맞춤법·순서 상관없어요.&#10;예) 기후 발표함 그래프 직접 그림 / 질문 대답 못했는데 담시간에 찾아옴 / 조별로 의견 정리 잘함"></textarea>
+        <button type="button" class="sample" id="sample">예시 메모 넣기</button>
+      </div>
+
+      <div class="group">
+        <div class="lbl"><span class="n">03</span>요청사항 <small>선택</small></div>
+        <textarea id="req" placeholder="예: 탐구 과정을 중심으로, 성장한 모습이 드러나게"></textarea>
+        <div class="chips" id="reqChips">
+          <button type="button" class="chip">탐구 과정 중심으로</button>
+          <button type="button" class="chip">성장·변화가 드러나게</button>
+          <button type="button" class="chip">협업·리더십 강조</button>
+          <button type="button" class="chip">진로와 자연스럽게 연결</button>
+          <button type="button" class="chip">구체적 사례 위주</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="lbl"><span class="n">04</span>제약사항</div>
+        <div class="inline">
+          <select id="limit" aria-label="최대 분량">
+            <option value="300">최대 300자 (900바이트)</option>
+            <option value="500" selected>최대 500자 (1,500바이트)</option>
+            <option value="700">최대 700자 (2,100바이트)</option>
+            <option value="1000">최대 1,000자 (3,000바이트)</option>
+          </select>
+          <select id="ending" aria-label="문장 끝맺음">
+            <option value="명사형">‘~함, ~임’으로 끝맺기</option>
+            <option value="자유">끝맺음 자유</option>
+          </select>
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" id="cNoFake" checked><span>메모에 없는 사실 지어내지 않기</span></label>
+          <label><input type="checkbox" id="cBanned" checked><span>기재 금지 표현 피하기 <em>대학명·교외상·자격증·어학성적·사교육·부모 직업 등</em></span></label>
+          <label><input type="checkbox" id="cNoHype" checked><span>과장·상투 표현 줄이기 <em>탁월한, 뛰어난, 함양함 남발 금지</em></span></label>
+          <label><input type="checkbox" id="cOne"><span>한 문단으로 이어서 쓰기</span></label>
+        </div>
+        <input type="text" id="extra" placeholder="추가 제약 (예: ‘리더십’ 단어 쓰지 말 것)" aria-label="추가 제약사항">
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="btn btn-primary" id="go">생기부 만들기</button>
+        <button type="button" class="btn btn-ghost" id="stop" hidden>중지</button>
+      </div>
+      <p class="note">학생 이름이나 주민번호 같은 개인정보는 메모에 쓰지 마세요.</p>
+    </form>
+  </aside>
+
+  <section class="out" id="out" aria-live="polite"></section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ================================================================
+   ★ 설정 — 여기만 바꾸면 돼요 ★
+   생기부용 Apps Script(Code.gs)를 '웹 앱'으로 배포한 주소(…/exec)를
+   아래 따옴표 안에 붙여 넣으세요. API 키는 이 파일에 넣지 않아요.
+   ================================================================ */
+const APPS_SCRIPT_URL = "여기에 /exec 주소를 붙여 넣으세요";
+/* ================================================================ */
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let ctl = null, state = { text:"", used:[], missing:[], notes:[], opts:null, review:null, reviewedText:"" };
+
+/* ── 나이스 기준 바이트: 한글 3, 영문·숫자·공백 1, 줄바꿈 2 ── */
+function neisBytes(s){
+  let b = 0;
+  for(const ch of s){ if(ch === "\n") b += 2; else if(ch.charCodeAt(0) < 128) b += 1; else b += 3; }
+  return b;
+}
+
+/* ── 기재 금지·주의 표현 (브라우저에서 바로 검사) ── */
+const RULES = [
+  {name:"대학명", re:/[가-힣A-Za-z]{1,10}대학교|서울대|연세대|고려대|카이스트|KAIST|포스텍|POSTECH|하버드|MIT\b/g, why:"대학명은 기재할 수 없어요."},
+  {name:"교외 수상·대회", re:/교외|외부\s?대회|올림피아드|경시대회|공모전에서\s?(수상|입상)/g, why:"교외 수상·대회 실적은 기재 금지예요."},
+  {name:"공인어학·자격증", re:/TOEIC|토익|TOEFL|토플|TEPS|텝스|HSK|JLPT|DELE|자격증|[0-9]급\s?취득/gi, why:"공인어학성적·자격증은 기재 금지예요."},
+  {name:"사교육", re:/학원|과외|인강|인터넷\s?강의/g, why:"사교육 관련 내용은 기재 금지예요."},
+  {name:"부모 정보", re:/아버지|어머니|부모님?|아빠|엄마/g, why:"부모의 직업·사회경제적 지위를 암시하면 안 돼요."},
+  {name:"논문·특허", re:/논문|학회지|학술지|특허|출원/g, why:"논문·특허·학회 활동은 기재 금지예요."},
+  {name:"해외 활동", re:/해외\s?(봉사|연수|탐방)|어학연수/g, why:"해외 봉사·연수는 기재 금지예요."},
+  {name:"영문 약어", re:/\b[A-Z]{2,}\b/g, why:"영문 약어는 나이스에서 한글 표기를 권장해요. 꼭 필요한지 확인해 주세요.", soft:true}
+];
+function ruleScan(text){
+  const hits = [];
+  for(const r of RULES){
+    r.re.lastIndex = 0;
+    const found = [...new Set((text.match(r.re) || []))];
+    if(found.length) hits.push({...r, found});
+  }
+  return hits;
+}
+function endingScan(text){
+  // 명사형 종결이 아닌 문장 찾기 (…다. 로 끝나는 문장)
+  return (text.match(/[^.\n]*?[가-힣](다|요)\.(?=\s|$)/g) || []).map(s=>s.trim()).filter(Boolean);
+}
+
+/* ── 입력 ── */
+const SAMPLE = `기후위기 주제로 조별 발표함 ppt는 다른애가 했는데 그래프는 얘가 직접 그림 기상청 자료 찾아서
+질문받았을때 해수면 상승 원인 대답 잘 못함 근데 담 시간에 열팽창이랑 빙하 녹는거 구분해서 정리해옴
+조원들 의견 갈릴때 정리 잘함 말 조용조용하게
+수행평가 보고서에 탄소중립 정책 비교했음 우리나라랑 독일
+환경공학 쪽 관심 있다고 함`;
+$("#sample").addEventListener("click", ()=>{ $("#memo").value = SAMPLE; $("#subject").value = "통합과학"; $("#memo").focus(); });
+
+$("#reqChips").addEventListener("click", e=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  const ta = $("#req"), t = b.textContent;
+  const parts = ta.value.split(/\s*,\s*/).filter(Boolean);
+  const i = parts.indexOf(t);
+  if(i >= 0){ parts.splice(i,1); b.classList.remove("on"); } else { parts.push(t); b.classList.add("on"); }
+  ta.value = parts.join(", ");
+});
+$("#req").addEventListener("input", ()=>{
+  const parts = $("#req").value.split(/\s*,\s*/);
+  document.querySelectorAll("#reqChips .chip").forEach(c=>c.classList.toggle("on", parts.includes(c.textContent)));
+});
+
+function readOpts(){
+  const limit = Number($("#limit").value);
+  const constraints = [];
+  if($("#ending").value === "명사형") constraints.push("모든 문장을 '~함', '~임', '~됨' 같은 명사형 종결로 끝맺을 것");
+  if($("#cNoFake").checked) constraints.push("메모에 없는 활동·성과·수치는 절대 지어내지 말 것. 메모를 자연스럽게 연결하고 의미를 해석하는 것까지만 허용");
+  if($("#cBanned").checked) constraints.push("학교생활기록부 기재 금지 사항(대학명, 교외 수상, 공인어학성적, 자격증, 사교육, 부모의 직업·지위, 논문·특허, 해외 활동, 특정 기관·강사명)을 쓰지 말 것");
+  if($("#cNoHype").checked) constraints.push("'탁월한', '뛰어난', '돋보임', '함양함', '깊이 있는' 같은 상투적·과장 표현을 피하고 관찰 가능한 행동으로 서술할 것");
+  if($("#cOne").checked) constraints.push("줄바꿈 없이 한 문단으로 쓸 것");
+  const extra = $("#extra").value.trim(); if(extra) constraints.push(extra);
+  constraints.push("학생 이름은 쓰지 말 것");
+  return {
+    area: document.querySelector('input[name=area]:checked').value,
+    subject: $("#subject").value.trim(),
+    memo: $("#memo").value.trim(),
+    request: $("#req").value.trim(),
+    constraints, limitChars: limit, limitBytes: limit*3,
+    ending: $("#ending").value
+  };
+}
+
+/* ── 렌더링 ── */
+function renderEmpty(){
+  $("#out").innerHTML = `<div class="empty">
+    <div class="sub">생기부 문장이 여기에 만들어져요</div>
+    <ol class="empty-list">
+      <li><span class="n">01</span>영역과 과목을 고르고</li>
+      <li><span class="n">02</span>메모를 생각나는 대로 적은 뒤</li>
+      <li><span class="n">03</span>‘생기부 만들기’ → ‘AI 사용 검토하기’</li>
+    </ol>
+    <p class="note">만든 문장은 바로 고쳐 쓸 수 있고, 고친 문장 그대로 검토돼요.</p>
+  </div>`;
+}
+
+function renderLoading(msg){
+  $("#out").innerHTML = `<div class="card"><div class="thinking"><span class="dots"><i></i><i></i><i></i></span>${esc(msg)}</div></div>`;
+}
+
+function renderResult(){
+  const o = state.opts;
+  $("#out").innerHTML = `
+    <article class="card" id="draft">
+      <div class="card-h"><span class="n">01</span><h2>생기부 문장</h2></div>
+      <div class="meta">${[o.area, o.subject, `최대 ${o.limitChars}자`].filter(Boolean).map(x=>`<span>${esc(x)}</span>`).join("")}</div>
+      <textarea id="result" aria-label="생기부 문장 (직접 고칠 수 있어요)"></textarea>
+      <div class="meter">
+        <div class="meter-top"><span>글자 <b id="chars">0</b>자</span><span>나이스 <b id="bytes">0</b> / ${o.limitBytes.toLocaleString()}바이트</span></div>
+        <div class="track"><div class="fill" id="fill"></div></div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-check grow" id="check">AI 사용 검토하기</button>
+        <button type="button" class="btn btn-line" id="copy">복사</button>
+        <button type="button" class="btn btn-line" id="again">다시 만들기</button>
+      </div>
+      ${(state.used.length||state.missing.length) ? `<div class="two">
+        ${state.used.length?`<div><div class="sub">메모에서 연결한 내용</div><ul class="list">${state.used.map(u=>`<li>${esc(u)}</li>`).join("")}</ul></div>`:""}
+        ${state.missing.length?`<div><div class="sub">보충하면 더 좋아질 정보</div><ul class="list muted">${state.missing.map(u=>`<li>${esc(u)}</li>`).join("")}</ul></div>`:""}
+      </div>`:""}
+    </article>
+    <div id="reviewBox"></div>`;
+  const ta = $("#result");
+  ta.value = state.text;
+  autoGrow(ta); updateMeter();
+  ta.addEventListener("input", ()=>{ state.text = ta.value; autoGrow(ta); updateMeter(); markStale(); });
+  $("#copy").addEventListener("click", ()=>copyText(state.text));
+  $("#again").addEventListener("click", ()=>$("#form").requestSubmit());
+  $("#check").addEventListener("click", runCheck);
+}
+function autoGrow(ta){ ta.style.height = "auto"; ta.style.height = Math.max(220, ta.scrollHeight + 2) + "px"; }
+function updateMeter(){
+  const t = state.text, b = neisBytes(t), lim = state.opts.limitBytes, over = b > lim;
+  $("#chars").textContent = [...t].length.toLocaleString();
+  const bb = $("#bytes"); bb.textContent = b.toLocaleString(); bb.classList.toggle("over", over);
+  const f = $("#fill"); f.style.width = Math.min(100, b/lim*100) + "%"; f.classList.toggle("over", over);
+}
+function markStale(){
+  const box = $("#reviewBox");
+  if(state.review && state.text !== state.reviewedText && !box.querySelector(".stale")){
+    const h = box.querySelector(".card-h");
+    if(h) h.insertAdjacentHTML("beforeend", `<span class="stale r">문장이 바뀌었어요 · 다시 검토해 주세요</span>`);
+  }
+}
+
+/* ── 검토 결과 ── */
+function renderReview(){
+  const r = state.review, text = state.reviewedText;
+  const rules = ruleScan(text);
+  const endings = state.opts.ending === "명사형" ? endingScan(text) : [];
+  const over = neisBytes(text) > state.opts.limitBytes;
+  const score = Math.max(0, Math.min(100, Math.round(Number(r.score) || 0)));
+  const lv = score >= 70 ? ["bad","AI 문체가 강해요"] : score >= 40 ? ["mid","손볼 곳이 있어요"] : ["ok","자연스러워요"];
+  const ringColor = {ok:"var(--ok)", mid:"var(--mid)", bad:"var(--bad)"}[lv[0]];
+
+  // 하이라이트할 표현 모으기
+  const marks = [];
+  (r.flags||[]).forEach((f,i)=>{ if(f.phrase) marks.push({p:f.phrase, cls:"", id:"f"+i}); });
+  rules.filter(h=>!h.soft).forEach(h=>h.found.forEach(p=>marks.push({p, cls:"rule", id:""})));
+
+  const ruleRows = [
+    {ok:!over, t: over ? `분량 초과 — ${neisBytes(text).toLocaleString()}바이트로 ${state.opts.limitBytes.toLocaleString()}바이트를 넘었어요` : "분량 — 나이스 바이트 제한 안에 있어요"},
+    ...(state.opts.ending === "명사형" ? [{ok:!endings.length, t: endings.length ? `끝맺음 — ‘~다.’로 끝난 문장이 ${endings.length}개 있어요` : "끝맺음 — 모두 명사형으로 끝나요"}] : []),
+    ...rules.map(h=>({ok:false, t:`${h.name} — ${h.found.join(", ")} · ${h.why}`})),
+  ];
+  if(!rules.length) ruleRows.push({ok:true, t:"기재 금지 표현 — 발견되지 않았어요"});
+
+  $("#reviewBox").innerHTML = `
+    <article class="card" id="review">
+      <div class="card-h"><span class="n">02</span><h2>AI 사용 검토</h2></div>
+      <div class="score">
+        <div class="ring" style="--v:${score};--c:${ringColor}"><div><span><b>${score}</b><small>AI 문체 지수</small></span></div></div>
+        <div><span class="lvl ${lv[0]}">${lv[1]}</span><p>${esc(r.summary || "")}</p></div>
+      </div>
+      <div class="preview" id="preview">${highlight(text, marks)}</div>
+      ${(r.flags||[]).length ? `<div><div class="sub">AI 같은 표현 · ${r.flags.length}곳</div><div class="flags">${r.flags.map((f,i)=>`
+        <div class="flag" id="f${i}">
+          <span class="tag">${esc(f.type || "AI 문체")}</span>
+          <span class="ph">${esc(f.phrase)}</span>
+          <span class="why">${esc(f.reason)}</span>
+          ${f.suggestion?`<span class="fix"><b>이렇게</b>${esc(f.suggestion)}</span>`:""}
+          ${f.suggestion && f.phrase && state.text.includes(f.phrase) ? `<button type="button" data-i="${i}">문장에 반영</button>`:""}
+        </div>`).join("")}</div></div>` : ""}
+      <div><div class="sub">규칙 점검</div><ul class="rules">${ruleRows.map(x=>`<li><span class="st ${x.ok?"ok":"bad"}">${x.ok?"OK":"확인"}</span><span>${esc(x.t)}</span></li>`).join("")}</ul></div>
+      ${endings.length ? `<div><div class="sub">명사형이 아닌 문장</div><ul class="list muted">${endings.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>`:""}
+      ${(r.strengths||[]).length ? `<div><div class="sub">사람이 쓴 것처럼 느껴지는 부분</div><ul class="list">${r.strengths.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>`:""}
+      <p class="caveat">AI 문체 지수는 상투 표현·반복 구조·구체성 부족을 기준으로 한 참고값이에요. 실제 AI 사용 여부를 판정하는 근거로 쓰지는 마세요.</p>
+    </article>`;
+
+  $("#reviewBox").querySelectorAll(".flag button").forEach(b=>b.addEventListener("click", ()=>{
+    const f = r.flags[+b.dataset.i];
+    if(!state.text.includes(f.phrase)) return toast("문장에서 그 표현을 찾지 못했어요");
+    state.text = state.text.replace(f.phrase, f.suggestion);
+    const ta = $("#result"); ta.value = state.text; autoGrow(ta); updateMeter();
+    b.textContent = "반영함"; b.disabled = true; markStale(); toast("문장에 반영했어요");
+  }));
+  $("#preview").addEventListener("click", e=>{
+    const m = e.target.closest("mark[data-id]"); if(!m) return;
+    const el = document.getElementById(m.dataset.id); if(!el) return;
+    el.scrollIntoView({block:"center"}); el.style.borderColor = "var(--mid)"; setTimeout(()=>el.style.borderColor="",1200);
+  });
+  $("#review").scrollIntoView({block:"start"});
+}
+
+function highlight(text, marks){
+  // 겹치지 않게 위치를 잡아 <mark>로 감싸기
+  const ranges = [];
+  for(const m of marks.sort((a,b)=>b.p.length - a.p.length)){
+    let from = 0, idx;
+    while((idx = text.indexOf(m.p, from)) !== -1){
+      const end = idx + m.p.length;
+      if(!ranges.some(r=>idx < r.e && end > r.s)){ ranges.push({s:idx, e:end, cls:m.cls, id:m.id}); break; }
+      from = idx + 1;
+    }
+  }
+  ranges.sort((a,b)=>a.s-b.s);
+  let out = "", pos = 0;
+  for(const r of ranges){
+    out += esc(text.slice(pos, r.s)) + `<mark class="${r.cls}"${r.id?` data-id="${r.id}"`:""}>${esc(text.slice(r.s, r.e))}</mark>`;
+    pos = r.e;
+  }
+  return out + esc(text.slice(pos));
+}
+
+/* ── 동작 ── */
+const ERR = {
+  no_url:"아직 서버 주소가 들어 있지 않아요. 파일 안의 APPS_SCRIPT_URL에 주소를 넣어 주세요.",
+  no_key:"서버에 AI 키가 아직 등록되지 않았어요. 관리자에게 알려 주세요.",
+  auth:"AI 키 설정에 문제가 있어요. 관리자에게 알려 주세요.",
+  rate_limited:"지금 사용하는 선생님이 많아요. 1분쯤 뒤에 다시 눌러 주세요.",
+  overloaded:"AI 서버가 바빠요. 잠시 후 다시 눌러 주세요.",
+  too_long:"메모가 너무 길어요. 2,000자 안으로 줄여 주세요.",
+  invalid_json:"결과 형식이 어긋났어요. 다시 한 번 눌러 주세요.",
+  refused:"이 내용으로는 만들 수 없어요. 메모를 바꿔 주세요.",
+  network:"서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.",
+  bad_request:"요청을 이해하지 못했어요. 페이지를 새로고침해 주세요."
+};
+
+async function callServer(payload, signal){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("여기에")) throw {code:"no_url"};
+  let res;
+  try{
+    // text/plain으로 보내야 Apps Script가 브라우저 요청을 받아 줘요.
+    res = await fetch(APPS_SCRIPT_URL, {
+      method:"POST", signal, redirect:"follow",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+  }catch(e){ throw {code: e?.name === "AbortError" ? "cancelled" : "network"}; }
+  let data = {};
+  try{ data = await res.json(); }catch{ throw {code:"invalid_json"}; }
+  if(data.error) throw {code:data.error};
+  return data.result;
+}
+
+function busy(on){
+  $("#go").disabled = on; $("#stop").hidden = !on;
+  const c = $("#check"); if(c) c.disabled = on;
+}
+$("#stop").addEventListener("click", ()=>ctl?.abort());
+$("#memo").addEventListener("keydown", e=>{ if(e.key==="Enter" && (e.metaKey||e.ctrlKey)) $("#form").requestSubmit(); });
+
+$("#form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const opts = readOpts();
+  if(!opts.memo){ $("#memo").focus(); return toast("학생 메모를 적어 주세요"); }
+  if(opts.memo.length > 2000) return toast(ERR.too_long);
+  ctl = new AbortController(); busy(true);
+  const hadResult = !!state.text;
+  renderLoading("메모를 연결해서 문장으로 다듬고 있어요…");
+  try{
+    const r = await callServer({action:"write", ...opts}, ctl.signal);
+    if(!r || typeof r.text !== "string" || !r.text.trim()) throw {code:"invalid_json"};
+    state = { text:r.text.trim(), used:r.used||[], missing:r.missing||[], opts, review:null, reviewedText:"" };
+    renderResult();
+  }catch(err){
+    const msg = err?.code === "cancelled" ? "생성을 중지했어요." : (ERR[err?.code] || "잠시 연결이 끊겼어요. 다시 눌러 주세요.");
+    if(hadResult){ renderResult(); toast(msg); }
+    else $("#out").innerHTML = `<div class="card"><p class="err">${esc(msg)}</p></div>`;
+  }finally{ busy(false); }
+});
+
+async function runCheck(){
+  const text = state.text.trim();
+  if(!text) return toast("검토할 문장이 없어요");
+  ctl = new AbortController(); busy(true);
+  $("#reviewBox").innerHTML = `<div class="card"><div class="thinking"><span class="dots"><i></i><i></i><i></i></span>AI 문체와 기재 규칙을 검토하고 있어요…</div></div>`;
+  try{
+    const r = await callServer({action:"check", text, area:state.opts.area}, ctl.signal);
+    if(!r || typeof r !== "object") throw {code:"invalid_json"};
+    state.review = r; state.reviewedText = text;
+    renderReview();
+  }catch(err){
+    const msg = err?.code === "cancelled" ? "검토를 중지했어요." : (ERR[err?.code] || "잠시 연결이 끊겼어요. 다시 눌러 주세요.");
+    $("#reviewBox").innerHTML = `<div class="card"><p class="err">${esc(msg)}</p></div>`;
+  }finally{ busy(false); }
+}
+
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,1800); }
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); toast("복사했어요 · 나이스에 붙여 넣으세요"); }
+  catch{ const ta=document.createElement("textarea"); ta.value=text; ta.style.cssText="position:fixed;opacity:0"; document.body.append(ta); ta.select(); try{document.execCommand("copy"); toast("복사했어요");}catch{toast("복사하지 못했어요. 직접 선택해 복사해 주세요");} ta.remove(); }
+}
+
+renderEmpty();
+</script>
+</body>
+</html>
