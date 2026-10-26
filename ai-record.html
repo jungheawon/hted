@@ -226,11 +226,11 @@ html{scroll-behavior:smooth}
 
 <script>
 /* ================================================================
-   ★ 설정 — 여기만 바꾸면 돼요 ★
-   생기부용 Apps Script(Code.gs)를 '웹 앱'으로 배포한 주소(…/exec)를
-   아래 따옴표 안에 붙여 넣으세요. API 키는 이 파일에 넣지 않아요.
+   ★ 설정 ★
+   수업 설계·수행평가·AI 튜터와 같은 Apps Script 주소를 써요.
+   (서버가 type:"record"를 보고 생기부로 처리해요.)
    ================================================================ */
-const APPS_SCRIPT_URL = "여기에 /exec 주소를 붙여 넣으세요";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyP0vig94A0Y_BwEOeCqiSYPcp1aen7oBtE-Ei8IVWkhxRb9ZGtY28ORBO2YWRpLPqUFg/exec";
 /* ================================================================ */
 
 const $ = s => document.querySelector(s);
@@ -473,7 +473,7 @@ async function callServer(payload, signal){
     res = await fetch(APPS_SCRIPT_URL, {
       method:"POST", signal, redirect:"follow",
       headers:{ "Content-Type":"text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({type:"record", ...payload})
     });
   }catch(e){ throw {code: e?.name === "AbortError" ? "cancelled" : "network"}; }
   let data = {};
