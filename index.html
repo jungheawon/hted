@@ -691,7 +691,7 @@
         <div class="dropdown-panel">
           <a href="#/teacher-quiz" data-route="teacher-quiz"><b>AI Quiz Teacher</b><small>AVAILABLE</small></a>
           <a href="#/teacher-material" data-route="teacher-material"><b>수업설계</b><small>AVAILABLE</small></a>
-          <a class="is-soon" href="#/teacher-assessment" data-route="teacher-assessment"><b>수행평가</b><small>COMING SOON</small></a>
+          <a href="#/teacher-assessment" data-route="teacher-assessment"><b>수행평가</b><small>AVAILABLE</small></a>
           <a class="is-soon" href="#/teacher-record" data-route="teacher-record"><b>생기부 AI</b><small>COMING SOON</small></a>
         </div>
       </div>
@@ -924,7 +924,7 @@
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h11"/></svg></div>
           <h3>수행평가</h3>
           <p>수행평가 주제, 평가 기준, 루브릭 등을 빠르게 만들 수 있습니다.</p>
-          <span class="status-tag soon"><i></i>Coming Soon</span>
+          <span class="status-tag avail"><i></i>Available</span>
         </a>
 
         <a href="#/teacher-record" data-route="teacher-record" class="feat-card reveal">
@@ -1291,7 +1291,7 @@
         { title: '교실 투표', icon: 'vote', desc: '학생들과 실시간으로 투표를 진행합니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'class-vote', primary: true } ] },
         { title: 'AI Quiz', icon: 'quiz', desc: '교과와 단원을 입력하면 AI가 다양한 형태의 퀴즈를 생성합니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'teacher-quiz', primary: true } ] },
         { title: 'AI 수업 설계', icon: 'lesson', desc: '수업 목표에 맞춘 수업안과 활동 아이디어를 설계합니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'teacher-material', primary: true } ] },
-        { title: 'AI 수행평가', icon: 'assess', desc: '평가 기준과 루브릭을 빠르게 만들어 줍니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-assessment' } ] },
+        { title: 'AI 수행평가', icon: 'assess', desc: '평가 기준과 루브릭을 빠르게 만들어 줍니다.', category: 'Available', label: 'LIVE', actions: [ { label: '바로가기', route: 'teacher-assessment', primary: true } ] },
         { title: '학생 학습 분석', icon: 'chart', desc: '시험 점수로 취약점을 분석하고 학습 플랜을 제안합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'tutor-plan' } ] },
         { title: '개인화 학습', icon: 'person', desc: '학생 수준에 맞춘 문제와 설명을 제공합니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'tutor-plan' } ] },
         { title: '교사 AI Assistant', icon: 'spark', desc: '반복 업무를 덜어 주는 교사 전용 AI 비서입니다.', category: 'Coming Soon', label: 'SOON', actions: [ { label: '보러가기', route: 'teacher-record' } ] },
@@ -1332,6 +1332,7 @@
     'class-lottery':      'https://hted.kr/number.html',  // 번호 추첨
     'class-vote':         'https://hted.kr/vote.html',    // 교실 투표
     'admissions-gradecut': 'https://hted.kr/kokyo.html',  // 고교학점제
+    'teacher-assessment': 'https://hted.kr/ai-assessment.html',  // 수행평가 (로그인 필요)
     'teacher-material':   'https://hted.kr/ai-lesson.html',  // 수업설계 (로그인 필요)
     'teacher-quiz':       'https://hted.kr/ai-quiz-teacher.html',  // AI Quiz Teacher (로그인 필요)
     'tutor-quiz':         'https://hted.kr/ai-quiz-student.html'   // AI Quiz Student (로그인 필요)
