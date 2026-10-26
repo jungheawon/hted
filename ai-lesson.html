@@ -288,15 +288,7 @@ const ERR = {
 };
 
 function normalize(p){
-  // 배열이나 다른 키로 한 번 감싸져 와도 수업안만 꺼내요.
-  for(let i=0;i<3 && p && !Array.isArray(p.goals);i++){
-    if(Array.isArray(p)){ p = p[0]; continue; }
-    const inner = typeof p==="object" ? Object.values(p).filter(x=>x && typeof x==="object") : [];
-    if(inner.length===1){ p = inner[0]; continue; }
-    break;
-  }
   if(!p || typeof p!=="object" || !Array.isArray(p.goals)) throw {code:"invalid_json"};
-  p.goals = p.goals.map(String);
   for(const k of ["intro","practice","assessment","closing"]) p[k] = p[k] || {minutes:0};
   const sum = ["intro","practice","assessment","closing"].reduce((a,k)=>a+(Number(p[k].minutes)||0),0);
   p.duration = Number(p.duration) || sum;
