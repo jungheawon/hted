@@ -247,11 +247,11 @@ html, body {
     <div class="login-box">
       <h1>AI 퀴즈</h1>
       <div id="student-panel">
-      <p class="subtitle">닉네임을 입력하고 퀴즈나 게임을 선택하세요</p>
+      <p class="subtitle">닉네임을 입력하고 학년과 과목을 선택하세요</p>
       <p class="solo-note">다른 참가자는 컴퓨터(봇)가 대신합니다</p>
       <input id="nickname-input" maxlength="10" placeholder="닉네임 (최대 10자)" autocomplete="off" />
 
-      <p class="subject-title">🎓 교과 퀴즈 · 학년 선택</p>
+      <p class="subject-title">🎓 학년 선택</p>
       <div id="grade-tabs" class="grade-tabs top"></div>
       <p class="subject-title">📚 과목 선택</p>
       <div id="subject-grid" class="room-select subject-select"></div>
@@ -259,31 +259,15 @@ html, body {
         <p id="unit-course" class="unit-course"></p>
         <div id="unit-chips" class="unit-chips"></div>
       </div>
+      <div id="custom-wrap" class="hidden">
+        <p class="subject-title">✏️ 선생님 문제</p>
+        <div id="custom-select" class="room-select subject-select"></div>
+      </div>
       <div class="join-row">
         <button id="btn-join">🙋 혼자 입장하기</button>
         <button id="btn-multi" title="친구들과 실시간으로 함께하기">👥 멀티플레이</button>
       </div>
       <p id="login-error" class="error-msg"></p>
-      <p class="subject-title">🎮 게임</p>
-      <div class="room-select">
-        <button class="room-btn" data-room="typing"><span class="room-emoji">⌨️</span><span class="room-name">타자연습</span><span class="room-desc">영어/한글 단어 타자 서바이벌</span></button>
-        <button class="room-btn" data-room="common"><span class="room-emoji">📚</span><span class="room-name">상식 퀴즈</span><span class="room-desc">일반 상식 문제 서바이벌</span></button>
-        <button class="room-btn" data-room="haewon"><span class="room-emoji">🏫</span><span class="room-name">해원고 퀴즈</span><span class="room-desc">우리 학교 문제 서바이벌</span></button>
-        <button class="room-btn" data-room="wordchain"><span class="room-emoji">🔤</span><span class="room-name">끝말잇기</span><span class="room-desc">먼저 잇는 사람이 승리! 자유경쟁</span></button>
-        <button class="room-btn" data-room="narak"><span class="room-emoji">🔥</span><span class="room-name">나락퀴즈</span><span class="room-desc">한국인이라면 모르면 안 되는 문제</span></button>
-        <button class="room-btn" data-room="chosung"><span class="room-emoji">🈂️</span><span class="room-name">초성퀴즈</span><span class="room-desc">초성 보고 단어 맞히기</span></button>
-      </div>
-      <div id="custom-wrap" class="hidden">
-        <p class="subject-title">✏️ 선생님 문제</p>
-        <div id="custom-select" class="room-select subject-select"></div>
-      </div>
-
-      <!-- 하단 버튼 (위쪽 버튼과 같은 동작) -->
-      <div class="join-row join-row-bottom">
-        <button id="btn-join-bottom" class="btn-join-copy">🙋 혼자 입장하기</button>
-        <button id="btn-multi-bottom" class="btn-multi-copy" title="친구들과 실시간으로 함께하기">👥 멀티플레이</button>
-      </div>
-      <p id="login-error-bottom" class="error-msg"></p>
 
       </div>
     </div>
@@ -3643,15 +3627,7 @@ registerCustomRooms();
 { const b = document.querySelector('.room-btn[data-room="' + selectedRoom + '"]'); if (b) selectRoomBtn(b); }
 
 $('btn-join').addEventListener('click', doJoin);
-// 하단 복사 버튼: 위쪽 버튼을 그대로 눌러 주고, 안내 문구도 아래에 같이 표시
-function pressFromBottom(id) {
-  $(id).click();
-  $('login-error-bottom').textContent = loginError.textContent;
-  if (!nicknameInput.value.trim()) nicknameInput.focus();
-}
-$('btn-join-bottom').addEventListener('click', () => pressFromBottom('btn-join'));
-$('btn-multi-bottom').addEventListener('click', () => pressFromBottom('btn-multi'));
-nicknameInput.addEventListener('input', () => { $('login-error-bottom').textContent = ''; });
+
 nicknameInput.addEventListener('keydown', e => { if (e.key === 'Enter') doJoin(); });
 
 function doJoin() {
