@@ -141,6 +141,78 @@ select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--
 .btn-sm{padding:7px 13px;font-size:13.5px}
 .note{font-size:12px;color:var(--faint);margin:0}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:500;z-index:10}
+
+/* ── 음성 튜터 (영상통화 화면) ── */
+.vbtn{margin-left:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.vbtn svg{width:14px;height:14px}
+.vbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tutor.call{min-height:720px}
+.stage{position:relative;flex:none;height:clamp(300px,50vh,480px);overflow:hidden;border-bottom:1px solid var(--line);
+  background:radial-gradient(120% 90% at 50% 100%,#C9D3FF 0%,#E7ECFF 45%,#F6F7FD 100%);transition:box-shadow .2s}
+.stage[hidden]{display:none}
+.stage::before{content:"";position:absolute;left:6%;top:12%;width:26%;height:30%;border-radius:8px;background:#2F5D50;box-shadow:inset 0 0 0 5px #8B6B4A;opacity:.85}
+.stage::after{content:"for i in range(3)";position:absolute;left:8%;top:17%;font-family:var(--mono);font-size:clamp(9px,1.2vw,12px);color:#E6F1EC;opacity:.85;white-space:nowrap}
+.stage[data-state="speaking"]{box-shadow:inset 0 0 0 4px var(--accent)}
+.stage[data-state="listening"]{box-shadow:inset 0 0 0 4px #D9483B}
+.av{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:96%;width:auto;max-width:100%;display:block;z-index:1}
+.av .lids path{transform-box:fill-box;transform-origin:50% 0;animation:blink 4.5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(0)}96%,98%{transform:scaleY(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+.av .think{opacity:0;transition:opacity .2s}
+.stage[data-state="thinking"] .av .think{opacity:1}
+.av .think circle{animation:bo 1.2s infinite ease-in-out}
+.av .think circle:nth-child(2){animation-delay:.15s}.av .think circle:nth-child(3){animation-delay:.3s}
+.stage[data-state="speaking"] .av .smile{opacity:0}
+.av .mouth{opacity:0}
+.stage[data-state="speaking"] .av .mouth{opacity:1}
+.call-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;z-index:2}
+.pill{background:rgba(15,18,40,.55);color:#fff;border-radius:999px;padding:5px 12px;font-size:13px;display:inline-flex;align-items:center;gap:8px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pill b{font-weight:800;font-size:14px}
+.pill .tm{font-family:var(--mono);font-size:12px;opacity:.85;font-variant-numeric:tabular-nums}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:#3DDC97}
+.st-badge{font-weight:700;font-size:12.5px}
+.stage[data-state="listening"] .st-badge .dot{background:#FF6B5E;animation:pulse 1s infinite}
+.stage[data-state="speaking"] .st-badge .dot{background:#8FA2FF;animation:pulse .6s infinite}
+.stage[data-state="thinking"] .st-badge .dot{background:#FFC24B;animation:pulse 1s infinite}
+.caption{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;z-index:2;max-width:min(560px,calc(100% - 32px));background:rgba(15,18,40,.62);color:#fff;
+  padding:8px 14px;border-radius:12px;font-size:14.5px;line-height:1.5;text-align:center;word-break:keep-all;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.caption:empty{display:none}
+.call-bar{position:absolute;left:0;right:0;bottom:14px;z-index:3;display:flex;justify-content:center;align-items:center;gap:14px}
+.cb{width:48px;height:48px;border-radius:50%;border:0;background:rgba(15,18,40,.55);color:#fff;display:grid;place-items:center;padding:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.cb svg{width:21px;height:21px}
+.cb:hover:not(:disabled){background:rgba(15,18,40,.75)}
+.cb.big{width:62px;height:62px;background:#fff;color:var(--accent);box-shadow:0 4px 14px rgba(15,18,40,.25)}
+.cb.big svg{width:26px;height:26px}
+.cb.big:hover:not(:disabled){background:#EEF1FF}
+.cb.big.on,.cb.big.on:hover{background:#D9483B;color:#fff;animation:pulse 1.2s infinite ease-in-out}
+.cb.end{background:#D9483B}
+.cb.end:hover{background:#b8372b}
+.cb[aria-expanded="true"],.cb[aria-expanded="true"]:hover{background:#fff;color:var(--fg)}
+.vpanel{position:absolute;left:50%;transform:translateX(-50%);bottom:76px;z-index:4;width:min(320px,calc(100% - 24px));background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;box-shadow:0 12px 32px rgba(15,18,40,.18);padding:14px;display:flex;flex-direction:column;gap:12px}
+.vpanel[hidden]{display:none}
+.vpanel h3{font-size:13px;font-weight:800;color:var(--muted)}
+.vrow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.vrow select{width:auto;max-width:62%;padding:6px 8px;font-size:13.5px;border-radius:8px}
+.vrow input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.vhint{font-size:12px;color:var(--faint);margin:0}
+.mic{flex:none;width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);display:grid;place-items:center;padding:0}
+.mic svg{width:20px;height:20px}
+.mic:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.mic.on{background:#D9483B;border-color:#D9483B;color:#fff;animation:pulse 1.2s infinite ease-in-out}
+.m-ai .speak{align-self:flex-start;border:0;background:transparent;color:var(--faint);font-size:12px;font-weight:600;padding:0 2px}
+.m-ai .speak:hover{color:var(--accent)}
+@media (max-width:640px){
+  .stage{height:clamp(280px,52vh,440px)}
+  .stage::before,.stage::after{display:none}
+  .vbtn span{display:none}
+  .tutor-h .ctx{display:none}
+  .tutor.call .quick{display:none}
+  .cb{width:44px;height:44px}.cb.big{width:58px;height:58px}
+  .caption{bottom:78px;font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){.av .lids path,.cb.big.on,.mic.on,.pill .dot{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.dots i{animation:none}.log{scroll-behavior:auto}}
 </style>
 </head>
@@ -196,6 +268,196 @@ select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--
       <span class="ai-badge">AI</span>
       <span class="t">STUDENT_TUTOR · SESSION</span>
       <div class="ctx" id="ctx"></div>
+      <button type="button" class="vbtn" id="voiceToggle" aria-pressed="false" title="가상 선생님과 말로 대화하기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg><span>음성 튜터</span>
+      </button>
+    </div>
+    <div class="stage" id="stage" data-state="idle" hidden aria-label="정해원 선생님과 음성 통화">
+      <div class="call-top">
+        <span class="pill"><b>정해원</b><span class="tm" id="stTimer">00:00</span></span>
+        <span class="pill st-badge"><span class="dot"></span><span id="stBadge">대기 중</span></span>
+      </div>
+      <svg class="av" viewBox="0 0 960 960" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<g clip-path="url(#jhw-clip0_0_1)">
+<path d="M56 960C72 776 232 704 480 696C728 704 888 776 904 960H56Z" fill="url(#jhw-paint0_linear_0_1)"/>
+<path d="M376 700L480 864L584 700H376Z" fill="url(#jhw-paint1_linear_0_1)"/>
+<path d="M444 748H516L504 800H456L444 748Z" fill="url(#jhw-paint2_linear_0_1)"/>
+<path d="M456 800H504L520 904H440L456 800Z" fill="url(#jhw-paint3_linear_0_1)"/>
+<path d="M460 788L500 820ZM456 832L504 868Z" fill="black"/>
+<path d="M460 788L500 820M456 832L504 868" stroke-width="12" stroke="white" stroke-opacity="0.08"/>
+<path d="M376 700L348 748ZM584 700L612 748Z" fill="black"/>
+<path d="M376 700L348 748M584 700L612 748" stroke-width="6" stroke="#0E1220" stroke-opacity="0.4"/>
+<path d="M480 856L408 960H552L480 856Z" fill="url(#jhw-paint4_linear_0_1)"/>
+<path d="M480 856L416 960ZM480 856L544 960Z" fill="black"/>
+<path d="M416 960L480 856L544 960" stroke-width="6" stroke="#0E1220" stroke-opacity="0.45"/>
+<path opacity="0.7" d="M480 930.4C485.744 930.4 490.4 925.744 490.4 920C490.4 914.256 485.744 909.6 480 909.6C474.256 909.6 469.6 914.256 469.6 920C469.6 925.744 474.256 930.4 480 930.4Z" fill="#0E1220"/>
+<path d="M389.565 552H570.435L584 705.125C514.667 734.292 445.333 734.292 376 705.125L389.565 552Z" fill="url(#jhw-paint5_linear_0_1)"/>
+<path opacity="0.45" d="M480 676C533.019 676 576 659.882 576 640C576 620.118 533.019 604 480 604C426.981 604 384 620.118 384 640C384 659.882 426.981 676 480 676Z" fill="#B97B58"/>
+<path d="M304 368C256 352 236 396 244 440C252 484 264 520 288 540C300 548 312 544 316 532V384L304 368Z" fill="url(#jhw-paint6_radial_0_1)"/>
+<path d="M287 400C271 429.333 269.667 461.333 283 496" stroke-width="8" stroke-linecap="round" stroke="#B97B58" stroke-opacity="0.55"/>
+<path d="M656 368C704 352 724 396 716 440C708 484 696 520 672 540C660 548 648 544 644 532V384L656 368Z" fill="url(#jhw-paint7_radial_0_1)"/>
+<path d="M673 400C689 429.333 690.333 461.333 677 496" stroke-width="8" stroke-linecap="round" stroke="#B97B58" stroke-opacity="0.55"/>
+<path d="M288 388C288 248 372 176 480 176C588 176 672 248 672 388C672 484 652 548 620 596C580 652 532 684 480 684C428 684 380 652 340 596C308 548 288 484 288 388Z" fill="url(#jhw-paint8_radial_0_1)"/>
+<path d="M288 388C288 248 372 176 480 176C588 176 672 248 672 388C672 484 652 548 620 596C580 652 532 684 480 684C428 684 380 652 340 596C308 548 288 484 288 388Z" fill="url(#jhw-paint9_radial_0_1)"/>
+<path d="M360 568C397.555 568 428 548.301 428 524C428 499.699 397.555 480 360 480C322.445 480 292 499.699 292 524C292 548.301 322.445 568 360 568Z" fill="url(#jhw-paint10_radial_0_1)"/>
+<path d="M600 568C637.555 568 668 548.301 668 524C668 499.699 637.555 480 600 480C562.445 480 532 499.699 532 524C532 548.301 562.445 568 600 568Z" fill="url(#jhw-paint11_radial_0_1)"/>
+<path d="M296 436H288C284 428 280 420 280 408C256 256 336 136 480 132C632 128 712 252 680 408C684 420 680 428 676 436H668L656 396C676 336 628 248 492 232C348 248 292 336 304 396L296 436Z" fill="url(#jhw-paint12_linear_0_1)"/>
+<path d="M392 176C432 156 480 152 512 160M536 164C568 168 592 180 608 196" stroke-width="18" stroke-linecap="round" stroke="#B4835E" stroke-opacity="0.3"/>
+<path d="M448 352C416 344 384 342 356 346C346 348 338 354 334 362C344 360 354 358.4 360 358.4C388 357.6 420 361.6 448 367.2V352Z" fill="#3A2416" stroke-width="3.6" stroke-linejoin="round" stroke="#3A2416"/>
+<path d="M514 352C546 344 578 342 606 346C616 348 624 354 628 362C618 360 608 358.4 602 358.4C574 357.6 542 361.6 514 367.2V352Z" fill="#3A2416" stroke-width="3.6" stroke-linejoin="round" stroke="#3A2416"/>
+<path d="M288 360L292 280Q480 120 668 280L672 360Q600 372 496 232Q392 372 288 360Z" fill="url(#jhw-paint12_linear_0_1)"/>
+<path d="M312 352Q392 344 472 248M344 296Q408 272 464 200M648 352Q584 344 520 248M616 296Q560 272 520 200" stroke-width="8" stroke-linecap="round" stroke="#9A6A48" stroke-opacity="0.35"/>
+<path d="M496 232Q504 184 516 136" stroke-width="6" stroke-linecap="round" stroke="#1A0F07" stroke-opacity="0.6"/>
+<path d="M332 420C366.667 390.667 404 388 444 412C412 438.667 374.667 441.333 332 420Z" fill="#FBF7F3"/>
+<mask id="jhw-mask0_0_1" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="332" y="396" width="116" height="38">
+<path d="M332 419.934C367.905 390.923 406.571 388.286 448 412.022C414.857 438.396 376.19 441.033 332 419.934Z" fill="white"/>
+</mask>
+<g mask="url(#jhw-mask0_0_1)">
+<path d="M390 443.67C406.016 443.67 419 431.272 419 415.978C419 400.684 406.016 388.286 390 388.286C373.984 388.286 361 400.684 361 415.978C361 431.272 373.984 443.67 390 443.67Z" fill="url(#jhw-paint14_radial_0_1)"/>
+<path d="M390 427.055C396.407 427.055 401.6 422.096 401.6 415.978C401.6 409.86 396.407 404.901 390 404.901C383.594 404.901 378.4 409.86 378.4 415.978C378.4 422.096 383.594 427.055 390 427.055Z" fill="#0E0906"/>
+<path d="M399.529 414.396C404.105 414.396 407.814 410.853 407.814 406.484C407.814 402.114 404.105 398.571 399.529 398.571C394.952 398.571 391.243 402.114 391.243 406.484C391.243 410.853 394.952 414.396 399.529 414.396Z" fill="white"/>
+<path opacity="0.85" d="M381.714 429.033C383.774 429.033 385.443 427.439 385.443 425.473C385.443 423.506 383.774 421.912 381.714 421.912C379.655 421.912 377.986 423.506 377.986 425.473C377.986 427.439 379.655 429.033 381.714 429.033Z" fill="white"/>
+</g>
+<path d="M628 420C593.333 390.667 556 388 516 412C548 438.667 585.333 441.333 628 420Z" fill="#FBF7F3"/>
+<mask id="jhw-mask1_0_1" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="515" y="396" width="112" height="39">
+<path d="M627 420.2C592.333 390.867 555 388.2 515 412.2C547 438.867 584.333 441.533 627 420.2Z" fill="white"/>
+</mask>
+<g mask="url(#jhw-mask1_0_1)">
+<path d="M571 444.2C586.464 444.2 599 431.664 599 416.2C599 400.736 586.464 388.2 571 388.2C555.536 388.2 543 400.736 543 416.2C543 431.664 555.536 444.2 571 444.2Z" fill="url(#jhw-paint15_radial_0_1)"/>
+<path d="M571 427.4C577.186 427.4 582.2 422.386 582.2 416.2C582.2 410.014 577.186 405 571 405C564.814 405 559.8 410.014 559.8 416.2C559.8 422.386 564.814 427.4 571 427.4Z" fill="#0E0906"/>
+<path d="M580.2 414.6C584.618 414.6 588.2 411.018 588.2 406.6C588.2 402.182 584.618 398.6 580.2 398.6C575.782 398.6 572.2 402.182 572.2 406.6C572.2 411.018 575.782 414.6 580.2 414.6Z" fill="white"/>
+<path opacity="0.85" d="M563 429.4C564.988 429.4 566.6 427.788 566.6 425.8C566.6 423.812 564.988 422.2 563 422.2C561.012 422.2 559.4 423.812 559.4 425.8C559.4 427.788 561.012 429.4 563 429.4Z" fill="white"/>
+</g>
+<g class="lids" fill="url(#jhw-paint8_radial_0_1)"><path d="M326 386h124v56H326z"/><path d="M510 386h124v56H510z"/></g>
+<path opacity="0.1" d="M462 404C460 452 450 492 440 528C452 544 468 548 480 548C492 548 508 544 520 528C510 492 500 452 498 404H462Z" fill="#B97B58"/>
+<path d="M480 412V500Z" fill="black"/>
+<path d="M480 412V500" stroke-width="12.8" stroke-linecap="round" stroke="white" stroke-opacity="0.2"/>
+<path opacity="0.55" d="M458 541.2C463.302 541.2 467.6 538.872 467.6 536C467.6 533.128 463.302 530.8 458 530.8C452.698 530.8 448.4 533.128 448.4 536C448.4 538.872 452.698 541.2 458 541.2Z" fill="#6E3E2C"/>
+<path opacity="0.55" d="M502 541.2C507.302 541.2 511.6 538.872 511.6 536C511.6 533.128 507.302 530.8 502 530.8C496.698 530.8 492.4 533.128 492.4 536C492.4 538.872 496.698 541.2 502 541.2Z" fill="#6E3E2C"/>
+<g class="smile"><path d="M428 596C444 588 461.333 586.667 480 592C498.667 586.667 516 588 532 596C497.333 606.667 462.667 606.667 428 596Z" fill="url(#jhw-paint16_linear_0_1)"/>
+<path d="M432 600C464 624 496 624 528 600C496 608 464 608 432 600Z" fill="url(#jhw-paint17_linear_0_1)"/>
+<path d="M424 598C461.333 608.667 498.667 608.667 536 598" stroke-width="4.8" stroke-linecap="round" stroke="#9D625A"/></g>
+<g class="mouth" transform="translate(480 602) scale(4)"><ellipse id="avMouth" cx="0" cy="0" rx="9.5" ry="2.5" fill="#4A1C19" stroke="#D99A8F" stroke-width="2.6"/></g>
+<path d="M376 700L480 864L416 960H312L348 800L332 740L376 700Z" fill="url(#jhw-paint18_linear_0_1)"/>
+<path d="M584 700L480 864L544 960H648L612 800L628 740L584 700Z" fill="url(#jhw-paint19_linear_0_1)"/>
+</g>
+<g class="think" fill="#3654F4"><circle cx="744" cy="192" r="24"/><circle cx="808" cy="152" r="24"/><circle cx="872" cy="112" r="24"/></g>
+<defs>
+<linearGradient id="jhw-paint0_linear_0_1" x1="56" y1="696" x2="56" y2="960" gradientUnits="userSpaceOnUse">
+<stop stop-color="#353C58"/>
+<stop offset="1" stop-color="#1A1F33"/>
+</linearGradient>
+<linearGradient id="jhw-paint1_linear_0_1" x1="376" y1="700" x2="376" y2="864" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="#DDE2EE"/>
+</linearGradient>
+<linearGradient id="jhw-paint2_linear_0_1" x1="444" y1="748" x2="493.363" y2="816.349" gradientUnits="userSpaceOnUse">
+<stop stop-color="#3A3A40"/>
+<stop offset="1" stop-color="#0C0C0F"/>
+</linearGradient>
+<linearGradient id="jhw-paint3_linear_0_1" x1="440" y1="800" x2="540.52" y2="877.323" gradientUnits="userSpaceOnUse">
+<stop stop-color="#3A3A40"/>
+<stop offset="1" stop-color="#0C0C0F"/>
+</linearGradient>
+<linearGradient id="jhw-paint4_linear_0_1" x1="408" y1="856" x2="408" y2="960" gradientUnits="userSpaceOnUse">
+<stop stop-color="#353C58"/>
+<stop offset="1" stop-color="#1A1F33"/>
+</linearGradient>
+<linearGradient id="jhw-paint5_linear_0_1" x1="376" y1="552" x2="376" y2="727" gradientUnits="userSpaceOnUse">
+<stop stop-color="#C98C69"/>
+<stop offset="0.45" stop-color="#E3AE8C"/>
+<stop offset="1" stop-color="#E9B898"/>
+</linearGradient>
+<radialGradient id="jhw-paint6_radial_0_1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(456 392) scale(320 320)">
+<stop stop-color="#FBE2D0"/>
+<stop offset="0.55" stop-color="#F2C7A9"/>
+<stop offset="1" stop-color="#D49B79"/>
+</radialGradient>
+<radialGradient id="jhw-paint7_radial_0_1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(456 392) scale(320 320)">
+<stop stop-color="#FBE2D0"/>
+<stop offset="0.55" stop-color="#F2C7A9"/>
+<stop offset="1" stop-color="#D49B79"/>
+</radialGradient>
+<radialGradient id="jhw-paint8_radial_0_1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(456 392) scale(320 320)">
+<stop stop-color="#FBE2D0"/>
+<stop offset="0.55" stop-color="#F2C7A9"/>
+<stop offset="1" stop-color="#D49B79"/>
+</radialGradient>
+<radialGradient id="jhw-paint9_radial_0_1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(480 416) scale(248 248)">
+<stop offset="0.72" stop-color="#A9643F" stop-opacity="0"/>
+<stop offset="1" stop-color="#A9643F" stop-opacity="0.32"/>
+</radialGradient>
+<radialGradient id="jhw-paint10_radial_0_1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(360 524) scale(68 44)">
+<stop stop-color="#E88C7D" stop-opacity="0.35"/>
+<stop offset="1" stop-color="#E88C7D" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="jhw-paint11_radial_0_1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(600 524) scale(68 44)">
+<stop stop-color="#E88C7D" stop-opacity="0.35"/>
+<stop offset="1" stop-color="#E88C7D" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="jhw-paint12_linear_0_1" x1="416" y1="120" x2="512" y2="472" gradientUnits="userSpaceOnUse">
+<stop stop-color="#5E3D27"/>
+<stop offset="0.55" stop-color="#432916"/>
+<stop offset="1" stop-color="#26170C"/>
+</linearGradient>
+<linearGradient id="jhw-paint13_linear_0_1" x1="405" y1="120.087" x2="501" y2="472.087" gradientUnits="userSpaceOnUse">
+<stop stop-color="#5E3D27"/>
+<stop offset="0.55" stop-color="#432916"/>
+<stop offset="1" stop-color="#26170C"/>
+</linearGradient>
+<radialGradient id="jhw-paint14_radial_0_1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(387.1 410.44) scale(34.8 33.2308)">
+<stop stop-color="#7A5539"/>
+<stop offset="0.7" stop-color="#3E2817"/>
+<stop offset="1" stop-color="#1E130B"/>
+</radialGradient>
+<radialGradient id="jhw-paint15_radial_0_1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(568.2 410.6) scale(33.6)">
+<stop stop-color="#7A5539"/>
+<stop offset="0.7" stop-color="#3E2817"/>
+<stop offset="1" stop-color="#1E130B"/>
+</radialGradient>
+<linearGradient id="jhw-paint16_linear_0_1" x1="428" y1="588.8" x2="428" y2="604" gradientUnits="userSpaceOnUse">
+<stop stop-color="#DDA196"/>
+<stop offset="0.9998" stop-color="#DA9D93"/>
+<stop offset="0.9999" stop-color="#D19086"/>
+<stop offset="1" stop-color="#CC8A80"/>
+</linearGradient>
+<linearGradient id="jhw-paint17_linear_0_1" x1="432" y1="600" x2="432" y2="618" gradientUnits="userSpaceOnUse">
+<stop stop-color="#E4ADA3"/>
+<stop offset="0.0001" stop-color="#EABBB1"/>
+<stop offset="1" stop-color="#EDC2B8"/>
+</linearGradient>
+<linearGradient id="jhw-paint18_linear_0_1" x1="312" y1="700" x2="549.035" y2="853.161" gradientUnits="userSpaceOnUse">
+<stop stop-color="#2A3049"/>
+<stop offset="1" stop-color="#151A2B"/>
+</linearGradient>
+<linearGradient id="jhw-paint19_linear_0_1" x1="480" y1="700" x2="717.035" y2="853.161" gradientUnits="userSpaceOnUse">
+<stop stop-color="#2A3049"/>
+<stop offset="1" stop-color="#151A2B"/>
+</linearGradient>
+<clipPath id="jhw-clip0_0_1">
+<rect width="960" height="960" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+      <div class="caption" id="stLine" aria-live="polite">마이크 버튼을 누르고 궁금한 것을 말해 보세요.</div>
+      <div class="vpanel" id="vPanel" hidden role="dialog" aria-label="음성 설정">
+        <h3>음성 설정</h3>
+        <label class="vrow">언어
+          <select id="vLang"><option value="ko-KR">한국어</option><option value="en-US">영어 (미국)</option><option value="en-GB">영어 (영국)</option><option value="ja-JP">일본어</option><option value="zh-CN">중국어</option></select></label>
+        <label class="vrow">말하는 속도
+          <select id="vRate"><option value="0.8">아주 느리게</option><option value="0.9">느리게</option><option value="1">보통</option><option value="1.15">조금 빠르게</option><option value="1.3">빠르게</option></select></label>
+        <label class="vrow">목소리
+          <select id="vVoice"><option value="">기본</option></select></label>
+        <label class="vrow">답한 뒤 자동으로 듣기 <input type="checkbox" id="vAuto"></label>
+        <p class="vhint" id="vMaleHint" hidden>이 브라우저에는 남자 목소리가 없어서 기본 목소리를 낮춰 읽어요. 엣지(Edge)에서 열면 자연스러운 남자 목소리(InJoon)를 쓸 수 있어요.</p>
+        <p class="vhint">언어는 말로 묻는 말과 읽어 주는 목소리에 함께 적용돼요. 영어 말하기 연습할 때 바꿔 보세요.</p>
+      </div>
+      <div class="call-bar">
+        <button type="button" class="cb" id="vSet" aria-label="음성 설정" aria-expanded="false" title="설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+        <button type="button" class="cb big" id="micCall" aria-label="말하기" title="말하기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <button type="button" class="cb" id="vStop" aria-label="말 멈추기" title="말 멈추기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/></svg></button>
+        <button type="button" class="cb end" id="vEnd" aria-label="음성 튜터 끄기" title="통화 종료"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 9c-3.2 0-6.2 1-8.6 2.8-.5.4-.6 1-.3 1.6l1.3 2.2c.3.5.9.7 1.4.5l2.6-1c.5-.2.8-.7.8-1.2l-.1-1.7c1-.3 1.9-.4 2.9-.4s1.9.1 2.9.4l-.1 1.7c0 .5.3 1 .8 1.2l2.6 1c.5.2 1.1 0 1.4-.5l1.3-2.2c.3-.6.2-1.2-.3-1.6C18.2 10 15.2 9 12 9z"/></svg></button>
+      </div>
     </div>
     <div class="log" id="log" aria-live="polite"></div>
     <form class="composer" id="form">
@@ -208,10 +470,11 @@ select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--
       </div>
       <div class="inrow">
         <textarea id="input" rows="1" maxlength="800" placeholder="궁금한 것을 물어보세요" aria-label="질문 입력"></textarea>
+        <button type="button" class="mic" id="mic" title="말로 질문하기" aria-label="말로 질문하기" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
         <button type="submit" class="btn btn-primary" id="send">보내기</button>
         <button type="button" class="btn btn-ghost" id="stop" hidden>중지</button>
       </div>
-      <p class="note">Enter로 보내기 · Shift+Enter 줄바꿈 · AI도 틀릴 수 있어요. 헷갈리면 선생님께 확인해요.</p>
+      <p class="note">Enter로 보내기 · Shift+Enter 줄바꿈 · 마이크로 말해도 돼요 · AI도 틀릴 수 있어요. 헷갈리면 선생님께 확인해요.</p>
     </form>
   </section>
 </main>
@@ -345,6 +608,7 @@ function renderLog(){
         ${m.grade != null ? `<span class="grade-tag">${m.grade ? "CORRECT · 정답 확인" : "REVIEW · 오답 분석"}</span>` : ""}
         ${m.error ? `<div class="b"><p class="err">${esc(m.text)}</p></div>` : (m.text ? `<div class="b">${md(m.text)}</div>` : "")}
         ${m.problem ? probCard(m) : ""}
+        ${Voice.on && !m.error && (m.text || m.problem) ? `<button type="button" class="speak" data-speak="${m.id}">▶ 다시 듣기</button>` : ""}
         ${i === last && !busy && m.suggestions?.length ? `<div class="sugs">${m.suggestions.map(s => `<button type="button" class="sug" data-say="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : ""}
         ${m.error && m.retry && i === last ? `<div class="sugs"><button type="button" class="sug" data-retry>다시 시도</button></div>` : ""}
       </div>`;
@@ -360,6 +624,7 @@ function render(){ renderSide(); renderLog(); setBusyUI(); }
 function setBusyUI(){
   $("#send").hidden = busy; $("#stop").hidden = !busy;
   document.querySelectorAll("#quick button").forEach(b => b.disabled = busy);
+  const mb = document.getElementById("mic"); if(mb) mb.disabled = busy;
 }
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,1800); }
 
@@ -408,7 +673,8 @@ async function callServer(payload){
 let lastJob = null;
 async function run(job){
   lastJob = job;
-  busy = true; render();
+  const before = S.msgs.length;
+  busy = true; render(); Voice.thinking();
   try{
     const d = await callServer(job.payload);
     busy = false;
@@ -419,6 +685,7 @@ async function run(job){
     else{ S.msgs.push({id:uid(), role:"ai", text: ERR[err.code] || "잠시 연결이 끊겼어요. 다시 눌러 주세요.", error:true, retry:!job.noRetry}); job.onFail?.(); }
   }
   save(); render();
+  Voice.afterReply(S.msgs.slice(before));
 }
 
 function aiMsg(d){
@@ -485,6 +752,7 @@ $("#modes").addEventListener("click", e => { const b = e.target.closest(".mode")
 $("#levels").addEventListener("click", e => { const b = e.target.closest(".lv"); if(!b) return; S.level = +b.dataset.lv; save(); render(); });
 $("#reset").addEventListener("click", () => {
   if(busy) ctl?.abort();
+  Voice.stop();
   if(!confirm("대화와 기록을 모두 지우고 새로 시작할까요?")) return;
   const keep = {subject:S.subject, level:S.level, mode:S.mode};
   S = Object.assign(fresh(), keep); save(); render();
@@ -520,6 +788,7 @@ $("#log").addEventListener("click", async e => {
     try{ await navigator.clipboard.writeText(code); toast("코드를 복사했어요"); }catch{ toast("복사하지 못했어요"); }
     return;
   }
+  const sp = t.closest("[data-speak]"); if(sp){ const m = S.msgs.find(x => x.id === sp.dataset.speak); if(m) Voice.speakMsgs([m], false); return; }
   const s = t.closest("[data-say]"); if(s){ say(s.dataset.say); return; }
   if(t.closest("[data-retry]")){
     if(!lastJob || busy) return;
@@ -539,6 +808,235 @@ $("#log").addEventListener("click", async e => {
 $("#log").addEventListener("input", e => {
   if(e.target.id?.startsWith("ans-")){ const m = S.msgs.find(x => x.id === e.target.id.slice(4)); if(m) m.answer = e.target.value; save(); }
 });
+
+/* ================================================================
+   음성 튜터 — 정해원 선생님과 영상통화하듯 말로 묻고 듣기
+   브라우저 기본 기능(음성 인식·TTS)만 써서 서버·키가 더 필요 없어요. (크롬·엣지 권장)
+   ================================================================ */
+const Voice = (() => {
+  const VKEY = "htro-tutor-voice-v2";
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const synth = window.speechSynthesis;
+  let cfg = { on:false, auto:false, rate:1, voice:"", lang:"ko-KR" };
+  try{ Object.assign(cfg, JSON.parse(localStorage.getItem(VKEY)) || {}); }catch{}
+  const saveCfg = () => { try{ localStorage.setItem(VKEY, JSON.stringify(cfg)); }catch{} };
+
+  const stage = $("#stage"), badge = $("#stBadge"), line = $("#stLine"), mouth = $("#avMouth"), panel = $("#vPanel"), setBtn = $("#vSet");
+  const mics = [$("#mic"), $("#micCall")];
+  const BADGE = { idle:"대기 중", listening:"듣는 중", thinking:"생각 중", speaking:"말하는 중" };
+  const HELLO = { "ko-KR":"안녕하세요! 궁금한 걸 편하게 말해 주세요.", "en-US":"Hi! I'm your tutor. Ask me anything.", "en-GB":"Hello! I'm your tutor. Ask me anything.", "ja-JP":"こんにちは！何でも聞いてくださいね。", "zh-CN":"你好！有什么问题都可以问我。" };
+  const IDLE_TXT = "마이크 버튼을 누르고 궁금한 것을 말해 보세요.";
+  let state = "idle", rec = null, listening = false, heard = "", spokeByVoice = false, speakingId = 0, raf = 0, pulse = 0, timer = 0, startAt = 0;
+
+  function setState(s, text){
+    state = s; stage.dataset.state = s; badge.textContent = BADGE[s];
+    if(text != null) line.textContent = text;
+    if(s !== "speaking"){ cancelAnimationFrame(raf); raf = 0; mouth.setAttribute("ry", 2.5); }
+  }
+  function setMic(on){ mics.forEach(m => { m.classList.toggle("on", on); m.setAttribute("aria-pressed", String(on)); }); }
+
+  /* ── 통화 시간 ── */
+  function startTimer(){
+    stopTimer(); startAt = Date.now();
+    const tick = () => { const s = Math.floor((Date.now() - startAt) / 1000); $("#stTimer").textContent = String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
+    tick(); timer = setInterval(tick, 1000);
+  }
+  function stopTimer(){ clearInterval(timer); timer = 0; }
+
+  /* ── 입 모양: 말하는 동안 움직이고, 단어가 나올 때마다 크게 벌려요 ── */
+  function animate(){
+    pulse *= 0.86;
+    const t = performance.now() / 1000;
+    const base = 2.5 + 3.5 * (0.5 + 0.5 * Math.sin(t * 17)) * (0.6 + 0.4 * Math.sin(t * 5.3));
+    mouth.setAttribute("ry", Math.min(6, base * 0.75 + pulse * 3).toFixed(1));
+    raf = requestAnimationFrame(animate);
+  }
+
+  /* ── 화면 글 → 읽기 좋은 말 ── */
+  function speakable(src){
+    const ko = cfg.lang.startsWith("ko");
+    return String(src || "")
+      .replace(/```[\s\S]*?```/g, ko ? " 코드는 화면에서 확인해 주세요. " : " (see the code on screen) ")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      .replace(/^#{1,4}\s+/gm, "")
+      .replace(/^\s*[-*•]\s+/gm, "")
+      .replace(/^\s*(\d+)[.)]\s+/gm, ko ? "$1번, " : "$1. ")
+      .replace(/[①-⑩]/g, c => " " + (c.charCodeAt(0) - 9311) + (ko ? "번, " : ". "))
+      .replace(/→/g, ko ? " 다음, " : ", then ").replace(/≤/g, ko ? " 이하 " : " or less ").replace(/≥/g, ko ? " 이상 " : " or more ")
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+      .replace(/[#*_~|<>]/g, " ")
+      .replace(/\s+/g, " ").trim();
+  }
+  // 크롬은 긴 문장을 중간에 끊어서, 문장 단위로 잘라 차례로 읽어요
+  function chunks(text){
+    const out = [];
+    text.split(/(?<=[.!?。…！？])\s*/).forEach(s => {
+      s = s.trim(); if(!s) return;
+      while(s.length > 140){ const cut = s.lastIndexOf(" ", 140); out.push(s.slice(0, cut > 40 ? cut : 140)); s = s.slice(cut > 40 ? cut + 1 : 140); }
+      out.push(s);
+    });
+    return out;
+  }
+
+  const langVoices = () => synth ? synth.getVoices().filter(v => v.lang.replace("_", "-").toLowerCase().startsWith(cfg.lang.slice(0, 2).toLowerCase())) : [];
+  // 브라우저는 목소리의 성별을 알려 주지 않아서, 알려진 남자 목소리 이름으로 찾아요
+  const MALE = /injoon|hyunsu|bongjin|gookmin|guy|davis|andrew|brian|christopher|eric|roger|steffan|ryan|thomas|david|mark|george|daniel|alex|aaron|fred|keita|ichiro|naoki|yunxi|yunjian|yunyang|kangkang|male|남자|남성/i;
+  const FEMALE = /female|여자|여성|heami|sunhi|yuna|jimin|seoyeon|google 한국의/i;
+  const isMale = v => MALE.test(v.name) && !FEMALE.test(v.name);
+  function pickVoice(){
+    const list = langVoices();
+    const exact = list.filter(v => v.lang.replace("_", "-").toLowerCase() === cfg.lang.toLowerCase());
+    const pool = exact.length ? exact : list;
+    const chosen = pool.find(v => v.name === cfg.voice);
+    if(chosen) return chosen;
+    return pool.filter(isMale).sort((a, b) => /natural|online/i.test(b.name) - /natural|online/i.test(a.name))[0]
+      || pool.find(v => /natural|online/i.test(v.name)) || pool.find(v => /google/i.test(v.name)) || pool[0] || null;
+  }
+  // 고른 목소리가 남자 목소리가 아니면 목소리를 낮춰서 남자처럼 읽어요
+  const pitchFor = v => (v && (isMale(v) || v.name === cfg.voice)) ? 1 : 0.72;
+  function fillVoices(){
+    const sel = $("#vVoice"), list = langVoices();
+    sel.innerHTML = `<option value="">기본 (남자 목소리)</option>` + list.map(v => `<option value="${esc(v.name)}"${v.name === cfg.voice ? " selected" : ""}>${esc((v.name.replace(/Microsoft |Google |\s*-\s*.*$/g, "").trim() || v.name) + (isMale(v) ? " · 남" : ""))}</option>`).join("");
+    const hint = $("#vMaleHint");
+    if(hint) hint.hidden = !list.length || list.some(isMale);
+  }
+
+  function speak(text, afterVoice){
+    if(!synth){ toast("이 브라우저는 음성 답변을 지원하지 않아요"); return; }
+    synth.cancel();
+    const parts = chunks(speakable(text));
+    if(!parts.length) return;
+    const id = ++speakingId, voice = pickVoice();
+    setState("speaking", parts[0]);
+    if(!raf) animate();
+    parts.forEach((p, i) => {
+      const u = new SpeechSynthesisUtterance(p);
+      u.lang = cfg.lang; if(voice) u.voice = voice;
+      u.rate = Number(cfg.rate) || 1; u.pitch = pitchFor(voice);
+      u.onstart = () => { if(id === speakingId) line.textContent = p; };
+      u.onboundary = () => { pulse = 1; };
+      u.onend = u.onerror = () => {
+        if(id !== speakingId || i !== parts.length - 1) return;
+        setState("idle", "더 궁금한 게 있으면 말하거나 적어 주세요.");
+        if(cfg.on && cfg.auto && afterVoice && !busy) setTimeout(() => { if(state === "idle" && !busy) listen(); }, 350);
+      };
+      synth.speak(u);
+    });
+  }
+
+  function stop(){
+    speakingId++;
+    if(synth) synth.cancel();
+    if(rec && listening) try{ rec.abort(); }catch{}
+    listening = false; setMic(false);
+    setState("idle", cfg.on ? IDLE_TXT : null);
+  }
+
+  /* ── 말로 묻기 ── */
+  function listen(){
+    if(!SR){ toast("이 브라우저는 음성 인식을 지원하지 않아요. 크롬이나 엣지에서 열어 주세요."); return; }
+    if(busy) return;
+    if(listening){ try{ rec.stop(); }catch{} return; }
+    panel.hidden = true; setBtn.setAttribute("aria-expanded", "false");
+    speakingId++; if(synth) synth.cancel();
+    rec = new SR();
+    rec.lang = cfg.lang; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+    heard = "";
+    rec.onstart = () => { listening = true; setMic(true); if(cfg.on) setState("listening", "듣고 있어요… 말이 끝나면 자동으로 보내요."); };
+    rec.onresult = e => {
+      let txt = "";
+      for(const r of e.results) txt += r[0].transcript;
+      heard = txt.trim();
+      input.value = heard; grow();
+      if(cfg.on) line.textContent = heard;
+    };
+    rec.onerror = e => {
+      const msg = { "not-allowed":"마이크 권한을 허용해 주세요. 주소창 왼쪽 자물쇠에서 바꿀 수 있어요.", "service-not-allowed":"마이크 권한을 허용해 주세요.", "no-speech":"말소리가 들리지 않았어요. 다시 눌러 말해 주세요.", "audio-capture":"마이크를 찾지 못했어요. 연결을 확인해 주세요.", "network":"음성 인식 서버에 연결하지 못했어요. 글로 적어 주세요.", "language-not-supported":"이 언어는 음성 인식을 지원하지 않아요. 설정에서 언어를 바꿔 주세요." }[e.error];
+      if(msg) toast(msg);
+    };
+    rec.onend = () => {
+      listening = false; setMic(false);
+      const t = heard; heard = "";
+      if(t && !busy){ input.value = ""; grow(); spokeByVoice = true; say(t); }
+      else if(state === "listening") setState("idle", IDLE_TXT);
+    };
+    try{ rec.start(); }catch{ toast("음성 인식을 시작하지 못했어요. 다시 눌러 주세요."); }
+  }
+
+  /* ── 튜터 답이 오면 읽어 주기 ── */
+  function speakMsgs(msgs, afterVoice){
+    const ko = cfg.lang.startsWith("ko"), parts = [];
+    msgs.forEach(m => {
+      if(m.role === "sys"){ parts.push(m.text); return; }
+      if(m.role !== "ai") return;
+      if(m.text) parts.push(m.text);
+      if(m.problem){
+        const p = m.problem;
+        parts.push((ko ? "문제예요. " : "Here's a question. ") + p.question);
+        if(p.choices?.length) parts.push(p.choices.map((c, i) => `${i + 1}${ko ? "번" : "."}, ${c}.`).join(" "));
+      }
+    });
+    if(parts.length) speak(parts.join("\n"), afterVoice);
+  }
+
+  function setOn(on){
+    cfg.on = on; saveCfg();
+    $("#voiceToggle").setAttribute("aria-pressed", String(on));
+    stage.hidden = !on;
+    document.querySelector(".tutor").classList.toggle("call", on);
+    panel.hidden = true; setBtn.setAttribute("aria-expanded", "false");
+    if(on){ startTimer(); setState("idle", IDLE_TXT); }
+    else { stop(); stopTimer(); }
+    renderLog();
+  }
+
+  return {
+    get on(){ return cfg.on; },
+    stop, listen, speakMsgs,
+    thinking(){ if(cfg.on){ speakingId++; if(synth) synth.cancel(); setState("thinking", "생각하고 있어요…"); } },
+    afterReply(msgs){
+      const byVoice = spokeByVoice; spokeByVoice = false;
+      if(!cfg.on) return;
+      if(!msgs.some(m => m.role === "ai" || m.role === "sys")){ setState("idle"); return; }
+      speakMsgs(msgs, byVoice);
+    },
+    init(){
+      $("#voiceToggle").addEventListener("click", () => {
+        setOn(!cfg.on);
+        if(cfg.on){
+          if(!SR && !synth) toast("이 브라우저는 음성 기능을 지원하지 않아요. 크롬이나 엣지에서 열어 주세요.");
+          else speak(HELLO[cfg.lang] || HELLO["ko-KR"], false);
+        }
+      });
+      $("#vEnd").addEventListener("click", () => setOn(false));
+      $("#vStop").addEventListener("click", stop);
+      mics.forEach(m => m.addEventListener("click", listen));
+      if(!SR) mics.forEach(m => { m.title = "이 브라우저는 음성 인식을 지원하지 않아요 (크롬·엣지 권장)"; m.style.opacity = ".45"; });
+
+      // 설정 창
+      setBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        panel.hidden = !panel.hidden; setBtn.setAttribute("aria-expanded", String(!panel.hidden));
+      });
+      document.addEventListener("click", e => {
+        if(!panel.hidden && !panel.contains(e.target) && e.target !== setBtn){ panel.hidden = true; setBtn.setAttribute("aria-expanded", "false"); }
+      });
+      document.addEventListener("keydown", e => { if(e.key === "Escape" && !panel.hidden){ panel.hidden = true; setBtn.setAttribute("aria-expanded", "false"); setBtn.focus(); } });
+      $("#vLang").value = cfg.lang; $("#vRate").value = String(cfg.rate); $("#vAuto").checked = !!cfg.auto;
+      $("#vLang").addEventListener("change", e => { cfg.lang = e.target.value; cfg.voice = ""; saveCfg(); fillVoices(); speak(HELLO[cfg.lang], false); });
+      $("#vRate").addEventListener("change", e => { cfg.rate = Number(e.target.value); saveCfg(); speak(cfg.lang.startsWith("ko") ? "이 속도로 읽어 드릴게요." : "I'll read at this speed.", false); });
+      $("#vVoice").addEventListener("change", e => { cfg.voice = e.target.value; saveCfg(); speak(cfg.lang.startsWith("ko") ? "이 목소리로 읽어 드릴게요." : "I'll use this voice.", false); });
+      $("#vAuto").addEventListener("change", e => { cfg.auto = e.target.checked; saveCfg(); });
+      if(synth){ fillVoices(); synth.onvoiceschanged = fillVoices; }
+      document.addEventListener("visibilitychange", () => { if(document.hidden) stop(); });
+
+      // 지난번에 켜 두었으면 화면만 열어 둬요 (소리는 학생이 누른 뒤에 나와요)
+      if(cfg.on){ stage.hidden = false; document.querySelector(".tutor").classList.add("call"); $("#voiceToggle").setAttribute("aria-pressed", "true"); startTimer(); setState("idle", IDLE_TXT); }
+    }
+  };
+})();
+Voice.init();
 
 render();
 </script>
