@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 스크립트 코치</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root{
+    --accent:#3654F4; --accent-soft:#EEF1FF; --accent-dark:#2238C9;
+    --bg:#FAFAFB; --card:#FFFFFF; --line:#E7E8EE; --line-2:#F1F2F6;
+    --ink:#14161F; --ink-2:#4A4F62; --ink-3:#8A8FA3;
+    --good:#14A06B; --good-soft:#E6F6EF; --warn:#E08A00; --warn-soft:#FFF4E0;
+    --bad:#E0404A; --bad-soft:#FDECEE;
+    --r:14px; --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select,textarea{font:inherit;color:inherit}
+
+  /* Top bar */
+  header{position:sticky;top:0;z-index:20;background:rgba(250,250,251,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar{max-width:1440px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:14px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .logo-mark{width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:600}
+  .logo small{display:block;font-size:11px;font-weight:500;color:var(--ink-3);font-family:var(--mono);letter-spacing:.02em}
+  .spacer{flex:1}
+  .status{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2);padding:6px 11px;border:1px solid var(--line);border-radius:99px;background:#fff}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--bad)}
+  .dot.on{background:var(--good)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 15px;border-radius:10px;font-weight:600;font-size:13.5px;transition:.15s;white-space:nowrap}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-dark)}
+  .btn-primary:disabled{background:#AEB9F8;cursor:not-allowed}
+  .btn-ghost{border:1px solid var(--line);background:#fff;color:var(--ink-2)}
+  .btn-ghost:hover{border-color:#CDD0DB;color:var(--ink)}
+  .btn-soft{background:var(--accent-soft);color:var(--accent)}
+  .btn-soft:hover{background:#E2E7FF}
+  .btn-sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
+  .btn svg{width:16px;height:16px}
+
+  main{max-width:1440px;margin:0 auto;padding:22px 24px 60px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+  @media (max-width:1000px){main{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+  .card-h{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+  .card-h h2{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .card-b{padding:18px}
+  .eyebrow{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.06em;font-weight:600}
+
+  /* Form */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px}
+  @media (max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+  label.f{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:var(--ink-2)}
+  .in{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;outline:none;transition:.15s;font-size:13.5px;font-weight:400;color:var(--ink)}
+  .in:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .types{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .chip{padding:7px 12px;border:1px solid var(--line);border-radius:99px;background:#fff;font-size:12.5px;font-weight:600;color:var(--ink-2);transition:.15s}
+  .chip:hover{border-color:#C9CEDF}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  .editor-wrap{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  .editor-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .editor-top{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line-2);background:#FCFCFD}
+  .editor-top .meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);display:flex;gap:12px;margin-left:auto}
+  textarea#script{width:100%;min-height:420px;resize:vertical;border:none;outline:none;padding:16px 18px;font-size:14.5px;line-height:1.85;background:#fff}
+  textarea#script.code{font-family:var(--mono);font-size:13px;line-height:1.7;tab-size:2}
+  .actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .actions .btn-primary{flex:1;padding:12px 16px;font-size:14.5px}
+
+  /* Result */
+  .tabs{display:flex;gap:2px;padding:4px;background:var(--line-2);border-radius:10px}
+  .tab{padding:6px 12px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink-3)}
+  .tab.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(20,22,31,.08)}
+  .pane{display:none}
+  .pane.on{display:block}
+
+  .empty{padding:70px 24px;text-align:center;color:var(--ink-3)}
+  .empty .ic{width:56px;height:56px;border-radius:16px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin:0 auto 14px}
+  .empty h3{color:var(--ink);font-size:16px;margin-bottom:6px}
+  .empty ol{display:inline-block;text-align:left;margin-top:14px;font-size:13px;line-height:2;padding-left:18px}
+
+  .loading{padding:70px 24px;text-align:center;color:var(--ink-2)}
+  .spin{width:36px;height:36px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;margin:0 auto 14px;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .loading small{display:block;color:var(--ink-3);margin-top:4px;font-family:var(--mono);font-size:11.5px}
+
+  .score-row{display:grid;grid-template-columns:140px 1fr;gap:20px;align-items:center;margin-bottom:18px}
+  @media (max-width:560px){.score-row{grid-template-columns:1fr}}
+  .ring{position:relative;width:132px;height:132px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .num b{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .ring .num span{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:4px}
+  .grade{display:inline-block;margin-top:6px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px}
+  .crit{display:flex;flex-direction:column;gap:10px}
+  .crit-i .top{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:4px}
+  .crit-i .top span{font-family:var(--mono);color:var(--ink-3);font-weight:400}
+  .track{height:7px;background:var(--line-2);border-radius:99px;overflow:hidden}
+  .fill{height:100%;border-radius:99px;transition:width .6s ease}
+  .crit-i p{font-size:12px;color:var(--ink-3);margin-top:3px}
+
+  .summary{padding:14px 16px;background:var(--accent-soft);border-radius:12px;font-size:13.5px;color:#22307F;margin-bottom:18px}
+  .sec-t{font-size:13px;font-weight:700;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+  .sec-t .n{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-weight:400}
+  .list{display:flex;flex-direction:column;gap:6px}
+  .li{display:flex;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;background:var(--good-soft)}
+  .li i{font-style:normal;color:var(--good);font-weight:700}
+
+  .imp{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;transition:.15s}
+  .imp.applied{opacity:.55}
+  .imp-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .sev{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+  .sev.high{background:var(--bad-soft);color:var(--bad)}
+  .sev.mid{background:var(--warn-soft);color:var(--warn)}
+  .sev.low{background:var(--line-2);color:var(--ink-2)}
+  .imp-h b{font-size:13.5px;flex:1}
+  .imp p.why{font-size:13px;color:var(--ink-2);margin-bottom:10px}
+  .ba{display:grid;gap:6px;font-size:13px}
+  .ba div{padding:9px 11px;border-radius:9px;white-space:pre-wrap;word-break:break-word}
+  .ba .b{background:var(--bad-soft);color:#8A1F27;text-decoration:line-through;text-decoration-color:rgba(224,64,74,.45)}
+  .ba .a{background:var(--good-soft);color:#0B5E3E}
+  .ba.code div{font-family:var(--mono);font-size:12px}
+  .imp-f{display:flex;justify-content:flex-end;gap:6px;margin-top:10px}
+
+  .revised{white-space:pre-wrap;word-break:break-word;font-size:14.5px;line-height:1.9;padding:18px;border:1px solid var(--line);border-radius:12px;background:#FCFCFD;max-height:620px;overflow:auto}
+  .revised.code{font-family:var(--mono);font-size:13px;line-height:1.7}
+  .pane-bar{display:flex;gap:6px;justify-content:flex-end;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+  .pane-bar .note{margin-right:auto;font-size:12px;color:var(--ink-3)}
+  .diff ins{background:var(--good-soft);color:#0B5E3E;text-decoration:none;border-radius:3px}
+  .diff del{background:var(--bad-soft);color:#8A1F27;border-radius:3px}
+
+  .hist{display:flex;flex-direction:column;gap:6px}
+  .hist-i{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;transition:.15s}
+  .hist-i:hover{border-color:var(--accent)}
+  .hist-i .s{font-family:var(--mono);font-weight:600;font-size:15px;width:40px;color:var(--accent)}
+  .hist-i .t{flex:1;min-width:0}
+  .hist-i .t b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hist-i .t span{font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(20,22,31,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .modal-bg.on{display:flex}
+  .modal{background:#fff;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(20,22,31,.25)}
+  .modal .card-b{display:flex;flex-direction:column;gap:14px}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .seg button{padding:10px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;font-weight:600;color:var(--ink-2);text-align:center}
+  .seg button small{display:block;font-weight:400;font-size:11px;color:var(--ink-3)}
+  .seg button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+  .hint{font-size:12px;color:var(--ink-3)}
+  .hint a{color:var(--accent)}
+  details{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12.5px}
+  details summary{cursor:pointer;font-weight:600;color:var(--ink-2)}
+  details pre{margin-top:10px;font-family:var(--mono);font-size:11px;background:#14161F;color:#E6E8F0;padding:12px;border-radius:8px;overflow:auto;max-height:260px;white-space:pre}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:90vw}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{background:var(--bad)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <div class="logo" id="logo" style="user-select:none">
+      <div class="logo-mark">AI</div>
+      <div>AI 스크립트 코치<small>SCRIPT COACH</small></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="status" id="apiStatus" style="display:none"><span class="dot" id="apiDot"></span><span id="apiText">API 미연결</span></div>
+    <button class="btn btn-ghost btn-sm" id="openSettings" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      API 설정
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: Editor -->
+  <section class="card">
+    <div class="card-h">
+      <div><div class="eyebrow">STEP 1</div><h2>스크립트 작성</h2></div>
+    </div>
+    <div class="card-b">
+      <div class="types" id="types"></div>
+
+      <div class="grid3">
+        <label class="f">주제 / 제목
+          <input class="in" id="topic" placeholder="예) 기후 위기와 우리의 선택">
+        </label>
+        <label class="f">대상
+          <input class="in" id="audience" placeholder="예) 고등학교 1학년">
+        </label>
+        <label class="f" id="timeField">목표 시간(분)
+          <input class="in" id="targetMin" type="number" min="0" step="0.5" placeholder="예) 3">
+        </label>
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <label class="f">톤 / 스타일
+          <select class="in" id="tone">
+            <option>자연스럽고 친근하게</option>
+            <option>격식 있고 설득력 있게</option>
+            <option>밝고 에너지 있게</option>
+            <option>차분하고 논리적으로</option>
+            <option>유머를 섞어서</option>
+          </select>
+        </label>
+        <label class="f">특별 요청 (선택)
+          <input class="in" id="request" placeholder="예) 질문으로 시작, 통계 1개 포함">
+        </label>
+      </div>
+
+      <div class="editor-wrap">
+        <div class="editor-top">
+          <button class="btn btn-ghost btn-sm" id="undoBtn" title="이전 버전으로">↶ 되돌리기</button>
+          <button class="btn btn-ghost btn-sm" id="clearBtn">지우기</button>
+          <div class="meta"><span id="mChars">0자</span><span id="mTime">약 0:00</span></div>
+        </div>
+        <textarea id="script" placeholder="스크립트를 붙여넣거나 직접 작성하세요.&#10;초안이 없다면 아래 'AI 초안 생성'을 눌러 시작할 수 있어요."></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-soft" id="genBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>
+          AI 초안 생성
+        </button>
+        <button class="btn btn-primary" id="fbBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          보완 · 피드백 받기
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Result -->
+  <section class="card" id="resultCard">
+    <div class="card-h">
+      <div><div class="eyebrow">STEP 2</div><h2>AI 피드백</h2></div>
+      <div class="spacer"></div>
+      <div class="tabs" id="tabs">
+        <button class="tab on" data-p="fb">피드백</button>
+        <button class="tab" data-p="rev">보완본</button>
+        <button class="tab" data-p="diff">변경 비교</button>
+        <button class="tab" data-p="hist">기록</button>
+      </div>
+    </div>
+    <div class="card-b" id="resultBody">
+      <div class="pane on" id="p-fb"></div>
+      <div class="pane" id="p-rev"></div>
+      <div class="pane" id="p-diff"></div>
+      <div class="pane" id="p-hist"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Settings modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="card-h">
+      <h2>API 설정</h2><div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="closeSettings">닫기</button>
+    </div>
+    <div class="card-b">
+      <div class="seg" id="provSeg">
+        <button data-v="gemini">Gemini<small>API 키 직접</small></button>
+        <button data-v="gas">Apps Script<small>내 서버 연결</small></button>
+        <button data-v="openai">OpenAI<small>API 키 직접</small></button>
+      </div>
+
+      <div id="cfg-gemini">
+        <label class="f">Gemini API 키
+          <input class="in" id="geminiKey" type="password" placeholder="AIza...">
+        </label>
+        <label class="f" style="margin-top:10px">모델
+          <input class="in" id="geminiModel" placeholder="gemini-2.5-flash">
+        </label>
+        <p class="hint" style="margin-top:8px">키는 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>에서 발급. 이 브라우저에만 저장됩니다. 학생과 공유하는 페이지라면 Apps Script 방식을 권장해요.</p>
+      </div>
+
+      <div id="cfg-gas">
+        <label class="f">웹 앱 URL
+          <input class="in" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
+        </label>
+        <p class="hint" style="margin-top:8px">POST 본문: <code>{"action":"script_coach","system":"...","prompt":"...","json":true}</code> · 응답: <code>{"text":"..."}</code> (또는 result / output / answer 필드)</p>
+        <details style="margin-top:10px">
+          <summary>Apps Script 예시 코드 (웹 앱으로 배포해서 사용)</summary>
+<pre>// 스크립트 속성에 GEMINI_API_KEY 저장
+function doPost(e) {
+  const body = JSON.parse(e.postData.contents);
+  if (body.action === 'script_coach') {
+    const key = PropertiesService.getScriptProperties()
+                  .getProperty('GEMINI_API_KEY');
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/'
+              + 'gemini-2.5-flash:generateContent?key=' + key;
+    const payload = {
+      systemInstruction: { parts: [{ text: body.system }] },
+      contents: [{ role: 'user', parts: [{ text: body.prompt }] }],
+      generationConfig: body.json
+        ? { responseMimeType: 'application/json', temperature: 0.6 }
+        : { temperature: 0.8 }
+    };
+    const res = UrlFetchApp.fetch(url, {
+      method: 'post', contentType: 'application/json',
+      payload: JSON.stringify(payload), muteHttpExceptions: true
+    });
+    const data = JSON.parse(res.getContentText());
+    const text = data.candidates?.[0]?.content?.parts
+                   ?.map(p => p.text).join('') || '';
+    return ContentService
+      .createTextOutput(JSON.stringify({ text }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  // ... 기존 action 분기
+}</pre>
+        </details>
+      </div>
+
+      <div id="cfg-openai">
+        <label class="f">OpenAI API 키
+          <input class="in" id="openaiKey" type="password" placeholder="sk-...">
+        </label>
+        <label class="f" style="margin-top:10px">모델
+          <input class="in" id="openaiModel" placeholder="gpt-4o-mini">
+        </label>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-ghost" id="testBtn">연결 테스트</button>
+        <button class="btn btn-primary" id="saveBtn">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- storage ---------- */
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('script-coach:' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('script-coach:' + k, JSON.stringify(v)); } catch {} }
+  };
+
+  /* ---------- types ---------- */
+  const TYPES = {
+    presentation: { label: '발표 대본', spoken: true,
+      criteria: ['구조·흐름', '도입의 흡입력', '내용 명확성', '청중 맞춤', '말하기 자연스러움'] },
+    video: { label: '영상·유튜브', spoken: true,
+      criteria: ['오프닝 훅', '전개 속도', '내용 명확성', '시청자 몰입', '마무리·행동 유도'] },
+    speech: { label: '연설·축사', spoken: true,
+      criteria: ['메시지 일관성', '감정 전달', '구조·흐름', '청중 공감', '인상적인 마무리'] },
+    interview: { label: '면접 답변', spoken: true,
+      criteria: ['질문 의도 파악', '구체적 근거', '논리 구조', '진정성', '간결성'] },
+    lesson: { label: '수업 대본', spoken: true,
+      criteria: ['학습 목표 연계', '설명 명확성', '학생 참여 유도', '발문의 질', '시간 배분'] },
+    code: { label: '코드 스크립트', spoken: false,
+      criteria: ['정확성·버그', '가독성', '구조·설계', '효율성', '안정성·예외 처리'] }
+  };
+  let curType = store.get('type', 'presentation');
+
+  /* ---------- dom ---------- */
+  const $ = s => document.querySelector(s);
+  const el = (tag, attrs = {}, html) => { const e = document.createElement(tag); Object.assign(e, attrs); if (html != null) e.innerHTML = html; return e; };
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ta = $('#script');
+
+  function toast(msg, err) {
+    const t = $('#toast'); t.textContent = msg; t.className = 'toast on' + (err ? ' err' : '');
+    clearTimeout(t._h); t._h = setTimeout(() => t.className = 'toast', err ? 4200 : 2200);
+  }
+
+  /* ---------- type chips ---------- */
+  function renderTypes() {
+    const box = $('#types'); box.innerHTML = '';
+    Object.entries(TYPES).forEach(([k, v]) => {
+      const b = el('button', { className: 'chip' + (k === curType ? ' on' : ''), textContent: v.label });
+      b.onclick = () => {
+        curType = k; store.set('type', k); renderTypes();
+        if (!ta.value.trim() || isSample(ta.value)) loadSample(k);
+        applyTypeUI();
+      };
+      box.appendChild(b);
+    });
+  }
+  function applyTypeUI() {
+    const isCode = !TYPES[curType].spoken;
+    ta.classList.toggle('code', isCode);
+    $('#timeField').style.display = isCode ? 'none' : '';
+    $('#topic').placeholder = isCode ? '예) 성적 CSV를 읽어 평균 계산' : '예) 기후 위기와 우리의 선택';
+    $('#audience').placeholder = isCode ? '예) 파이썬 / 고1 정보 수업용' : '예) 고등학교 1학년';
+    updateMeta();
+  }
+
+  /* ---------- meta ---------- */
+  const CHARS_PER_MIN = 330; // 한국어 발화 기준 대략치(공백 제외)
+  function speakSecs(text) { return Math.round(text.replace(/\s/g, '').length / CHARS_PER_MIN * 60); }
+  const fmt = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  function updateMeta() {
+    const t = ta.value;
+    if (TYPES[curType].spoken) {
+      $('#mChars').textContent = t.replace(/\s/g, '').length.toLocaleString() + '자';
+      $('#mTime').textContent = '약 ' + fmt(speakSecs(t));
+    } else {
+      $('#mChars').textContent = (t ? t.split('\n').length : 0) + '줄';
+      $('#mTime').textContent = t.length.toLocaleString() + ' chars';
+    }
+    store.set('draft', t);
+  }
+
+  /* ---------- undo stack ---------- */
+  const undo = [];
+  function pushUndo() { if (undo[undo.length - 1] !== ta.value) { undo.push(ta.value); if (undo.length > 30) undo.shift(); } }
+  function setScript(text) { pushUndo(); ta.value = text; updateMeta(); }
+  $('#undoBtn').onclick = () => { if (!undo.length) return toast('되돌릴 버전이 없어요'); ta.value = undo.pop(); updateMeta(); toast('이전 버전으로 되돌렸어요'); };
+  $('#clearBtn').onclick = () => { if (!ta.value) return; setScript(''); };
+  ta.addEventListener('input', updateMeta);
+
+  /* ---------- API ---------- */
+  let cfg = store.get('cfg', { provider: 'gemini', geminiKey: '', geminiModel: 'gemini-2.5-flash', gasUrl: '', openaiKey: '', openaiModel: 'gpt-4o-mini' });
+
+  function isReady() {
+    return (cfg.provider === 'gemini' && cfg.geminiKey) || (cfg.provider === 'gas' && cfg.gasUrl) || (cfg.provider === 'openai' && cfg.openaiKey);
+  }
+  function renderStatus() {
+    const on = !!isReady();
+    $('#apiDot').classList.toggle('on', on);
+    const names = { gemini: 'Gemini', gas: 'Apps Script', openai: 'OpenAI' };
+    $('#apiText').textContent = on ? names[cfg.provider] + ' 연결됨' : 'API 미연결';
+  }
+
+  async function callAI(system, prompt, json) {
+    if (!isReady()) { openSettings(); throw new Error('먼저 API를 설정해 주세요'); }
+
+    if (cfg.provider === 'gemini') {
+      const model = cfg.geminiModel || 'gemini-2.5-flash';
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.geminiKey)}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: json ? { responseMimeType: 'application/json', temperature: 0.6 } : { temperature: 0.85 }
+        })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error?.message || 'Gemini 오류 (' + r.status + ')');
+      const text = d.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+      if (!text) throw new Error('응답이 비어 있어요' + (d.candidates?.[0]?.finishReason ? ' (' + d.candidates[0].finishReason + ')' : ''));
+      return text;
+    }
+
+    if (cfg.provider === 'openai') {
+      const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + cfg.openaiKey },
+        body: JSON.stringify({
+          model: cfg.openaiModel || 'gpt-4o-mini',
+          messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }],
+          ...(json ? { response_format: { type: 'json_object' } } : {})
+        })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error?.message || 'OpenAI 오류 (' + r.status + ')');
+      return d.choices?.[0]?.message?.content || '';
+    }
+
+    // Apps Script — text/plain 으로 보내 CORS preflight 회피
+    const r = await fetch(cfg.gasUrl, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'script_coach', system, prompt, json: !!json })
+    });
+    const raw = await r.text();
+    if (!r.ok) throw new Error('Apps Script 오류 (' + r.status + ')');
+    let d; try { d = JSON.parse(raw); } catch { return raw; }
+    if (typeof d === 'string') return d;
+    if (d.error) throw new Error(typeof d.error === 'string' ? d.error : JSON.stringify(d.error));
+    const out = d.text ?? d.result ?? d.output ?? d.answer ?? d.content ?? d.data;
+    if (out == null) return raw;
+    return typeof out === 'string' ? out : JSON.stringify(out);
+  }
+
+  function parseJSON(text) {
+    let t = String(text).trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+    try { return JSON.parse(t); } catch {}
+    const a = t.indexOf('{'), b = t.lastIndexOf('}');
+    if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch {} }
+    throw new Error('AI 응답을 해석하지 못했어요. 다시 시도해 주세요.');
+  }
+
+
+  /* ---------- 예시 응답 (API 미설정 시 사용) ---------- */
+  const DEMO_PRES_SCRIPT = `안녕하세요. 저는 오늘 스마트폰 사용 시간에 대해 발표하겠습니다.
+
+요즘 스마트폰을 많이 사용합니다. 스마트폰은 편리하지만 너무 많이 사용하면 안 좋습니다. 그래서 오늘은 스마트폰 사용 시간을 줄이는 방법에 대해 이야기하려고 합니다.
+
+첫 번째로 스마트폰을 많이 쓰면 수면에 영향을 줍니다. 자기 전에 스마트폰을 보면 잠이 잘 안 옵니다. 그리고 집중력도 떨어지고 공부할 때도 자꾸 알림이 와서 방해가 됩니다. 또 친구들과 직접 대화하는 시간도 줄어듭니다.
+
+두 번째로 줄이는 방법입니다. 알림을 끄는 것이 좋습니다. 그리고 공부할 때는 스마트폰을 다른 방에 두는 것이 좋습니다. 사용 시간 제한 앱을 쓰는 것도 방법입니다.
+
+마지막으로 저도 실제로 해봤는데 효과가 있었습니다.
+
+이상으로 발표를 마치겠습니다. 감사합니다.`;
+
+  const DEMO_PRES_REVISED = `여러분, 어제 하루 스마트폰을 몇 시간 쓰셨는지 알고 계신가요? 지금 화면을 켜서 확인해 보면 생각보다 긴 시간에 놀라실지도 모릅니다. 오늘은 그 시간을 되찾는 방법을 이야기해 보려고 합니다.
+
+제가 반 친구 10명에게 물어보니 평일 하루 평균 [ ]시간을 쓴다고 답했습니다. 스마트폰은 편리하지만, 이 정도면 우리 생활의 꽤 큰 부분을 차지하고 있는 셈입니다. 그래서 오늘은 스마트폰 사용 시간을 줄이는 방법에 대해 이야기하려고 합니다.
+
+첫 번째로 스마트폰을 많이 쓰면 수면에 영향을 줍니다. 자기 전에 스마트폰을 보면 잠이 잘 안 옵니다. 공부할 때도 마찬가지입니다. 알림이 한 번 울리면 다시 집중하기까지 시간이 걸립니다. 게다가 친구와 얼굴을 보고 이야기하는 시간까지 줄어들죠.
+
+두 번째로 줄이는 방법입니다. 가장 쉬운 방법은 알림을 끄는 것입니다. 꼭 필요한 앱만 남기고 나머지는 꺼 두세요. 그리고 공부할 때는 스마트폰을 다른 방에 두는 것이 좋습니다. 사용 시간 제한 앱을 쓰는 것도 방법입니다.
+
+저도 2주 동안 직접 해 봤습니다. 공부할 때 휴대폰을 거실에 두었더니 하루 사용 시간이 [ ]시간에서 [ ]시간으로 줄었고, 숙제를 끝내는 시간도 빨라졌습니다.
+
+오늘 밤, 딱 하나만 해 보세요. 자기 전 30분은 휴대폰을 책상 위에 두는 것. 그 30분이 내일의 집중력을 바꿉니다. 감사합니다.`;
+
+  const DEMO_CODE_SCRIPT = `scores = input("점수를 입력하세요: ").split(",")
+total = 0
+for i in range(len(scores)):
+    total = total + int(scores[i])
+avg = total / len(scores)
+print("평균은", avg)
+if avg > 90:
+    print("A")
+elif avg > 80:
+    print("B")
+else:
+    print("C")`;
+
+  const DEMO_CODE_REVISED = `def grade(avg):
+    """평균 점수에 따라 등급을 돌려줍니다."""
+    if avg >= 90:
+        return "A"
+    elif avg >= 80:
+        return "B"
+    return "C"
+
+
+scores = input("점수를 쉼표로 구분해 입력하세요: ").split(",")
+
+total = 0
+count = 0
+for s in scores:
+    s = s.strip()
+    if not s:
+        continue
+    try:
+        total += int(s)
+        count += 1
+    except ValueError:
+        print(f"숫자가 아닌 값은 건너뜁니다: {s}")
+
+if count == 0:
+    print("유효한 점수가 없습니다.")
+else:
+    avg = total / count
+    print(f"평균은 {avg:.1f}점입니다")
+    print("등급:", grade(avg))`;
+
+  const DEMO = {
+    presentation: {
+      topic: '스마트폰 사용 시간 줄이기', audience: '고등학교 1학년', targetMin: '3',
+      script: DEMO_PRES_SCRIPT,
+      feedback: {
+        criteria: [
+          { score: 14, comment: '서론-본론-결론 구조는 갖췄지만 본론 안의 내용 구분이 흐려요.' },
+          { score: 9, comment: '인사와 주제 소개로만 시작해 청중의 관심을 끌기 어려워요.' },
+          { score: 13, comment: '주장은 분명하지만 뒷받침하는 근거와 수치가 없어요.' },
+          { score: 12, comment: '고1 청중이 공감할 만한 구체적 상황이 더 필요해요.' },
+          { score: 14, comment: '문장이 짧아 읽기 쉽지만 "~습니다"가 반복돼 단조로워요.' }
+        ],
+        summary: '주제가 청중에게 친숙하고 구조도 안정적이에요. 다만 도입이 평범하고, 주장을 받쳐 줄 근거(직접 조사한 수치, 경험)가 부족해서 설득력이 약해요. 질문으로 시작하고 직접 해 본 경험을 구체적으로 넣으면 훨씬 좋아질 거예요.',
+        time_note: '현재 분량은 목표 3분보다 꽤 짧아요. 조사 결과와 직접 해 본 경험을 구체적으로 풀면 자연스럽게 채울 수 있어요.',
+        strengths: [
+          '청중(고1)의 일상과 바로 연결되는 주제를 골랐어요.',
+          '"첫 번째, 두 번째, 마지막" 표지어로 흐름을 따라가기 쉬워요.',
+          '문제점 → 해결 방법 순서가 논리적이에요.'
+        ],
+        improvements: [
+          { severity: 'high', title: '도입에서 관심 끌기',
+            reason: '첫 10초에 청중의 집중이 결정돼요. 인사와 주제 소개 대신 질문으로 시작하면 청중이 스스로 생각하게 돼요.',
+            original: '안녕하세요. 저는 오늘 스마트폰 사용 시간에 대해 발표하겠습니다.',
+            revised: '여러분, 어제 하루 스마트폰을 몇 시간 쓰셨는지 알고 계신가요? 지금 화면을 켜서 확인해 보면 생각보다 긴 시간에 놀라실지도 모릅니다. 오늘은 그 시간을 되찾는 방법을 이야기해 보려고 합니다.' },
+          { severity: 'high', title: '근거를 수치로 제시하기',
+            reason: '"많이 사용한다"는 누구나 하는 말이라 설득력이 약해요. 직접 조사한 수치를 넣으면 발표가 내 이야기가 돼요. [ ] 안에 실제 조사 결과를 넣으세요.',
+            original: '요즘 스마트폰을 많이 사용합니다. 스마트폰은 편리하지만 너무 많이 사용하면 안 좋습니다.',
+            revised: '제가 반 친구 10명에게 물어보니 평일 하루 평균 [ ]시간을 쓴다고 답했습니다. 스마트폰은 편리하지만, 이 정도면 우리 생활의 꽤 큰 부분을 차지하고 있는 셈입니다.' },
+          { severity: 'mid', title: '한 문장에 한 가지 내용만',
+            reason: '집중력, 알림, 대화 시간이 한꺼번에 나와서 듣는 사람이 놓치기 쉬워요. 말로 할 때는 문장을 나누는 게 좋아요.',
+            original: '그리고 집중력도 떨어지고 공부할 때도 자꾸 알림이 와서 방해가 됩니다. 또 친구들과 직접 대화하는 시간도 줄어듭니다.',
+            revised: '공부할 때도 마찬가지입니다. 알림이 한 번 울리면 다시 집중하기까지 시간이 걸립니다. 게다가 친구와 얼굴을 보고 이야기하는 시간까지 줄어들죠.' },
+          { severity: 'mid', title: '경험을 구체적으로',
+            reason: '"효과가 있었다"만으로는 무엇이 어떻게 달라졌는지 알 수 없어요. 기간, 방법, 결과를 넣으면 가장 강력한 근거가 돼요.',
+            original: '마지막으로 저도 실제로 해봤는데 효과가 있었습니다.',
+            revised: '저도 2주 동안 직접 해 봤습니다. 공부할 때 휴대폰을 거실에 두었더니 하루 사용 시간이 [ ]시간에서 [ ]시간으로 줄었고, 숙제를 끝내는 시간도 빨라졌습니다.' },
+          { severity: 'low', title: '방법 설명에 이유 더하기',
+            reason: '방법만 나열하면 기억에 남지 않아요. "가장 쉬운"처럼 우선순위를 붙이고 바로 따라 할 수 있게 말해 보세요.',
+            original: '알림을 끄는 것이 좋습니다.',
+            revised: '가장 쉬운 방법은 알림을 끄는 것입니다. 꼭 필요한 앱만 남기고 나머지는 꺼 두세요.' },
+          { severity: 'low', title: '행동을 남기는 마무리',
+            reason: '"이상으로 마치겠습니다"는 아무것도 남기지 않아요. 청중이 오늘 바로 해 볼 행동 하나를 제안하면 여운이 남아요.',
+            original: '이상으로 발표를 마치겠습니다. 감사합니다.',
+            revised: '오늘 밤, 딱 하나만 해 보세요. 자기 전 30분은 휴대폰을 책상 위에 두는 것. 그 30분이 내일의 집중력을 바꿉니다. 감사합니다.' }
+        ],
+        revised_script: DEMO_PRES_REVISED
+      }
+    },
+    code: {
+      topic: '점수 평균과 등급 계산', audience: '파이썬 / 고1 정보 수업', targetMin: '',
+      script: DEMO_CODE_SCRIPT,
+      feedback: {
+        criteria: [
+          { score: 11, comment: '경계값(90, 80점)에서 등급이 의도와 다르게 나와요.' },
+          { score: 14, comment: '짧고 읽기 쉽지만 인덱스 반복이 불필요해요.' },
+          { score: 12, comment: '등급 판정을 함수로 분리하면 재사용과 테스트가 쉬워져요.' },
+          { score: 16, comment: '데이터 양에 비해 효율은 충분해요.' },
+          { score: 6, comment: '숫자가 아닌 입력이나 빈 값이 들어오면 프로그램이 멈춰요.' }
+        ],
+        summary: '기본 흐름(입력 → 합계 → 평균 → 등급)은 정확하게 잡혀 있어요. 하지만 잘못된 입력에 대한 예외 처리가 없어서 실제로 쓰면 쉽게 오류가 나고, 90점·80점 경계값 처리에 버그가 있어요.',
+        strengths: [
+          '입력-처리-출력 흐름이 한눈에 보여요.',
+          'split(",")으로 여러 값을 한 번에 받는 아이디어가 좋아요.',
+          'if-elif-else로 등급을 나눈 구조가 명확해요.'
+        ],
+        improvements: [
+          { severity: 'high', title: '잘못된 입력 처리하기',
+            reason: '"90, abc"나 "90,,80"처럼 입력하면 int()에서 ValueError가 나고, 빈 입력이면 0으로 나누게 돼요. 값을 하나씩 검사하고 개수를 따로 세면 안전해요.',
+            original: 'total = 0\nfor i in range(len(scores)):\n    total = total + int(scores[i])\navg = total / len(scores)',
+            revised: 'total = 0\ncount = 0\nfor s in scores:\n    s = s.strip()\n    if not s:\n        continue\n    try:\n        total += int(s)\n        count += 1\n    except ValueError:\n        print(f"숫자가 아닌 값은 건너뜁니다: {s}")\navg = total / count if count else 0' },
+          { severity: 'high', title: '경계값 버그',
+            reason: '> 를 쓰면 정확히 90점은 A가 아니라 B, 80점은 C가 돼요. 보통 "90점 이상"이 A이므로 >= 를 써야 해요.',
+            original: 'if avg > 90:\n    print("A")\nelif avg > 80:',
+            revised: 'if avg >= 90:\n    print("A")\nelif avg >= 80:' },
+          { severity: 'low', title: '출력 형식 다듬기',
+            reason: '평균이 86.66666… 처럼 길게 나와요. f-string으로 소수 첫째 자리까지 보여 주면 읽기 좋아요.',
+            original: 'print("평균은", avg)',
+            revised: 'print(f"평균은 {avg:.1f}점입니다")' },
+          { severity: 'low', title: '등급 판정을 함수로 분리',
+            reason: '등급 기준이 바뀌거나 다른 곳에서도 쓰려면 함수로 빼 두는 게 좋아요. 보완본 탭에서 함수로 정리한 전체 코드를 확인하세요.' }
+        ],
+        revised_script: DEMO_CODE_REVISED
+      }
+    }
+  };
+  const isSample = t => Object.values(DEMO).some(d => d.script === t);
+  function demoFor(type) { return DEMO[type] || DEMO.presentation; }
+  function loadSample(type, force) {
+    const d = demoFor(type);
+    [['topic', d.topic], ['audience', d.audience], ['targetMin', d.targetMin]].forEach(([id, v]) => {
+      const x = $('#' + id); if (force || !x.value.trim() || isSampleField(id, x.value)) { x.value = v; store.set('f:' + id, v); }
+    });
+    ta.value = d.script; updateMeta();
+  }
+  const isSampleField = (id, v) => Object.values(DEMO).some(d => d[id] === v);
+  function demoFeedback(type) {
+    const base = demoFor(type).feedback, crit = TYPES[type].criteria;
+    const fb = JSON.parse(JSON.stringify(base));
+    fb.criteria = fb.criteria.map((c, i) => ({ name: crit[i] || ('기준 ' + (i + 1)), ...c }));
+    fb.total = fb.criteria.reduce((a, c) => a + c.score, 0);
+    fb._demo = true;
+    return fb;
+  }
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+
+  /* ---------- prompts ---------- */
+  function ctx() {
+    const T = TYPES[curType];
+    const lines = [`유형: ${T.label}`];
+    const v = id => $('#' + id).value.trim();
+    if (v('topic')) lines.push(`주제: ${v('topic')}`);
+    if (v('audience')) lines.push(`대상: ${v('audience')}`);
+    if (T.spoken && v('targetMin')) lines.push(`목표 발화 시간: ${v('targetMin')}분 (한국어 기준 분당 약 ${CHARS_PER_MIN}자)`);
+    lines.push(`톤: ${$('#tone').value}`);
+    if (v('request')) lines.push(`특별 요청: ${v('request')}`);
+    return lines.join('\n');
+  }
+
+  async function generateDraft() {
+    const T = TYPES[curType];
+    if (isReady() && !$('#topic').value.trim()) { $('#topic').focus(); return toast('주제를 먼저 입력해 주세요', true); }
+    const sys = T.spoken
+      ? '당신은 한국어 스크립트 작가입니다. 실제로 소리 내어 읽기 좋은 자연스러운 구어체 대본을 씁니다. 머리말, 설명, 마크다운 기호 없이 대본 본문만 출력하세요. 필요하면 [잠시 멈춤], [슬라이드 전환] 같은 짧은 지시문을 대괄호로 넣을 수 있습니다.'
+      : '당신은 숙련된 개발자이자 정보 교사입니다. 읽기 쉽고 주석이 적절한 코드를 작성합니다. 코드 블록 기호(```) 없이 코드만 출력하세요. 주석은 한국어로 씁니다.';
+    const prompt = `${ctx()}\n\n위 조건에 맞는 ${T.label} 초안을 작성해 주세요.` + (ta.value.trim() ? `\n\n참고할 기존 메모:\n${ta.value}` : '');
+    if (!isReady()) {
+      setBusy(true, '초안을 쓰는 중', 'generate');
+      await wait(1200);
+      setScript(demoFor(curType).script);
+      toast('예시 초안을 넣었어요. 이제 피드백을 받아보세요');
+      setBusy(false); renderEmpty(); return;
+    }
+    setBusy(true, '초안을 쓰는 중', 'generate');
+    try {
+      let out = await callAI(sys, prompt, false);
+      out = out.replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/, '').trim();
+      setScript(out);
+      toast('초안을 만들었어요. 이제 피드백을 받아보세요');
+      renderEmpty();
+    } catch (e) { toast(e.message, true); renderEmpty(); }
+    finally { setBusy(false); }
+  }
+
+  async function getFeedback() {
+    const T = TYPES[curType];
+    const text = ta.value.trim();
+    if (!text) { ta.focus(); return toast('스크립트를 먼저 입력하거나 생성해 주세요', true); }
+    const sys = `당신은 ${T.spoken ? '스피치·대본 코치' : '코드 리뷰어이자 정보 교사'}입니다. 구체적이고 실행 가능한 피드백을 한국어로 줍니다. 칭찬은 근거와 함께 짧게, 개선점은 원문을 정확히 인용해 고칠 문장을 제시합니다. 반드시 지정된 JSON 형식만 출력합니다.`;
+    const schema = `{
+  "total": 0-100 정수,
+  "criteria": [${T.criteria.map(c => `{"name":"${c}","score":0-20 정수,"comment":"한 줄 평"}`).join(',')}],
+  "summary": "전체 총평 2~3문장",
+  "strengths": ["잘한 점", ...] (2~4개),
+  "improvements": [
+    {"severity":"high|mid|low","title":"짧은 제목","reason":"왜 고쳐야 하는지","original":"원문에서 그대로 복사한 부분(정확히 일치)","revised":"고친 문장"}
+  ] (3~7개, 중요도 순),
+  "revised_script": "모든 개선을 반영한 전체 보완본"${T.spoken ? ',\n  "time_note": "목표 시간 대비 분량 코멘트"' : ''}
+}`;
+    const prompt = `${ctx()}\n\n아래 ${T.label}을(를) 평가하고 보완해 주세요.\n평가 기준(각 20점, 합계 100점): ${T.criteria.join(', ')}\n${T.spoken ? `현재 분량: 공백 제외 ${text.replace(/\s/g, '').length}자, 예상 발화 ${fmt(speakSecs(text))}\n` : ''}\n출력 JSON 형식:\n${schema}\n\n--- 스크립트 시작 ---\n${text}\n--- 스크립트 끝 ---`;
+
+    setBusy(true, '스크립트를 분석하는 중', 'feedback');
+    try {
+      const data = isReady() ? parseJSON(await callAI(sys, prompt, true)) : (await wait(1800), demoFeedback(curType));
+      data._original = text; data._type = curType; data._topic = $('#topic').value.trim(); data._at = Date.now();
+      normalize(data);
+      current = data;
+      const hist = store.get('hist', []);
+      hist.unshift(data); store.set('hist', hist.slice(0, 15));
+      renderResult();
+      showTab('fb');
+    } catch (e) { toast(e.message, true); current ? renderResult() : renderEmpty(); }
+    finally { setBusy(false); }
+  }
+
+  function normalize(d) {
+    d.criteria = Array.isArray(d.criteria) ? d.criteria : [];
+    d.criteria.forEach(c => c.score = Math.max(0, Math.min(20, Number(c.score) || 0)));
+    if (typeof d.total !== 'number' || isNaN(d.total)) d.total = d.criteria.reduce((a, c) => a + c.score, 0);
+    d.total = Math.max(0, Math.min(100, Math.round(d.total)));
+    d.strengths = Array.isArray(d.strengths) ? d.strengths : [];
+    d.improvements = Array.isArray(d.improvements) ? d.improvements : [];
+    d.revised_script = String(d.revised_script || '');
+  }
+
+  /* ---------- busy ---------- */
+  let busy = false;
+  function setBusy(on, msg, kind) {
+    busy = on;
+    $('#genBtn').disabled = on; $('#fbBtn').disabled = on;
+    if (on) {
+      $('#p-fb').innerHTML = `<div class="loading"><div class="spin"></div>${esc(msg)}…<small>${kind === 'feedback' ? '보통 10~30초 걸려요' : '잠시만 기다려 주세요'}</small></div>`;
+      showTab('fb');
+    }
+  }
+
+  /* ---------- result render ---------- */
+  let current = null;
+  const color = p => p >= 80 ? 'var(--good)' : p >= 60 ? 'var(--accent)' : p >= 40 ? 'var(--warn)' : 'var(--bad)';
+  const gradeOf = s => s >= 90 ? ['매우 우수', 'var(--good-soft)', 'var(--good)'] : s >= 75 ? ['우수', 'var(--accent-soft)', 'var(--accent)'] : s >= 60 ? ['보통', 'var(--warn-soft)', 'var(--warn)'] : ['보완 필요', 'var(--bad-soft)', 'var(--bad)'];
+
+  function renderEmpty() {
+    if (current) return renderResult();
+    $('#p-fb').innerHTML = `<div class="empty">
+      <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <h3>아직 피드백이 없어요</h3>
+      <p>왼쪽에 스크립트를 쓰고 피드백을 요청하세요.</p>
+      <ol><li>유형과 주제, 대상을 정하고</li><li>직접 쓰거나 <b>AI 초안 생성</b>으로 시작한 뒤</li><li><b>보완 · 피드백 받기</b>를 누르세요</li></ol>
+    </div>`;
+    $('#p-rev').innerHTML = $('#p-diff').innerHTML = '<div class="empty"><p>피드백을 받으면 여기에 표시돼요.</p></div>';
+    renderHist();
+  }
+
+  function renderResult() {
+    const d = current, T = TYPES[d._type] || TYPES.presentation, isCode = !T.spoken;
+    const C = 2 * Math.PI * 56, pct = d.total / 100, [gl, gb, gc] = gradeOf(d.total);
+
+    let h = `<div class="score-row">
+      <div style="text-align:center">
+        <div class="ring">
+          <svg width="132" height="132"><circle cx="66" cy="66" r="56" fill="none" stroke="var(--line-2)" stroke-width="11"/>
+          <circle cx="66" cy="66" r="56" fill="none" stroke="${color(d.total)}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}" style="transition:stroke-dashoffset .8s"/></svg>
+          <div class="num"><b>${d.total}</b><span>/ 100</span></div>
+        </div>
+        <span class="grade" style="background:${gb};color:${gc}">${gl}</span>
+      </div>
+      <div class="crit">${d.criteria.map(c => `<div class="crit-i">
+        <div class="top">${esc(c.name)}<span>${c.score}/20</span></div>
+        <div class="track"><div class="fill" style="width:${c.score * 5}%;background:${color(c.score * 5)}"></div></div>
+        ${c.comment ? `<p>${esc(c.comment)}</p>` : ''}</div>`).join('')}</div>
+    </div>`;
+
+    if (d._demo) h += `<div style="font-size:12px;color:var(--ink-3);margin:-6px 0 12px;text-align:right"><span style="background:var(--line-2);padding:3px 9px;border-radius:99px;font-weight:600">예시 응답</span></div>`;
+    if (d.summary) h += `<div class="summary">${esc(d.summary)}${d.time_note ? `<br><span style="opacity:.8">⏱ ${esc(d.time_note)}</span>` : ''}</div>`;
+
+    if (d.strengths.length) {
+      h += `<div class="sec-t">잘한 점 <span class="n">${d.strengths.length}</span></div><div class="list">${d.strengths.map(s => `<div class="li"><i>✓</i><span>${esc(s)}</span></div>`).join('')}</div>`;
+    }
+    if (d.improvements.length) {
+      h += `<div class="sec-t">보완할 점 <span class="n">${d.improvements.length}</span><span class="spacer" style="flex:1"></span><button class="btn btn-soft btn-sm" id="applyAll">전체 적용</button></div>`;
+      d.improvements.forEach((m, i) => {
+        const sev = ['high', 'mid', 'low'].includes(m.severity) ? m.severity : 'mid';
+        const sevL = { high: '중요', mid: '권장', low: '선택' }[sev];
+        h += `<div class="imp${m._applied ? ' applied' : ''}" data-i="${i}">
+          <div class="imp-h"><span class="sev ${sev}">${sevL}</span><b>${esc(m.title || '개선 제안')}</b></div>
+          ${m.reason ? `<p class="why">${esc(m.reason)}</p>` : ''}
+          <div class="ba${isCode ? ' code' : ''}">${m.original ? `<div class="b">${esc(m.original)}</div>` : ''}${m.revised ? `<div class="a">${esc(m.revised)}</div>` : ''}</div>
+          ${m.original && m.revised ? `<div class="imp-f"><button class="btn btn-ghost btn-sm" data-act="apply" data-i="${i}">${m._applied ? '적용됨' : '이 부분만 적용'}</button></div>` : ''}
+        </div>`;
+      });
+    }
+    $('#p-fb').innerHTML = h;
+
+    $('#p-fb').querySelectorAll('[data-act="apply"]').forEach(b => b.onclick = () => applyOne(+b.dataset.i));
+    const aa = $('#applyAll'); if (aa) aa.onclick = applyAll;
+
+    // revised
+    const revSecs = T.spoken ? speakSecs(d.revised_script) : 0;
+    $('#p-rev').innerHTML = d.revised_script ? `<div class="pane-bar">
+        <span class="note">${T.spoken ? `공백 제외 ${d.revised_script.replace(/\s/g, '').length.toLocaleString()}자 · 약 ${fmt(revSecs)}` : d.revised_script.split('\n').length + '줄'}</span>
+        <button class="btn btn-ghost btn-sm" id="copyRev">복사</button>
+        <button class="btn btn-primary btn-sm" id="useRev">편집기에 반영</button>
+      </div><div class="revised${isCode ? ' code' : ''}">${esc(d.revised_script)}</div>`
+      : '<div class="empty"><p>보완본이 없어요.</p></div>';
+    const cr = $('#copyRev'); if (cr) cr.onclick = () => copy(d.revised_script);
+    const ur = $('#useRev'); if (ur) ur.onclick = () => { setScript(d.revised_script); toast('보완본을 편집기에 반영했어요 (되돌리기 가능)'); };
+
+    // diff
+    $('#p-diff').innerHTML = d.revised_script ? `<div class="pane-bar"><span class="note"><del style="background:var(--bad-soft);color:#8A1F27;padding:0 4px;border-radius:3px">삭제</del> &nbsp;<ins style="background:var(--good-soft);color:#0B5E3E;padding:0 4px;border-radius:3px;text-decoration:none">추가</ins> &nbsp;원본 → 보완본</span></div>
+      <div class="revised diff${isCode ? ' code' : ''}">${diffHTML(d._original, d.revised_script)}</div>` : '<div class="empty"><p>비교할 보완본이 없어요.</p></div>';
+
+    renderHist();
+  }
+
+  function applyOne(i) {
+    const m = current.improvements[i];
+    if (m._applied) return;
+    if (!ta.value.includes(m.original)) {
+      // 공백 차이 허용 매칭
+      const re = new RegExp(m.original.trim().split(/\s+/).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'));
+      if (!re.test(ta.value)) return toast('원문에서 해당 부분을 찾지 못했어요. 이미 수정했을 수 있어요', true);
+      setScript(ta.value.replace(re, m.revised));
+    } else {
+      setScript(ta.value.replace(m.original, m.revised));
+    }
+    m._applied = true; renderResult(); toast('적용했어요');
+  }
+  function applyAll() {
+    let n = 0;
+    current.improvements.forEach((m, i) => { if (!m._applied && m.original && m.revised && ta.value.includes(m.original)) { pushUndo(); ta.value = ta.value.replace(m.original, m.revised); m._applied = true; n++; } });
+    updateMeta(); renderResult();
+    toast(n ? `${n}개를 적용했어요` : '적용할 수 있는 항목이 없어요. 보완본 탭을 이용해 보세요');
+  }
+
+  /* ---------- diff (토큰 단위 LCS) ---------- */
+  function diffHTML(a, b) {
+    const tok = s => s.match(/\s+|[^\s]+/g) || [];
+    const A = tok(a), B = tok(b), n = A.length, m = B.length;
+    if (n * m > 6e6) return esc(b); // 너무 길면 보완본만 표시
+    const dp = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+      dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    let i = 0, j = 0, out = '', mode = '', buf = '';
+    const flush = () => { if (!buf) return; out += mode === 'd' ? `<del>${esc(buf)}</del>` : mode === 'i' ? `<ins>${esc(buf)}</ins>` : esc(buf); buf = ''; };
+    const push = (md, t) => { if (md !== mode) { flush(); mode = md; } buf += t; };
+    while (i < n && j < m) {
+      if (A[i] === B[j]) { push('s', A[i]); i++; j++; }
+      else if (dp[i + 1][j] >= dp[i][j + 1]) push('d', A[i++]);
+      else push('i', B[j++]);
+    }
+    while (i < n) push('d', A[i++]);
+    while (j < m) push('i', B[j++]);
+    flush();
+    return out;
+  }
+
+  /* ---------- history ---------- */
+  function renderHist() {
+    const hist = store.get('hist', []);
+    if (!hist.length) { $('#p-hist').innerHTML = '<div class="empty"><p>피드백 기록이 여기에 쌓여요 (최근 15개, 이 브라우저에만 저장).</p></div>'; return; }
+    $('#p-hist').innerHTML = `<div class="pane-bar"><span class="note">점수 변화로 성장 과정을 확인해 보세요</span><button class="btn btn-ghost btn-sm" id="clearHist">기록 지우기</button></div>
+      <div class="hist">${hist.map((h, i) => {
+        const dt = new Date(h._at), first = (h._original || '').replace(/\s+/g, ' ').slice(0, 60);
+        return `<div class="hist-i" data-i="${i}"><div class="s">${h.total}</div><div class="t"><b>${esc(h._topic || first || '제목 없음')}</b>
+          <span>${esc((TYPES[h._type] || {}).label || '')} · ${dt.getMonth() + 1}/${dt.getDate()} ${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}</span></div></div>`;
+      }).join('')}</div>`;
+    $('#p-hist').querySelectorAll('.hist-i').forEach(x => x.onclick = () => {
+      current = store.get('hist', [])[+x.dataset.i]; if (!current) return;
+      normalize(current); renderResult(); showTab('fb');
+    });
+    $('#clearHist').onclick = () => { if (confirmClear()) { store.set('hist', []); renderHist(); } };
+  }
+  let clearArmed = 0;
+  function confirmClear() { // 브라우저 confirm 대신 두 번 클릭
+    if (Date.now() - clearArmed < 3000) { clearArmed = 0; return true; }
+    clearArmed = Date.now(); toast('한 번 더 누르면 기록이 삭제돼요'); return false;
+  }
+
+  /* ---------- tabs ---------- */
+  function showTab(p) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === p));
+    document.querySelectorAll('.pane').forEach(x => x.classList.toggle('on', x.id === 'p-' + p));
+  }
+  $('#tabs').onclick = e => { const t = e.target.closest('.tab'); if (t) showTab(t.dataset.p); };
+
+  async function copy(t) {
+    try { await navigator.clipboard.writeText(t); toast('복사했어요'); }
+    catch { const x = el('textarea', { value: t }); document.body.appendChild(x); x.select(); document.execCommand('copy'); x.remove(); toast('복사했어요'); }
+  }
+
+  /* ---------- settings ---------- */
+  let editProv = cfg.provider;
+  function syncSeg() {
+    document.querySelectorAll('#provSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === editProv));
+    ['gemini', 'gas', 'openai'].forEach(p => $('#cfg-' + p).style.display = p === editProv ? '' : 'none');
+  }
+  function openSettings() {
+    editProv = cfg.provider;
+    $('#geminiKey').value = cfg.geminiKey || ''; $('#geminiModel').value = cfg.geminiModel || '';
+    $('#gasUrl').value = cfg.gasUrl || '';
+    $('#openaiKey').value = cfg.openaiKey || ''; $('#openaiModel').value = cfg.openaiModel || '';
+    syncSeg(); $('#modalBg').classList.add('on');
+  }
+  function readForm() {
+    return { provider: editProv,
+      geminiKey: $('#geminiKey').value.trim(), geminiModel: $('#geminiModel').value.trim() || 'gemini-2.5-flash',
+      gasUrl: $('#gasUrl').value.trim(),
+      openaiKey: $('#openaiKey').value.trim(), openaiModel: $('#openaiModel').value.trim() || 'gpt-4o-mini' };
+  }
+  $('#provSeg').onclick = e => { const b = e.target.closest('button'); if (b) { editProv = b.dataset.v; syncSeg(); } };
+  $('#openSettings').onclick = openSettings;
+  $('#apiStatus').onclick = openSettings; $('#apiStatus').style.cursor = 'pointer';
+  $('#closeSettings').onclick = () => $('#modalBg').classList.remove('on');
+  $('#modalBg').onclick = e => { if (e.target.id === 'modalBg') $('#modalBg').classList.remove('on'); };
+  $('#saveBtn').onclick = () => { cfg = readForm(); store.set('cfg', cfg); renderStatus(); $('#modalBg').classList.remove('on'); toast('저장했어요'); };
+  $('#testBtn').onclick = async () => {
+    const prev = cfg; cfg = readForm();
+    const b = $('#testBtn'); b.disabled = true; b.textContent = '테스트 중…';
+    try { const r = await callAI('짧게 답하세요.', '"연결 성공"이라고만 답하세요.', false); toast('✓ ' + r.trim().slice(0, 40)); }
+    catch (e) { toast('연결 실패: ' + e.message, true); }
+    finally { cfg = prev; b.disabled = false; b.textContent = '연결 테스트'; }
+  };
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') $('#modalBg').classList.remove('on');
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !busy) { e.preventDefault(); getFeedback(); }
+  });
+
+  /* ---------- wire ---------- */
+  $('#genBtn').onclick = generateDraft;
+  $('#fbBtn').onclick = getFeedback;
+  ['topic', 'audience', 'targetMin', 'tone', 'request'].forEach(id => {
+    const x = $('#' + id); const saved = store.get('f:' + id, null); if (saved != null) x.value = saved;
+    x.addEventListener('change', () => store.set('f:' + id, x.value));
+  });
+
+  // 숨겨진 API 설정: 로고 더블클릭 또는 Ctrl+Shift+K
+  $('#logo').ondblclick = openSettings;
+  document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'K' || e.key === 'k')) { e.preventDefault(); openSettings(); } });
+
+  ta.value = store.get('draft', '');
+  if (!ta.value.trim()) loadSample(curType, true);
+  renderTypes(); applyTypeUI(); renderStatus(); renderEmpty();
+})();
+</script>
+</body>
+</html>
