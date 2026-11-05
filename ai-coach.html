@@ -7,110 +7,142 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen p-4 md:p-8">
-    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100">
+    <div class="max-w-7xl mx-auto">
         <!-- 헤더 -->
-        <div class="border-b pb-4 mb-6">
+        <div class="mb-6">
             <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">Debate Practice Tool</span>
             <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2">팀 토론 [주장 - 이유 - 근거] 대본 빌더</h1>
-            <p class="text-sm text-slate-500 mt-1">3:3 팀 토론 역할(토론자/사회자)에 맞춰 논리적인 발언 대본을 완성해 보세요.</p>
+            <p class="text-sm text-slate-500 mt-1">3:3 팀 토론 역할(토론자/사회자)에 맞춰 논리적인 발언 대본을 완성하고, AI 피드백을 받아 직접 고쳐 보세요.</p>
         </div>
 
-        <form id="debateForm" class="space-y-6">
-            <!-- 1. 주제 선택 -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-1">토론 주제</label>
-                <select id="topicSelect" onchange="toggleCustomTopic()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none mb-2">
-                    <option value="학생들의 과제 수행 시 AI 사용을 허용해야 한다">학생들의 과제 수행 시 AI 사용을 허용해야 한다</option>
-                    <option value="자율 주행차의 도로 운행을 전면 허용해야 한다">자율 주행차의 도로 운행을 전면 허용해야 한다</option>
-                    <option value="온라인 수업이 대면 수업보다 낫다">온라인 수업이 대면 수업보다 낫다</option>
-                    <option value="custom">✏️ 직접 입력하기</option>
-                </select>
-                <input type="text" id="customTopic" placeholder="토론 주제를 직접 입력하세요"
-                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none hidden">
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <!-- ===== 왼쪽: 재료 입력 ===== -->
+            <div class="space-y-6 lg:sticky lg:top-6">
+                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100">
+                    <div class="text-xs font-bold text-indigo-600 mb-4">STEP 1 · 재료 입력</div>
+                    <form id="debateForm" class="space-y-6">
+                        <!-- 1. 주제 선택 -->
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">토론 주제</label>
+                            <select id="topicSelect" onchange="toggleCustomTopic()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none mb-2">
+                                <option value="학생들의 과제 수행 시 AI 사용을 허용해야 한다">학생들의 과제 수행 시 AI 사용을 허용해야 한다</option>
+                                <option value="자율 주행차의 도로 운행을 전면 허용해야 한다">자율 주행차의 도로 운행을 전면 허용해야 한다</option>
+                                <option value="온라인 수업이 대면 수업보다 낫다">온라인 수업이 대면 수업보다 낫다</option>
+                                <option value="custom">✏️ 직접 입력하기</option>
+                            </select>
+                            <input type="text" id="customTopic" placeholder="토론 주제를 직접 입력하세요"
+                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none hidden">
+                        </div>
 
-            <!-- 2. 역할 선택 -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-1">나의 역할</label>
-                <select id="role" onchange="toggleRoleFields()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    <optgroup label="토론자 (Speaker)">
-                        <option value="찬성 1번 (입론 & 1,2번 논거)">찬성 1번 (입론 & 1,2번 논거)</option>
-                        <option value="반대 1번 (반박 & 1,2번 논거)">반대 1번 (반박 & 1,2번 논거)</option>
-                        <option value="찬성 2번 (심화 & 3번 논거)">찬성 2번 (심화 & 3번 논거)</option>
-                        <option value="반대 2번 (심화 & 3번 논거)">반대 2번 (심화 & 3번 논거)</option>
-                        <option value="찬성 3번 (종합 반박 & 요약)">찬성 3번 (종합 반박 & 요약)</option>
-                        <option value="반대 3번 (종합 반박 & 요약)">반대 3번 (종합 반박 & 요약)</option>
-                    </optgroup>
-                    <optgroup label="사회자 (Moderator)">
-                        <option value="사회자 - 오프닝">사회자 - 오프닝 (토론 시작 안내)</option>
-                        <option value="사회자 - 찬성 발언 직후 진행">사회자 - 찬성 발언 직후 진행</option>
-                        <option value="사회자 - 반대 발언 직후 진행">사회자 - 반대 발언 직후 진행</option>
-                        <option value="사회자 - 클로징">사회자 - 클로징 (토론 마무리 안내)</option>
-                    </optgroup>
-                </select>
-            </div>
+                        <!-- 2. 역할 선택 -->
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">나의 역할</label>
+                            <select id="role" onchange="toggleRoleFields()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <optgroup label="토론자 (Speaker)">
+                                    <option value="찬성 1번 (입론 & 1,2번 논거)">찬성 1번 (입론 & 1,2번 논거)</option>
+                                    <option value="반대 1번 (반박 & 1,2번 논거)">반대 1번 (반박 & 1,2번 논거)</option>
+                                    <option value="찬성 2번 (심화 & 3번 논거)">찬성 2번 (심화 & 3번 논거)</option>
+                                    <option value="반대 2번 (심화 & 3번 논거)">반대 2번 (심화 & 3번 논거)</option>
+                                    <option value="찬성 3번 (종합 반박 & 요약)">찬성 3번 (종합 반박 & 요약)</option>
+                                    <option value="반대 3번 (종합 반박 & 요약)">반대 3번 (종합 반박 & 요약)</option>
+                                </optgroup>
+                                <optgroup label="사회자 (Moderator)">
+                                    <option value="사회자 - 오프닝">사회자 - 오프닝 (토론 시작 안내)</option>
+                                    <option value="사회자 - 찬성 발언 직후 진행">사회자 - 찬성 발언 직후 진행</option>
+                                    <option value="사회자 - 반대 발언 직후 진행">사회자 - 반대 발언 직후 진행</option>
+                                    <option value="사회자 - 클로징">사회자 - 클로징 (토론 마무리 안내)</option>
+                                </optgroup>
+                            </select>
+                        </div>
 
-            <!-- 3-A. 토론자용: 주장-이유-근거 -->
-            <div id="speakerFields" class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <div>
-                    <label class="block text-sm font-bold text-indigo-900 mb-1">
-                        1. 주장 (Assertion) <span class="text-xs font-normal text-indigo-600">- 한 문장으로 명확하게</span>
-                    </label>
-                    <input type="text" id="assertion" placeholder="예: 저희 팀은 학생들의 과제 수행 시 AI 사용을 허용해야 한다고 생각합니다."
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <!-- 3-A. 토론자용: 주장-이유-근거 -->
+                        <div id="speakerFields" class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div>
+                                <label class="block text-sm font-bold text-indigo-900 mb-1">
+                                    1. 주장 (Assertion) <span class="text-xs font-normal text-indigo-600">- 한 문장으로 명확하게</span>
+                                </label>
+                                <input type="text" id="assertion" placeholder="예: 저희 팀은 학생들의 과제 수행 시 AI 사용을 허용해야 한다고 생각합니다."
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-900 mb-1">
+                                    2. 이유 (Reasoning) <span class="text-xs font-normal text-emerald-600">- 왜 그렇게 생각하는지 핵심 이유</span>
+                                </label>
+                                <textarea id="reasoning" rows="2" placeholder="예: 왜냐하면 AI는 학생들의 자료 조사 시간을 줄여주고 비판적 사고에 더 집중할 수 있게 돕는 도구이기 때문입니다."
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-amber-900 mb-1">
+                                    3. 근거 (Evidence) <span class="text-xs font-normal text-amber-600">- 통계, 연구 결과, 객관적 사례</span>
+                                </label>
+                                <textarea id="evidence" rows="3" placeholder="예: 실제로 2024년 교육 연구 결과에 따르면, AI를 조사 도구로 활용한 집단이 정보 분석 및 정리 능력에서 20% 높은 성취도를 보였습니다."
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- 3-B. 사회자용: 진행 멘트 -->
+                        <div id="moderatorFields" class="space-y-4 bg-sky-50 p-4 rounded-xl border border-sky-200 hidden">
+                            <div>
+                                <label class="block text-sm font-bold text-sky-900 mb-1">
+                                    핵심 진행 메모 <span class="text-xs font-normal text-sky-600">- 다음 순서를 안내하며 강조하고 싶은 포인트</span>
+                                </label>
+                                <textarea id="moderatorNote" rows="3" placeholder="예: 방금 찬성 측의 논거를 정리하고, 이어서 반대 측의 반박을 요청합니다."
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:outline-none"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="generateScript()"
+                            class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition duration-200 shadow-md">
+                            발언 대본 생성하기
+                        </button>
+                    </form>
                 </div>
-                <div>
-                    <label class="block text-sm font-bold text-emerald-900 mb-1">
-                        2. 이유 (Reasoning) <span class="text-xs font-normal text-emerald-600">- 왜 그렇게 생각하는지 핵심 이유</span>
-                    </label>
-                    <textarea id="reasoning" rows="2" placeholder="예: 왜냐하면 AI는 학생들의 자료 조사 시간을 줄여주고 비판적 사고에 더 집중할 수 있게 돕는 도구이기 때문입니다."
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-amber-900 mb-1">
-                        3. 근거 (Evidence) <span class="text-xs font-normal text-amber-600">- 통계, 연구 결과, 객관적 사례</span>
-                    </label>
-                    <textarea id="evidence" rows="3" placeholder="예: 실제로 2024년 교육 연구 결과에 따르면, AI를 조사 도구로 활용한 집단이 정보 분석 및 정리 능력에서 20% 높은 성취도를 보였습니다."
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
-                </div>
+
             </div>
 
-            <!-- 3-B. 사회자용: 진행 멘트 -->
-            <div id="moderatorFields" class="space-y-4 bg-sky-50 p-4 rounded-xl border border-sky-200 hidden">
-                <div>
-                    <label class="block text-sm font-bold text-sky-900 mb-1">
-                        핵심 진행 메모 <span class="text-xs font-normal text-sky-600">- 다음 순서를 안내하며 강조하고 싶은 포인트</span>
-                    </label>
-                    <textarea id="moderatorNote" rows="3" placeholder="예: 방금 찬성 측의 논거를 정리하고, 이어서 반대 측의 반박을 요청합니다."
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:outline-none"></textarea>
+            <!-- ===== 오른쪽: 대본 편집 + AI 피드백 ===== -->
+            <div class="space-y-6">
+                <!-- 대본 편집기 (학생이 직접 수정) -->
+                <div id="outputArea" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100 space-y-4">
+                    <div class="flex items-end justify-between gap-3">
+                        <div>
+                            <div class="text-xs font-bold text-indigo-600">STEP 2 · 대본 다듬기 (직접 수정 가능)</div>
+                            <h2 class="text-xl font-bold text-slate-900">나의 발언 대본</h2>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="scriptMeta" class="text-xs text-slate-400 font-mono">0자 · 약 0:00</span>
+                            <button type="button" onclick="undoScript()" title="방금 바꾼 것 되돌리기"
+                                class="text-xs font-semibold px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50">↶ 되돌리기</button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 -mt-2">✏️ 아래 대본을 직접 고칠 수 있어요. 고친 내용 그대로 AI 피드백을 받아요.</p>
+                    <textarea id="scriptBox" rows="16" onbeforeinput="snapUndo()" oninput="updateMeta()"
+                        placeholder="'발언 대본 생성하기'를 누르거나 여기에 직접 대본을 써 보세요."
+                        class="w-full bg-indigo-50/60 border border-indigo-200 p-4 rounded-xl text-slate-800 font-mono text-sm leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-y"></textarea>
+
+                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl">
+                        <h3 class="font-bold text-amber-900 text-sm mb-2">💡 자가 논리 점검 체크리스트</h3>
+                        <ul class="text-xs text-amber-800 space-y-1 list-disc list-inside">
+                            <li>주장이 명확한 한 문장으로 제시되었는가?</li>
+                            <li>이유가 주장을 논리적으로 받쳐주고 있는가? ('왜냐하면~')</li>
+                            <li>근거에 출처, 통계, 사례 등 객관적 사실이 포함되어 있는가?</li>
+                        </ul>
+                    </div>
+
+                    <button type="button" id="aiFbBtn" onclick="getAIFeedback()"
+                        class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 disabled:cursor-not-allowed text-white font-bold rounded-lg transition duration-200 shadow-md">
+                        🤖 AI 보완 · 피드백 받기 ↓
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-100">
+                    <div class="px-6 md:px-8 pt-6 pb-4 border-b border-slate-100">
+                        <div class="text-xs font-bold text-emerald-600">STEP 3 · AI 피드백</div>
+                        <h2 class="text-xl font-bold text-slate-900">AI 코치의 분석</h2>
+                    </div>
+                    <div id="aiFbArea" class="p-6 md:p-8 space-y-4"></div>
                 </div>
             </div>
-
-            <button type="button" onclick="generateScript()"
-                class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition duration-200 shadow-md">
-                발언 대본 생성하기
-            </button>
-        </form>
-
-        <div id="outputArea" class="mt-8 hidden space-y-4 border-t pt-6">
-            <h2 class="text-xl font-bold text-slate-900">완성된 발언 대본</h2>
-            <div id="scriptBox" class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-slate-800 whitespace-pre-line font-mono text-sm"></div>
-
-            <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl">
-                <h3 class="font-bold text-amber-900 text-sm mb-2">💡 자가 논리 점검 체크리스트</h3>
-                <ul class="text-xs text-amber-800 space-y-1 list-disc list-inside">
-                    <li>주장이 명확한 한 문장으로 제시되었는가?</li>
-                    <li>이유가 주장을 논리적으로 받쳐주고 있는가? ('왜냐하면~')</li>
-                    <li>근거에 출처, 통계, 사례 등 객관적 사실이 포함되어 있는가?</li>
-                </ul>
-            </div>
-
-            <!-- ===== [추가] AI 보완·피드백 ===== -->
-            <button type="button" id="aiFbBtn" onclick="getAIFeedback()"
-                class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 disabled:cursor-not-allowed text-white font-bold rounded-lg transition duration-200 shadow-md">
-                🤖 AI 보완 · 피드백 받기
-            </button>
-            <div id="aiFbArea" class="hidden space-y-4"></div>
         </div>
     </div>
 
@@ -146,80 +178,128 @@
                     '사회자 - 오프닝': `안녕하십니까. 지금부터 '${topic}'를 주제로 한 토론을 시작하겠습니다.
 오늘 토론은 찬성 측과 반대 측이 각각 1, 2, 3번 토론자로 참여하며, 입론-반박-요약 순으로 진행됩니다.
 
-[진행 메모]
 ${note}
 
 그럼 먼저 찬성 측 1번 토론자부터 입론을 시작해 주시기 바랍니다.`,
                     '사회자 - 찬성 발언 직후 진행': `네, 찬성 측의 발언 잘 들었습니다.
 
-[진행 메모 - 발언 요약 및 다음 순서 안내]
 ${note}
 
 이어서 반대 측의 반박을 들어보겠습니다. 반대 측 토론자, 발언해 주시기 바랍니다.`,
                     '사회자 - 반대 발언 직후 진행': `네, 반대 측의 발언 잘 들었습니다.
 
-[진행 메모 - 발언 요약 및 다음 순서 안내]
 ${note}
 
 이어서 찬성 측의 반박을 들어보겠습니다. 찬성 측 토론자, 발언해 주시기 바랍니다.`,
                     '사회자 - 클로징': `양측의 열띤 토론 잘 들었습니다. 이것으로 '${topic}'에 대한 토론을 마치겠습니다.
 
-[진행 메모 - 토론 총평]
 ${note}
 
 오늘 토론에 참여해 주신 모든 토론자 여러분께 감사드립니다. 이것으로 토론을 마치겠습니다.`
                 };
-                script = `[${role} 진행 대본]\n\n${templates[role]}`;
+                script = templates[role];
             } else {
                 const assertion = document.getElementById('assertion').value;
                 const reasoning = document.getElementById('reasoning').value;
                 const evidence = document.getElementById('evidence').value;
                 if (!assertion || !reasoning || !evidence) { alert('모든 항목을 입력해 주세요!'); return; }
 
-                script = `[${role} 발언 대본]
+                script = `안녕하십니까. 오늘 '${topic}'에 대해 발언을 맡은 ${role}입니다.
 
-안녕하십니까. 오늘 '${topic}'에 대해 발언을 맡은 ${role}입니다.
-
-[주장]
 ${assertion}
 
-[이유]
 ${reasoning}
 
-[근거]
 ${evidence}
 
-[마무리]
 따라서 이러한 이유와 객관적 근거를 바탕으로 저희 팀의 입장을 강력히 주창합니다. 감사합니다.`;
             }
 
-            document.getElementById('scriptBox').innerText = script;
-            document.getElementById('outputArea').classList.remove('hidden');
+            const box = document.getElementById('scriptBox');
+            if (box.value.trim() && box.value !== script &&
+                !confirm('지금 대본을 새로 만든 대본으로 바꿀까요?\n(직접 고친 내용은 되돌리기로 복구할 수 있어요)')) return;
+            setScript(script);
+            renderEmptyFeedback();
+            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     </script>
-    <!-- ===== [추가] AI 보완·피드백 스크립트 ===== -->
+
+    <!-- ===== 대본 편집 도우미 ===== -->
+    <script>
+        const CHARS_PER_MIN = 330; // 한국어 발화 기준 대략치(공백 제외)
+        const undoStack = [];
+
+        function updateMeta() {
+            const t = document.getElementById('scriptBox').value;
+            const n = t.replace(/\s/g, '').length;
+            const sec = Math.round(n / CHARS_PER_MIN * 60);
+            document.getElementById('scriptMeta').textContent =
+                `${n.toLocaleString()}자 · 약 ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+        }
+        function setScript(text) {
+            const box = document.getElementById('scriptBox');
+            if (undoStack[undoStack.length - 1] !== box.value) undoStack.push(box.value);
+            if (undoStack.length > 30) undoStack.shift();
+            box.value = text;
+            updateMeta();
+        }
+        function undoScript() {
+            if (!undoStack.length) { alert('되돌릴 내용이 없어요.'); return; }
+            document.getElementById('scriptBox').value = undoStack.pop();
+            updateMeta();
+        }
+        let typingTimer = null;
+        function snapUndo() {
+            // 직접 타이핑할 때 4초 단위로 '고치기 전' 상태를 저장
+            if (typingTimer) return;
+            const v = document.getElementById('scriptBox').value;
+            if (undoStack[undoStack.length - 1] !== v) undoStack.push(v);
+            if (undoStack.length > 30) undoStack.shift();
+            typingTimer = setTimeout(() => { typingTimer = null; }, 4000);
+        }
+    </script>
+
+    <!-- ===== AI 보완·피드백 스크립트 ===== -->
     <script>
         // ▼▼▼ 여기에 Gemini API 키를 붙여 넣으세요 (AI Studio에서 발급) ▼▼▼
-        const GEMINI_API_KEY = 'AQ.Ab8RN6JF6AKwcTyzZIAtgei17i_p8zG9y40HneBOACuGJQv-Zw';
+        const GEMINI_API_KEY = 'AQ.Ab8RN6IsPGDELV-EV3e7sXb8D8RQnXIvHwT0ozgeJ6IYpQMeKQ';
         const GEMINI_MODEL = 'gemini-3.8-flash';
         const GEMINI_FALLBACK_MODEL = 'gemini-flash-lite-latest'; // 서버가 붐빌 때 대신 쓸 모델
         // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-        // 새 대본을 만들면 이전 피드백 숨기기 (기존 함수는 그대로 두고 감싸기만 함)
-        const _originalGenerateScript = generateScript;
-        generateScript = function () {
-            _originalGenerateScript();
-            const area = document.getElementById('aiFbArea');
-            area.classList.add('hidden'); area.innerHTML = '';
-        };
-
         const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         const sleep = ms => new Promise(r => setTimeout(r, ms));
+        // 대본에서 대괄호 없애기: [머리표]만 있는 줄과 문장 속 [ ... ]를 모두 지움
+        const stripBrackets = s => String(s ?? '')
+            .split('\n').filter(l => !/^\s*\[[^\]]*\]\s*$/.test(l)).join('\n')
+            .replace(/ ?\[[^\]\n]*\]/g, '').replace(/[\[\]]/g, '')
+            .replace(/\n{3,}/g, '\n\n').trim();
 
-        let useThinkingLow = true; // 추론을 낮게 → 더 빠름 (지원 안 하면 자동으로 끔)
-        async function geminiOnce(model, system, prompt, json = true) {
-            const generationConfig = json ? { responseMimeType: 'application/json', temperature: 0.6 } : { temperature: 0.7 };
-            if (useThinkingLow) generationConfig.thinkingConfig = { thinkingLevel: 'low' };
+        function renderEmptyFeedback() {
+            document.getElementById('aiFbArea').innerHTML = `
+                <div class="text-center py-16 text-slate-400">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-2xl grid place-items-center mx-auto mb-3">🤖</div>
+                    <p class="font-semibold text-slate-600">아직 피드백이 없어요</p>
+                    <p class="text-sm mt-1">위 대본 칸에 대본을 만들거나 직접 쓴 뒤<br><b class="text-emerald-600">AI 보완 · 피드백 받기</b>를 눌러 보세요.</p>
+                    <ol class="text-xs text-left inline-block mt-5 space-y-1 list-decimal list-inside text-slate-500">
+                        <li>AI 피드백을 읽고</li>
+                        <li>위 대본을 직접 고친 다음</li>
+                        <li>다시 피드백을 받아 점수가 오르는지 확인!</li>
+                    </ol>
+                </div>`;
+        }
+
+        // 추론 단계를 최소로 → 가장 빠름. 모델이 지원하지 않으면 minimal → low → 끔 순서로 자동 조정
+        const THINKING_LEVELS = ['minimal', 'low', null];
+        let thinkingIdx = 0;
+        const HEDGE_AFTER_MS = 6000; // 이 시간 안에 답이 없으면 가벼운 모델에도 동시에 요청 → 먼저 온 답 사용
+
+        async function geminiOnce(model, system, prompt, json = true, signal) {
+            const generationConfig = json
+                ? { responseMimeType: 'application/json', temperature: 0.6 }
+                : { temperature: 0.7 };
+            const level = THINKING_LEVELS[thinkingIdx];
+            if (level) generationConfig.thinkingConfig = { thinkingLevel: level };
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -227,13 +307,14 @@ ${evidence}
                     systemInstruction: { parts: [{ text: system }] },
                     contents: [{ role: 'user', parts: [{ text: prompt }] }],
                     generationConfig
-                })
+                }),
+                signal
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                if (res.status === 400 && useThinkingLow && /thinking/i.test(data.error?.message || '')) {
-                    useThinkingLow = false;
-                    return geminiOnce(model, system, prompt, json);
+                if (res.status === 400 && level && /thinking/i.test(data.error?.message || '')) {
+                    thinkingIdx++;
+                    return geminiOnce(model, system, prompt, json, signal);
                 }
                 const err = new Error(data.error?.message || ('오류 (' + res.status + ')'));
                 err.busy = [429, 500, 503].includes(res.status) || /high demand|overloaded|try again later|unavailable/i.test(err.message);
@@ -244,21 +325,39 @@ ${evidence}
             return text;
         }
 
-        // 서버가 붐비면 기다리지 않고 바로 가벼운 모델로 → 그래도 안 되면 짧게 쉬며 번갈아 시도
+        // 기본 모델과 가벼운 모델을 '경주'시켜 먼저 도착한 답을 씀
+        // - 기본 모델이 6초 안에 답하면 그대로 사용
+        // - 6초가 지나거나 서버가 붐비면 가벼운 모델도 출발
+        function raceOnce(system, prompt, onStatus, json) {
+            return new Promise((resolve, reject) => {
+                const ctrls = [];
+                let done = false, failed = 0, started = 0, lastErr = null, hedgeTimer = null;
+                const finish = (fn, v) => { if (done) return; done = true; clearTimeout(hedgeTimer); ctrls.forEach(c => c.abort()); fn(v); };
+                const start = (model) => {
+                    const c = new AbortController(); ctrls.push(c); started++;
+                    geminiOnce(model, system, prompt, json, c.signal)
+                        .then(t => finish(resolve, t))
+                        .catch(e => {
+                            if (e.name === 'AbortError') return;
+                            lastErr = e; failed++;
+                            if (!e.busy) return finish(reject, e);
+                            if (started < 2) { onStatus('서버가 붐벼서 가벼운 모델로 바로 전환했어요'); startHedge(); }
+                            else if (failed >= started) finish(reject, e);
+                        });
+                };
+                const startHedge = () => { clearTimeout(hedgeTimer); if (started < 2 && !done) start(GEMINI_FALLBACK_MODEL); };
+                start(GEMINI_MODEL);
+                hedgeTimer = setTimeout(() => { onStatus('응답이 늦어 가벼운 모델에도 함께 요청했어요'); startHedge(); }, HEDGE_AFTER_MS);
+            });
+        }
+
         async function callGemini(system, prompt, onStatus, json = true) {
-            const plan = [
-                [GEMINI_MODEL, 0, ''],
-                [GEMINI_FALLBACK_MODEL, 0, '서버가 붐벼서 가벼운 모델로 바로 전환했어요'],
-                [GEMINI_MODEL, 2000, '다시 시도하는 중 (1/2)'],
-                [GEMINI_FALLBACK_MODEL, 3000, '다시 시도하는 중 (2/2)']
-            ];
-            for (const [model, wait, msg] of plan) {
-                if (msg) onStatus(msg);
-                if (wait) await sleep(wait);
-                try { return await geminiOnce(model, system, prompt, json); }
-                catch (e) { if (!e.busy) throw e; }
-            }
-            throw new Error('구글 서버가 지금 많이 붐벼요. 1~2분 뒤 다시 눌러 주세요.');
+            try { return await raceOnce(system, prompt, onStatus, json); }
+            catch (e) { if (!e.busy) throw e; }
+            onStatus('잠시 후 한 번 더 시도하는 중…');
+            await sleep(2000);
+            try { return await raceOnce(system, prompt, onStatus, json); }
+            catch (e) { if (e.busy) throw new Error('구글 서버가 지금 많이 붐벼요. 1~2분 뒤 다시 눌러 주세요.'); throw e; }
         }
 
         function parseJSON(text) {
@@ -270,26 +369,26 @@ ${evidence}
         }
 
         let lastFb = null;
+        let prevScore = null;
         async function getAIFeedback() {
             const area = document.getElementById('aiFbArea');
             const btn = document.getElementById('aiFbBtn');
-            const script = document.getElementById('scriptBox').innerText.trim();
+            const script = document.getElementById('scriptBox').value.trim();
             const role = document.getElementById('role').value;
             const topic = getTopic();
             const isModerator = role.startsWith('사회자');
 
-            area.classList.remove('hidden');
             if (!GEMINI_API_KEY) {
                 area.innerHTML = `<div class="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl text-sm">API 키가 없어요. HTML 코드에서 <code class="font-mono bg-white px-1 rounded">GEMINI_API_KEY</code> 줄에 키를 넣어 주세요.</div>`;
                 return;
             }
-            if (!script) return;
+            if (!script) { alert('대본을 먼저 만들거나 직접 써 주세요!'); document.getElementById('scriptBox').focus(); return; }
 
             const criteria = isModerator
                 ? ['진행 안내의 명확성', '중립성', '발언 요약의 정확성', '순서·시간 안내', '전달력']
                 : ['주장의 명확성', '이유의 논리성', '근거의 객관성', '역할 수행', '전달력'];
 
-            const system = '당신은 고등학생 토론 수업을 지도하는 토론 코치입니다. 학생 눈높이에 맞춰 친절하지만 구체적으로 피드백합니다. 근거가 지어낸 것처럼 보이거나 출처가 불분명하면 반드시 지적하고, 학생이 직접 확인할 수 있는 자료 종류를 안내합니다. 존재가 확실하지 않은 통계나 연구를 새로 지어내지 말고, 필요하면 [출처 확인 필요] 또는 [ ]로 빈칸을 남깁니다. 반드시 JSON만 출력합니다.';
+            const system = '당신은 고등학생 토론 수업을 지도하는 토론 코치입니다. 학생 눈높이에 맞춰 친절하지만 구체적으로 피드백합니다. 학생이 스스로 고쳐 볼 수 있도록 무엇을 왜 바꿔야 하는지 설명합니다. 근거가 지어낸 것처럼 보이거나 출처가 불분명하면 반드시 지적하고, 학생이 직접 확인할 수 있는 자료 종류를 안내합니다. 존재가 확실하지 않은 통계나 연구를 새로 지어내지 않습니다. 고친 문장에는 대괄호([ ])를 절대 쓰지 않고, 출처 확인이 필요한 부분은 고친 문장이 아니라 설명(reason)에서 알려 줍니다. 반드시 JSON만 출력합니다.';
             const prompt = `토론 주제: ${topic}
 역할: ${role}
 평가 기준(각 20점, 합계 100점): ${criteria.join(', ')}
@@ -302,7 +401,7 @@ ${evidence}
   "criteria": [${criteria.map(c => `{"name":"${c}","score":0~20 정수,"comment":"한 줄 평"}`).join(',')}],
   "summary": "총평 2~3문장",
   "strengths": ["잘한 점", ...] (2~3개),
-  "improvements": [{"title":"짧은 제목","reason":"왜 고쳐야 하는지","original":"원문 일부","revised":"고친 문장"}] (2~5개, 중요한 순)
+  "improvements": [{"title":"짧은 제목","reason":"왜 고쳐야 하는지","original":"대본에서 그대로 복사한 부분(글자 하나도 바꾸지 말 것)","revised":"고친 문장"}] (2~5개, 중요한 순)
 }
 
 --- 대본 시작 ---
@@ -311,16 +410,23 @@ ${script}
 
             lastFb = { system, script, topic, role };
             btn.disabled = true;
-            area.innerHTML = `<div class="text-center py-8 text-slate-500 text-sm"><div class="w-8 h-8 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mx-auto mb-3"></div>AI가 대본을 분석하는 중…<div id="aiFbStatus" class="text-xs text-slate-400 mt-1">보통 10~30초 걸려요</div></div>`;
-            const setStatus = t => { const s = document.getElementById('aiFbStatus'); if (s) s.textContent = t; };
+            area.innerHTML = `<div class="text-center py-16 text-slate-500 text-sm"><div class="w-8 h-8 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mx-auto mb-3"></div>AI가 대본을 분석하는 중…<div id="aiFbStatus" class="text-xs text-slate-400 mt-1">보통 5~15초 걸려요</div></div>`;
+            const t0 = Date.now();
+            let note = '보통 5~15초 걸려요';
+            const setStatus = t => { note = t; tick(); };
+            const tick = () => { const s = document.getElementById('aiFbStatus'); if (s) s.textContent = `${Math.floor((Date.now() - t0) / 1000)}초 · ${note}`; };
+            const ticker = setInterval(tick, 1000); tick();
 
             try {
                 const d = parseJSON(await callGemini(system, prompt, setStatus));
+                (d.improvements || []).forEach(m => { if (m.revised) m.revised = stripBrackets(m.revised); });
                 lastFb.feedback = d;
                 renderAIFeedback(d);
+                area.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } catch (e) {
                 area.innerHTML = `<div class="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl text-sm"><b>피드백 실패:</b> ${escHTML(e.message)}</div>`;
             } finally {
+                clearInterval(ticker);
                 btn.disabled = false;
             }
         }
@@ -330,11 +436,16 @@ ${script}
             const crit = Array.isArray(d.criteria) ? d.criteria : [];
             const total = Number.isFinite(+d.total) ? Math.round(+d.total) : crit.reduce((a, c) => a + (+c.score || 0), 0);
             const color = p => p >= 80 ? 'bg-emerald-500' : p >= 60 ? 'bg-indigo-500' : p >= 40 ? 'bg-amber-500' : 'bg-rose-500';
+            const diff = prevScore == null ? '' :
+                total > prevScore ? `<span class="text-sm font-bold text-emerald-600">▲ ${total - prevScore}</span>` :
+                total < prevScore ? `<span class="text-sm font-bold text-rose-500">▼ ${prevScore - total}</span>` :
+                `<span class="text-sm font-bold text-slate-400">－</span>`;
+            prevScore = total;
 
             let h = `
-            <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div>
                 <div class="flex items-center gap-4 mb-4">
-                    <div class="text-4xl font-extrabold text-slate-900">${total}<span class="text-base font-medium text-slate-400"> / 100</span></div>
+                    <div class="text-4xl font-extrabold text-slate-900 whitespace-nowrap">${total}<span class="text-base font-medium text-slate-400"> / 100</span> ${diff}</div>
                     <p class="text-sm text-slate-600 flex-1">${escHTML(d.summary || '')}</p>
                 </div>
                 <div class="space-y-3">
@@ -357,62 +468,60 @@ ${script}
             }
 
             if (Array.isArray(d.improvements) && d.improvements.length) {
-                h += `<div class="space-y-3"><h3 class="font-bold text-slate-900 text-sm">🛠 보완할 점</h3>
+                h += `<div class="space-y-3"><h3 class="font-bold text-slate-900 text-sm">🛠 보완할 점 <span class="font-normal text-xs text-slate-400">— 직접 고쳐 보거나, 예시를 적용해 보세요</span></h3>
                     ${d.improvements.map((m, i) => `
-                    <div class="border border-slate-200 rounded-xl p-4">
+                    <div class="border border-slate-200 rounded-xl p-4" id="imp-${i}">
                         <div class="font-bold text-sm text-slate-900 mb-1">${i + 1}. ${escHTML(m.title || '')}</div>
                         ${m.reason ? `<p class="text-sm text-slate-600 mb-2">${escHTML(m.reason)}</p>` : ''}
                         ${m.original ? `<div class="text-sm bg-rose-50 text-rose-800 line-through decoration-rose-300 p-2 rounded-lg mb-1 whitespace-pre-line">${escHTML(m.original)}</div>` : ''}
-                        ${m.revised ? `<div class="text-sm bg-emerald-50 text-emerald-800 p-2 rounded-lg whitespace-pre-line">${escHTML(m.revised)}</div>` : ''}
+                        ${m.revised ? `<div class="text-sm bg-emerald-50 text-emerald-800 p-2 rounded-lg whitespace-pre-line"><span class="text-xs font-bold text-emerald-600">예시 </span>${escHTML(m.revised)}</div>` : ''}
+                        <div class="flex justify-end gap-2 mt-2">
+                            ${m.original ? `<button type="button" onclick="findInScript(${i})" class="text-xs font-semibold px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50">🔍 대본에서 찾기</button>` : ''}
+                            ${m.original && m.revised ? `<button type="button" onclick="applyImprovement(${i})" class="text-xs font-semibold px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100">예시 적용</button>` : ''}
+                        </div>
                     </div>`).join('')}
                 </div>`;
             }
 
-            h += `<div id="revisedWrap">
-                <button type="button" id="revisedBtn" onclick="getRevisedScript()"
-                    class="w-full py-3 bg-white border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 font-bold rounded-lg transition">
-                    ✨ 보완한 대본 받기
-                </button>
-            </div>`;
-
             area.innerHTML = h;
         }
 
-        async function getRevisedScript() {
-            if (!lastFb) return;
-            const wrap = document.getElementById('revisedWrap');
-            const btn = document.getElementById('revisedBtn');
-            btn.disabled = true;
-            btn.innerHTML = '대본을 다듬는 중… <span id="revStatus" class="text-xs font-normal"></span>';
-            const setStatus = t => { const s = document.getElementById('revStatus'); if (s) s.textContent = '· ' + t; };
-            const imp = (lastFb.feedback?.improvements || []).map((m, i) => `${i + 1}. ${m.title}: ${m.reason || ''}${m.revised ? ' → ' + m.revised : ''}`).join('\n');
-            const prompt = `토론 주제: ${lastFb.topic}\n역할: ${lastFb.role}\n\n아래 보완점을 모두 반영해 대본 전체를 다시 써 주세요. 원래 구성([주장]/[이유]/[근거]/[마무리] 같은 머리표)은 유지하고, 설명이나 머리말 없이 대본만 출력하세요. 확실하지 않은 통계·연구는 지어내지 말고 [출처 확인 필요]로 남기세요.\n\n[보완점]\n${imp}\n\n--- 원래 대본 ---\n${lastFb.script}`;
-            try {
-                let text = await callGemini(lastFb.system.replace('반드시 JSON만 출력합니다.', '대본 본문만 출력합니다.'), prompt, setStatus, false);
-                text = text.replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/, '').trim();
-                wrap.innerHTML = `<div class="flex items-center justify-between mb-2">
-                        <h3 class="font-bold text-slate-900 text-sm">✨ AI가 보완한 대본</h3>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="copyRevised()" class="text-xs font-semibold px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50">복사</button>
-                            <button type="button" onclick="useRevised()" class="text-xs font-semibold px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">위 대본에 반영</button>
-                        </div>
-                    </div>
-                    <div id="revisedBox" class="bg-white border border-emerald-200 p-4 rounded-xl text-slate-800 whitespace-pre-line font-mono text-sm">${escHTML(text)}</div>`;
-            } catch (e) {
-                btn.disabled = false;
-                btn.textContent = '✨ 보완한 대본 받기 (다시 시도)';
-                alert('보완 대본 실패: ' + e.message);
-            }
+        // 원문 위치를 찾아 왼쪽 편집기에서 선택(하이라이트)
+        function locate(original) {
+            const box = document.getElementById('scriptBox');
+            let i = box.value.indexOf(original);
+            if (i >= 0) return [i, i + original.length];
+            const re = new RegExp(original.trim().split(/\s+/).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'));
+            const m = re.exec(box.value);
+            return m ? [m.index, m.index + m[0].length] : null;
+        }
+        function findInScript(i) {
+            const m = lastFb?.feedback?.improvements?.[i];
+            const box = document.getElementById('scriptBox');
+            const pos = m && locate(m.original);
+            if (!pos) { alert('대본에서 해당 부분을 찾지 못했어요. 이미 고쳤을 수도 있어요!'); return; }
+            box.focus();
+            box.setSelectionRange(pos[0], pos[1]);
+            // 선택한 위치가 보이도록 스크롤
+            const before = box.value.slice(0, pos[0]).split('\n').length;
+            const lineH = parseFloat(getComputedStyle(box).lineHeight) || 22;
+            box.scrollTop = Math.max(0, (before - 3) * lineH);
+            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        function applyImprovement(i) {
+            const m = lastFb?.feedback?.improvements?.[i];
+            const box = document.getElementById('scriptBox');
+            const pos = m && locate(m.original);
+            if (!pos) { alert('대본에서 해당 부분을 찾지 못했어요. 이미 고쳤을 수도 있어요!'); return; }
+            setScript(box.value.slice(0, pos[0]) + m.revised + box.value.slice(pos[1]));
+            const card = document.getElementById('imp-' + i);
+            if (card) card.classList.add('opacity-50');
+            box.focus();
+            box.setSelectionRange(pos[0], pos[0] + m.revised.length);
         }
 
-        function copyRevised() {
-            const t = document.getElementById('revisedBox').innerText;
-            navigator.clipboard.writeText(t).then(() => alert('복사했어요!'), () => alert('복사에 실패했어요. 직접 드래그해서 복사해 주세요.'));
-        }
-        function useRevised() {
-            document.getElementById('scriptBox').innerText = document.getElementById('revisedBox').innerText;
-            document.getElementById('scriptBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        renderEmptyFeedback();
+        updateMeta();
     </script>
 </body>
 </html>
