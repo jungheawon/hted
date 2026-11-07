@@ -719,6 +719,7 @@
           <a href="#/download-classroom" data-route="download-classroom"><b>수업 자료실</b><small>RESOURCES</small></a>
           -->
           <a href="#/download-program" data-route="download-program"><b>프로그램 자료실</b><small>RESOURCES</small></a>
+          <a href="#/download-script" data-route="download-script"><b>AI 스크립트</b><small>AVAILABLE</small></a>
         </div>
       </div>
 
@@ -805,6 +806,7 @@
         <a href="#/download-classroom" data-route="download-classroom">수업 자료실</a>
         -->
         <a href="#/download-program" data-route="download-program">프로그램 자료실</a>
+        <a href="#/download-script" data-route="download-script">AI 스크립트</a>
       </div>
     </div>
 
@@ -1265,6 +1267,7 @@
     'tutor-plan':          { eyebrow: 'AI TUTOR',    title: 'AI 학습 플랜' },
     'download-classroom':  { eyebrow: 'DOWNLOAD',    title: '수업 자료실' },
     'download-program':    { eyebrow: 'DOWNLOAD',    title: '프로그램 자료실' },
+    'download-script':     { eyebrow: 'DOWNLOAD',    title: 'AI 스크립트' },
     'ai-interview':        { eyebrow: 'AI TUTOR',    title: 'AI 면접' },
     'admissions-gradecut': { eyebrow: '대입정보',     title: '고교학점제' }
   };
@@ -1334,6 +1337,7 @@
     'class-group':        'https://hted.kr/modum.html',   // 모둠 편성
     'class-presentation': 'https://hted.kr/turn.html',    // 발표 순서
     'class-lottery':      'https://hted.kr/number.html',  // 번호 추첨
+    'download-script':    'https://hted.kr/ai-coach.html',  // AI 스크립트
     'class-vote':         'https://hted.kr/vote.html',    // 교실 투표
     'admissions-gradecut': 'https://hted.kr/kokyo.html',  // 고교학점제
     'tutor-teacher':      'https://hted.kr/ai-tutor.html',
@@ -1364,6 +1368,23 @@
 
   // 로그인해야 들어갈 수 있는 페이지 (Teacher AI, AI Tutor)
   const isProtected = (r) => /^(teacher|tutor)-/.test(r || '') || r === 'ai-interview';
+  // ===== 역할 구분 =====
+  // 교사: 학교(.go.kr) 계정 중 아이디가 kko로 시작하지 않는 계정 + ADMIN_EMAILS
+  // 학생: 아이디가 kko로 시작하는 .go.kr 계정, 그리고 그 밖의 모든 계정
+  // 학생은 AI Tutor 메뉴만 사용할 수 있고, Teacher AI / Class AI는 막힙니다.
+  const ADMIN_EMAILS = ['htroceo@gmail.com'];
+  function roleOf(email){
+    const e = String(email || '').trim().toLowerCase();
+    const at = e.lastIndexOf('@');
+    if(at < 1) return 'student';
+    if(ADMIN_EMAILS.includes(e)) return 'teacher';
+    const local = e.slice(0, at), domain = e.slice(at + 1);
+    const school = domain === 'go.kr' || domain.endsWith('.go.kr');
+    if(school && !local.startsWith('kko')) return 'teacher';
+    return 'student';
+  }
+  const teacherOnly = (r) => /^(teacher|class)-/.test(r || '');
+  const isBlocked = (r) => !!currentUser && teacherOnly(r) && roleOf(currentUser.email) !== 'teacher';
   let currentRoute = 'home';
   let pendingRoute = null;
   const resView = document.getElementById('resView');
@@ -1600,6 +1621,7 @@
     footerEl.style.display = 'none';
     featView.classList.remove('active');
     const gated = isProtected(route) && !currentUser;
+    const blocked = !gated && isBlocked(route);
     if(route === 'features'){
       clearEmbed();
       renderFeatures();
@@ -1608,7 +1630,7 @@
       featView.classList.add('active');
       return;
     }
-    if(EMBEDS[route] && !gated){
+    if(EMBEDS[route] && !gated && !blocked){
       pageView.classList.remove('active');
       resView.classList.remove('active');
       embedFrame.title = meta.title;
@@ -1617,7 +1639,7 @@
       return;
     }
     clearEmbed();
-    if(RESOURCES[route]){
+    if(RESOURCES[route] && !blocked){
       renderResources(route);
       pageView.classList.remove('active');
       resView.classList.add('active');
@@ -1629,6 +1651,11 @@
       pvTitle.textContent = '로그인이 필요한 페이지예요';
       pvDesc.textContent = 'Teacher AI와 AI Tutor는 로그인 후 이용할 수 있어요. Google 계정으로 간단히 로그인해 주세요.';
       pvLogin.hidden = false;
+    } else if(blocked){
+      pvEyebrow.textContent = 'TEACHER ONLY';
+      pvTitle.textContent = '교사 전용 기능이에요';
+      pvDesc.textContent = '학생 계정은 AI Tutor 메뉴만 이용할 수 있어요. 교사 계정(.go.kr)으로 로그인하면 모든 기능을 쓸 수 있어요.';
+      pvLogin.hidden = true;
     } else if(EXTERNALS[route]){
       pvEyebrow.textContent = meta.eyebrow;
       pvTitle.textContent = meta.title;
@@ -1760,6 +1787,8 @@
             const r = pendingRoute;
             pendingRoute = null;
             navigate(r, false);
+          } else if(isBlocked(currentRoute)){
+            navigate(currentRoute, false);
           }
         } catch(err){
           showToast('로그인 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
@@ -1793,12 +1822,13 @@
   }
 
   function logout(){
+    const wasBlocked = isBlocked(currentRoute);
     currentUser = null;
     saveUser(null);
     renderAuth();
     closeMenus();
     // 로그인 필요한 페이지에서 로그아웃하면 안내 화면으로
-    if(isProtected(currentRoute)) navigate(currentRoute, false);
+    if(isProtected(currentRoute) || wasBlocked) navigate(currentRoute, false);
     showToast('로그아웃되었어요.');
   }
 
