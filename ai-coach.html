@@ -3,159 +3,623 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>팀 토론 [주장-이유-근거] 빌더</title>
+    <title>3:3 팀 토론 [주장-이유-근거] 빌더 & AI 스마트 코치</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .tab-btn.active {
+            color: #4f46e5;
+            border-bottom: 2px solid #4f46e5;
+            font-weight: 700;
+        }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen p-4 md:p-8">
-    <div class="max-w-7xl mx-auto">
-        <!-- 헤더 -->
-        <div class="mb-6">
-            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">Debate Practice Tool</span>
-            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2">팀 토론 [주장 - 이유 - 근거] 대본 빌더</h1>
-            <p class="text-sm text-slate-500 mt-1">3:3 팀 토론 역할(토론자/사회자)에 맞춰 논리적인 발언 대본을 완성하고, AI 피드백을 받아 직접 고쳐 보세요.</p>
-        </div>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            <!-- ===== 왼쪽: 재료 입력 ===== -->
-            <div class="space-y-6 lg:sticky lg:top-6">
-                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100">
-                    <div class="text-xs font-bold text-indigo-600 mb-4">STEP 1 · 재료 입력</div>
-                    <form id="debateForm" class="space-y-6">
-                        <!-- 1. 주제 선택 -->
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">토론 주제</label>
-                            <select id="topicSelect" onchange="toggleCustomTopic()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none mb-2">
-                                <option value="학생들의 과제 수행 시 AI 사용을 허용해야 한다">학생들의 과제 수행 시 AI 사용을 허용해야 한다</option>
-                                <option value="자율 주행차의 도로 운행을 전면 허용해야 한다">자율 주행차의 도로 운행을 전면 허용해야 한다</option>
-                                <option value="온라인 수업이 대면 수업보다 낫다">온라인 수업이 대면 수업보다 낫다</option>
-                                <option value="custom">✏️ 직접 입력하기</option>
-                            </select>
-                            <input type="text" id="customTopic" placeholder="토론 주제를 직접 입력하세요"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none hidden">
-                        </div>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-                        <!-- 2. 역할 선택 -->
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">나의 역할</label>
-                            <select id="role" onchange="toggleRoleFields()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <optgroup label="토론자 (Speaker)">
-                                    <option value="찬성 1번 (입론 & 1,2번 논거)">찬성 1번 (입론 & 1,2번 논거)</option>
-                                    <option value="반대 1번 (반박 & 1,2번 논거)">반대 1번 (반박 & 1,2번 논거)</option>
-                                    <option value="찬성 2번 (심화 & 3번 논거)">찬성 2번 (심화 & 3번 논거)</option>
-                                    <option value="반대 2번 (심화 & 3번 논거)">반대 2번 (심화 & 3번 논거)</option>
-                                    <option value="찬성 3번 (종합 반박 & 요약)">찬성 3번 (종합 반박 & 요약)</option>
-                                    <option value="반대 3번 (종합 반박 & 요약)">반대 3번 (종합 반박 & 요약)</option>
-                                </optgroup>
-                                <optgroup label="사회자 (Moderator)">
-                                    <option value="사회자 - 오프닝">사회자 - 오프닝 (토론 시작 안내)</option>
-                                    <option value="사회자 - 찬성 발언 직후 진행">사회자 - 찬성 발언 직후 진행</option>
-                                    <option value="사회자 - 반대 발언 직후 진행">사회자 - 반대 발언 직후 진행</option>
-                                    <option value="사회자 - 클로징">사회자 - 클로징 (토론 마무리 안내)</option>
-                                </optgroup>
-                            </select>
-                        </div>
-
-                        <!-- 3-A. 토론자용: 주장-이유-근거 -->
-                        <div id="speakerFields" class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <div>
-                                <label class="block text-sm font-bold text-indigo-900 mb-1">
-                                    1. 주장 (Assertion) <span class="text-xs font-normal text-indigo-600">- 한 문장으로 명확하게</span>
-                                </label>
-                                <input type="text" id="assertion" placeholder="예: 저희 팀은 학생들의 과제 수행 시 AI 사용을 허용해야 한다고 생각합니다."
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-emerald-900 mb-1">
-                                    2. 이유 (Reasoning) <span class="text-xs font-normal text-emerald-600">- 왜 그렇게 생각하는지 핵심 이유</span>
-                                </label>
-                                <textarea id="reasoning" rows="2" placeholder="예: 왜냐하면 AI는 학생들의 자료 조사 시간을 줄여주고 비판적 사고에 더 집중할 수 있게 돕는 도구이기 때문입니다."
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-amber-900 mb-1">
-                                    3. 근거 (Evidence) <span class="text-xs font-normal text-amber-600">- 통계, 연구 결과, 객관적 사례</span>
-                                </label>
-                                <textarea id="evidence" rows="3" placeholder="예: 실제로 2024년 교육 연구 결과에 따르면, AI를 조사 도구로 활용한 집단이 정보 분석 및 정리 능력에서 20% 높은 성취도를 보였습니다."
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
-                            </div>
-                        </div>
-
-                        <!-- 3-B. 사회자용: 진행 멘트 -->
-                        <div id="moderatorFields" class="space-y-4 bg-sky-50 p-4 rounded-xl border border-sky-200 hidden">
-                            <div>
-                                <label class="block text-sm font-bold text-sky-900 mb-1">
-                                    핵심 진행 메모 <span class="text-xs font-normal text-sky-600">- 다음 순서를 안내하며 강조하고 싶은 포인트</span>
-                                </label>
-                                <textarea id="moderatorNote" rows="3" placeholder="예: 방금 찬성 측의 논거를 정리하고, 이어서 반대 측의 반박을 요청합니다."
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:outline-none"></textarea>
-                            </div>
-                        </div>
-
-                        <button type="button" onclick="generateScript()"
-                            class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition duration-200 shadow-md">
-                            발언 대본 생성하기
-                        </button>
-                    </form>
-                </div>
-
-            </div>
-
-            <!-- ===== 오른쪽: 대본 편집 + AI 피드백 ===== -->
-            <div class="space-y-6">
-                <!-- 대본 편집기 (학생이 직접 수정) -->
-                <div id="outputArea" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100 space-y-4">
-                    <div class="flex items-end justify-between gap-3">
-                        <div>
-                            <div class="text-xs font-bold text-indigo-600">STEP 2 · 대본 다듬기 (직접 수정 가능)</div>
-                            <h2 class="text-xl font-bold text-slate-900">나의 발언 대본</h2>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span id="scriptMeta" class="text-xs text-slate-400 font-mono">0자 · 약 0:00</span>
-                            <button type="button" onclick="undoScript()" title="방금 바꾼 것 되돌리기"
-                                class="text-xs font-semibold px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50">↶ 되돌리기</button>
-                        </div>
-                    </div>
-                    <p class="text-xs text-slate-500 -mt-2">✏️ 아래 대본을 직접 고칠 수 있어요. 고친 내용 그대로 AI 피드백을 받아요.</p>
-                    <textarea id="scriptBox" rows="16" onbeforeinput="snapUndo()" oninput="updateMeta()"
-                        placeholder="'발언 대본 생성하기'를 누르거나 여기에 직접 대본을 써 보세요."
-                        class="w-full bg-indigo-50/60 border border-indigo-200 p-4 rounded-xl text-slate-800 font-mono text-sm leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-y"></textarea>
-
-                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl">
-                        <h3 class="font-bold text-amber-900 text-sm mb-2">💡 자가 논리 점검 체크리스트</h3>
-                        <ul class="text-xs text-amber-800 space-y-1 list-disc list-inside">
-                            <li>주장이 명확한 한 문장으로 제시되었는가?</li>
-                            <li>이유가 주장을 논리적으로 받쳐주고 있는가? ('왜냐하면~')</li>
-                            <li>근거에 출처, 통계, 사례 등 객관적 사실이 포함되어 있는가?</li>
-                        </ul>
-                    </div>
-
-                    <button type="button" id="aiFbBtn" onclick="getAIFeedback()"
-                        class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 disabled:cursor-not-allowed text-white font-bold rounded-lg transition duration-200 shadow-md">
-                        🤖 AI 보완 · 피드백 받기 ↓
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-xl border border-slate-100">
-                    <div class="px-6 md:px-8 pt-6 pb-4 border-b border-slate-100">
-                        <div class="text-xs font-bold text-emerald-600">STEP 3 · AI 피드백</div>
-                        <h2 class="text-xl font-bold text-slate-900">AI 코치의 분석</h2>
-                    </div>
-                    <div id="aiFbArea" class="p-6 md:p-8 space-y-4"></div>
-                </div>
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl mx-4 transform transition-all scale-95" id="modalBox">
+            <h3 id="modalTitle" class="text-lg font-bold text-slate-900 mb-2">확인 요청</h3>
+            <p id="modalMessage" class="text-sm text-slate-600 mb-6">진행하시겠습니까?</p>
+            <div class="flex justify-end gap-3">
+                <button type="button" id="modalCancelBtn" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition">취소</button>
+                <button type="button" id="modalConfirmBtn" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow transition">확인</button>
             </div>
         </div>
     </div>
 
+    <!-- 네비게이션 헤더 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-md">
+                        ARE
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">Debate Master</span>
+                            <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Gemini 3 AI</span>
+                        </div>
+                        <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">3:3 팀 토론 대본 빌더 & AI 스마트 코치</h1>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 탭 네비게이션 -->
+        <div class="bg-slate-50 border-t border-slate-100">
+            <div class="max-w-7xl mx-auto px-4">
+                <nav class="flex space-x-4 sm:space-x-8 text-xs sm:text-sm font-medium overflow-x-auto py-1">
+                    <button onclick="switchTab('builderTab')" id="nav-builderTab" class="tab-btn active py-3 px-1 flex items-center gap-1.5 whitespace-nowrap">
+                        <span>📝</span> 1. 대본 작성 & AI 피드백
+                    </button>
+                    <button onclick="switchTab('rebuttalTab')" id="nav-rebuttalTab" class="tab-btn text-slate-500 hover:text-slate-700 py-3 px-1 flex items-center gap-1.5 whitespace-nowrap">
+                        <span>⚔️</span> 2. 예상 반박 시뮬레이터
+                    </button>
+                    <button onclick="switchTab('practiceTab')" id="nav-practiceTab" class="tab-btn text-slate-500 hover:text-slate-700 py-3 px-1 flex items-center gap-1.5 whitespace-nowrap">
+                        <span>⏱️</span> 3. 스피치 연습 & 음성
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+
+        <!-- TAB 1: 대본 작성 & 편집기 -->
+        <section id="builderTab" class="tab-content block">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- 입력 패널 (5 cols) -->
+                <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">STEP 1 · 대본 구조화</span>
+                            <button type="button" onclick="loadSampleData()" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 hover:bg-indigo-100 px-2.5 py-1 rounded-md transition">
+                                ✨ 예시 입력 채우기
+                            </button>
+                        </div>
+
+                        <form id="debateForm" class="space-y-4">
+                            <!-- 1. 주제 선택 -->
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">토론 주제 (Motion)</label>
+                                <select id="topicSelect" onchange="handleTopicChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50/50 font-medium text-slate-900">
+                                    <option value="촉법소년 연령을 낮춰야 한다">옵션 1: 촉법소년 연령을 낮춰야 한다</option>
+                                    <option value="9시 등교제를 전면 실시해야 한다">옵션 2: 9시 등교제를 전면 실시해야 한다</option>
+                                    <option value="대학 입시 정시 비중을 확대해야 한다">옵션 3: 대학 입시 정시 비중을 확대해야 한다</option>
+                                    <option value="교내 스마트폰 사용을 전면 금지해야 한다">옵션 4: 교내 스마트폰 사용을 전면 금지해야 한다</option>
+                                    <option value="AI 창작물에 저작권을 인정해야 한다">옵션 5: AI 창작물에 저작권을 인정해야 한다</option>
+                                    <option value="custom">✏️ 직접 토론 주제 입력하기...</option>
+                                </select>
+                                <input type="text" id="customTopic" placeholder="토론 주제를 직접 입력하세요 (예: 유기동물 안락사를 금지해야 한다)"
+                                    class="w-full mt-2 px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none hidden bg-white">
+                            </div>
+
+                            <!-- 2. 역할 선택 -->
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">나의 역할 (3:3 토론)</label>
+                                <select id="role" onchange="toggleRoleFields()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50/50 font-medium text-slate-900">
+                                    <optgroup label="찬성 측 토론자 (Affirmative)">
+                                        <option value="찬성 1번 (입론 & 첫 번째 주장)">찬성 1번 (입론 · 배경 제시 & 1차 핵심 주장)</option>
+                                        <option value="찬성 2번 (반박 & 두 번째 주장)">찬성 2번 (상대 반박 & 2차 핵심 주장)</option>
+                                        <option value="찬성 3번 (종합 반박 & 요약 변론)">찬성 3번 (종합 반박 & 최종 요약 변론)</option>
+                                    </optgroup>
+                                    <optgroup label="반대 측 토론자 (Negative)">
+                                        <option value="반대 1번 (반박 & 첫 번째 주장)">반대 1번 (찬성 1번 반박 & 1차 핵심 주장)</option>
+                                        <option value="반대 2번 (반박 & 두 번째 주장)">반대 2번 (찬성 2번 반박 & 2차 핵심 주장)</option>
+                                        <option value="반대 3번 (종합 반박 & 요약 변론)">반대 3번 (종합 반박 & 최종 요약 변론)</option>
+                                    </optgroup>
+                                    <optgroup label="사회자 (Moderator)">
+                                        <option value="사회자 - 오프닝">사회자 - 오프닝 (주제 소개 및 토론 시작)</option>
+                                        <option value="사회자 - 찬성 발언 직후 진행">사회자 - 찬성 발언 직후 진행 안내</option>
+                                        <option value="사회자 - 반대 발언 직후 진행">사회자 - 반대 발언 직후 진행 안내</option>
+                                        <option value="사회자 - 클로징">사회자 - 클로징 (토론 총평 및 마감)</option>
+                                    </optgroup>
+                                </select>
+                                <p id="roleTip" class="text-xs text-indigo-600 mt-1 font-medium bg-indigo-50 p-2 rounded-lg border border-indigo-100">
+                                    💡 찬성 1번 역할: 사회 문제의 심각성을 먼저 환기하고 팀의 핵심 입론을 명확히 제시합니다.
+                                </p>
+                            </div>
+
+                            <!-- 3-A. 토론자용: ARE 구조 입력 -->
+                            <div id="speakerFields" class="space-y-3 bg-slate-50/80 p-4 rounded-xl border border-slate-200">
+                                <div>
+                                    <label class="block text-xs font-bold text-indigo-900 mb-1">
+                                        1. 주장 (Assertion) <span class="text-xs font-normal text-indigo-600">- 한 문장으로 명확한 결론</span>
+                                    </label>
+                                    <input type="text" id="assertion" placeholder="예: 저희 팀은 촉법소년 연령을 현행 만 14세 미만에서 하향 조정해야 한다고 생각합니다."
+                                        class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-emerald-900 mb-1">
+                                        2. 이유 (Reasoning) <span class="text-xs font-normal text-emerald-600">- 왜 그렇게 생각하는지 핵심 이유</span>
+                                    </label>
+                                    <textarea id="reasoning" rows="2" placeholder="예: 왜냐하면 청소년의 신체적·정신적 성장 속도가 과거보다 훨씬 빨라졌고 강력범죄가 지능화되어 현 행정 및 법적 기준이 현실을 반영하지 못하기 때문입니다."
+                                        class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-amber-900 mb-1">
+                                        3. 근거 (Evidence) <span class="text-xs font-normal text-amber-600">- 객관적 데이터, 연구, 통계, 사례</span>
+                                    </label>
+                                    <textarea id="evidence" rows="3" placeholder="예: 실제로 경찰청 범죄 통계에 따르면 10~13세 청소년의 강력범죄 건수가 최근 5년간 30% 이상 증가했으며, 법적 처벌을 받지 않는 점을 악용하는 사례가 잇따르고 있습니다."
+                                        class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- 3-B. 사회자용 진행 입력 -->
+                            <div id="moderatorFields" class="space-y-3 bg-sky-50/80 p-4 rounded-xl border border-sky-200 hidden">
+                                <div>
+                                    <label class="block text-xs font-bold text-sky-900 mb-1">
+                                        핵심 진행 및 요약 메모 <span class="text-xs font-normal text-sky-600">- 다음 순서 안내 및 정리</span>
+                                    </label>
+                                    <textarea id="moderatorNote" rows="4" placeholder="예: 방금 찬성 측 1번 토론자가 제시한 촉법소년 범죄율 증가 통계를 강조하고, 이에 대한 반대 측의 첫 번째 입론을 요청합니다."
+                                        class="w-full px-3 py-2 text-sm border border-sky-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:outline-none bg-white"></textarea>
+                                </div>
+                            </div>
+
+                            <button type="button" onclick="generateScript()"
+                                class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition duration-200 shadow-md flex items-center justify-center gap-2">
+                                <span>⚡</span> 초안 대본 생성하기
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 대본 편집기 패널 (7 cols) -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 space-y-4">
+                        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">STEP 2 · 대본 작성 및 완성</span>
+                                <h2 class="text-lg font-bold text-slate-900 mt-1">나의 토론 발언 대본</h2>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="undoScript()" title="실수 되돌리기"
+                                    class="text-xs font-medium px-2.5 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition flex items-center gap-1 text-slate-600">
+                                    <span>↶</span> 되돌리기
+                                </button>
+                                <button type="button" onclick="copyScript()" title="클립보드 복사"
+                                    class="text-xs font-medium px-2.5 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition flex items-center gap-1 text-slate-600">
+                                    <span>📋</span> 복사
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 실시간 메타 데이터 -->
+                        <div class="flex flex-wrap items-center justify-between bg-slate-50 px-3.5 py-2 rounded-xl text-xs text-slate-600 border border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <span>글자 수: <b id="charCount" class="text-slate-900 font-mono">0자</b></span>
+                                <span>발화 예상 시간: <b id="timeEstimate" class="text-indigo-600 font-mono">약 0초</b></span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <label for="wpmSelect" class="text-slate-400">발화 속도:</label>
+                                <select id="wpmSelect" onchange="updateMeta()" class="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 font-medium">
+                                    <option value="280">천천히 (280자/분)</option>
+                                    <option value="330" selected>보통 (330자/분)</option>
+                                    <option value="380">빠르게 (380자/분)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 대본 입력 에디터 -->
+                        <div class="relative">
+                            <textarea id="scriptBox" rows="14" onbeforeinput="snapUndo()" oninput="updateMeta()"
+                                placeholder="'초안 대본 생성하기' 버튼을 누르거나, 직접 여기에 발언 대본을 작성해 보세요."
+                                class="w-full bg-slate-50/50 border border-slate-300 p-4 rounded-xl text-slate-800 font-medium text-sm leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition resize-y font-sans"></textarea>
+                        </div>
+
+                        <!-- 자가 체크리스트 -->
+                        <div class="bg-amber-50/70 border border-amber-200 p-4 rounded-xl">
+                            <h3 class="font-bold text-amber-900 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <span>💡</span> 자가 논리 점검 체크리스트 (Self-Check)
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-amber-900">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                                    <span>주장이 한 문장인가?</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                                    <span>이유가 주장을 뒷받침하는가?</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                                    <span>객관적 근거가 포함되었는가?</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- AI 진단 실행 버튼 -->
+                        <button type="button" id="aiFbBtn" onclick="requestAIFeedback()"
+                            class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition duration-200 shadow-md flex items-center justify-center gap-2 text-sm">
+                            <span>🤖</span> AI 피드백 받기
+                        </button>
+                    </div>
+
+                    <!-- STEP 3: AI 피드백 (대본 바로 아래) -->
+                    <div id="aiFbCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 scroll-mt-28">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">STEP 3 · AI 코치 피드백</span>
+                                <h2 class="text-lg font-bold text-slate-900 mt-1">대본 분석 & 보완 포인트</h2>
+                            </div>
+                            <button onclick="requestAIFeedback()" class="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+                                <span>🔄</span> 고친 대본 다시 진단
+                            </button>
+                        </div>
+
+                        <div id="aiFbArea">
+                            <div class="text-center py-10 text-slate-400 space-y-3">
+                                <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 text-2xl grid place-items-center mx-auto mb-2">🤖</div>
+                                <h3 class="font-bold text-slate-700">아직 진행된 피드백이 없습니다</h3>
+                                <p class="text-sm text-slate-500 max-w-md mx-auto">
+                                    위에서 대본을 완성한 뒤 <b class="text-emerald-600">'AI 피드백 받기'</b>를 눌러 주세요.
+                                </p>
+                                <ol class="text-xs text-left inline-block mt-2 space-y-1 list-decimal list-inside text-slate-500">
+                                    <li>AI가 짚어 준 보완 포인트를 읽고</li>
+                                    <li>위 대본을 내 말로 직접 고친 다음</li>
+                                    <li>다시 진단해서 점수가 오르는지 확인해요!</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: 예상 반박 & 재반박 시뮬레이터 -->
+        <section id="rebuttalTab" class="tab-content hidden">
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-violet-600 bg-violet-50 px-2.5 py-1 rounded-md">Counter-Argument Simulator</span>
+                            <h2 class="text-xl font-extrabold text-slate-900 mt-1">상대팀 예상 반박 & 재반박 전략</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">상대팀이 내 대본에 대해 제기할 수 있는 허점과 최적의 재반박 논리를 AI가 시뮬레이션합니다.</p>
+                        </div>
+                        <button onclick="generateRebuttals()" id="rebuttalGenBtn" class="text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 px-4 py-2.5 rounded-xl shadow transition flex items-center gap-1.5">
+                            <span>⚔️</span> 반박 시뮬레이션 실행
+                        </button>
+                    </div>
+
+                    <div id="rebuttalArea">
+                        <div class="text-center py-16 text-slate-400 space-y-3">
+                            <div class="w-16 h-16 rounded-2xl bg-violet-50 text-violet-600 text-3xl grid place-items-center mx-auto mb-2">⚔️</div>
+                            <h3 class="font-bold text-slate-700">예상 반박 시뮬레이션을 시작해보세요</h3>
+                            <p class="text-sm text-slate-500 max-w-md mx-auto">
+                                우측 상단의 <b>'반박 시뮬레이션 실행'</b> 버튼을 누르면 상대팀의 주요 공격 포인트와 대응 전략을 바로 확인하실 수 있습니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: 스피치 연습 & AI 음성 -->
+        <section id="practiceTab" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- 타이머 & 스피치 컨트롤 (5 cols) -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center space-y-6">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">Speech Practice Timer</span>
+                        <h2 class="text-lg font-bold text-slate-900">실전 발언 타이머</h2>
+
+                        <!-- 시간 설정 버튼 -->
+                        <div class="flex justify-center gap-2">
+                            <button onclick="setTimer(120)" class="px-3 py-1.5 text-xs font-bold border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition">2분</button>
+                            <button onclick="setTimer(180)" class="px-3 py-1.5 text-xs font-bold border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition">3분</button>
+                            <button onclick="setTimer(240)" class="px-3 py-1.5 text-xs font-bold border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition">4분</button>
+                            <button onclick="setTimer(300)" class="px-3 py-1.5 text-xs font-bold border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition">5분</button>
+                        </div>
+
+                        <!-- 타이머 디스플레이 -->
+                        <div class="relative w-48 h-48 mx-auto flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90">
+                                <circle cx="96" cy="96" r="88" stroke="currentColor" stroke-width="8" class="text-slate-100" fill="transparent" />
+                                <circle id="timerRing" cx="96" cy="96" r="88" stroke="currentColor" stroke-width="8" class="text-indigo-600 transition-all duration-300" fill="transparent" stroke-dasharray="552.92" stroke-dashoffset="0" stroke-linecap="round" />
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span id="timerDisplay" class="text-4xl font-black text-slate-900 font-mono">03:00</span>
+                                <span id="timerStatus" class="text-xs font-bold text-slate-400 mt-1 uppercase">Ready</span>
+                            </div>
+                        </div>
+
+                        <!-- 시작 / 일시정지 / 리셋 -->
+                        <div class="flex items-center justify-center gap-3">
+                            <button type="button" id="startTimerBtn" onclick="toggleTimer()" class="w-28 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition text-sm">
+                                ▶ 시작
+                            </button>
+                            <button type="button" onclick="resetTimer()" class="w-24 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-sm">
+                                ↺ 리셋
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 음성 낭독 (브라우저 내장 TTS) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">Voice Reader</span>
+                            <span class="text-xs text-slate-400">대본 음성 낭독</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900">음성으로 들으며 연습하기</h3>
+                        <p class="text-xs text-slate-500">내 대본을 음성으로 들으며 발화 속도와 호흡을 익혀 보세요. (기기에 설치된 한국어 음성을 사용해요)</p>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-slate-600 mb-1">음성</label>
+                                <select id="ttsVoice" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-slate-50">
+                                    <option value="">기본 한국어 음성</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">속도</label>
+                                <select id="ttsRate" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-slate-50">
+                                    <option value="0.85">천천히</option>
+                                    <option value="1" selected>보통</option>
+                                    <option value="1.15">빠르게</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button type="button" id="generateTtsBtn" onclick="generateTTSAudio()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition text-xs flex items-center justify-center gap-2">
+                                <span>🔊</span> 음성으로 듣기
+                            </button>
+                            <button type="button" onclick="stopTTS()" class="w-24 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-xs">
+                                ⏹ 정지
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 프롬프터 겸 가독 대본 뷰어 (7 cols) -->
+                <div class="lg:col-span-7">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4 h-full flex flex-col">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-bold text-slate-900">텔레프롬프터 가독 뷰어</h3>
+                            <div class="flex items-center gap-2">
+                                <button onclick="adjustFontSize(1)" class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded hover:bg-slate-200 font-mono">A+</button>
+                                <button onclick="adjustFontSize(-1)" class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded hover:bg-slate-200 font-mono">A-</button>
+                            </div>
+                        </div>
+
+                        <div id="prompterBox" class="flex-1 bg-slate-900 text-slate-100 p-6 rounded-xl font-medium text-lg leading-relaxed overflow-y-auto max-h-[500px] whitespace-pre-wrap font-sans border border-slate-800">
+대본이 여기에 표시됩니다.
+[1. 대본 작성 & AI 피드백] 탭에서 대본을 먼저 작성해 주세요.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+                <b>3:3 팀 토론 ARE 대본 빌더 & AI 코치</b> · Powered by Google Gemini 3 API
+            </div>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span>Assertion</span> · <span>Reasoning</span> · <span>Evidence</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 스크립트 로직 -->
     <script>
-        function toggleCustomTopic() {
+        /* ============================================================
+           AI 서버 연결 (Apps Script) 및 전역 상태
+           - API 키는 Apps Script의 [스크립트 속성 → GEMINI_API_KEY]에만 저장됩니다.
+           ============================================================ */
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwUYgmhvgQLCBKpPv3we10S9KH2lk26J3PrU4eMS8J8qkxHJLRUKyywOfKIUD4HJm4L3w/exec';
+        const GEMINI_MODEL = 'gemini-3.8-flash';
+        const GEMINI_FALLBACK_MODEL = 'gemini-flash-lite-latest'; // 서버가 붐빌 때 대신 쓸 모델
+        const HEDGE_AFTER_MS = 6000; // 이 시간 안에 답이 없으면 가벼운 모델에도 함께 요청
+
+        const undoStack = [];
+        let typingTimer = null;
+        let prompterFontSize = 18;
+
+        const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        // 주제별 ARE 데이터 세트
+        const topicExamples = {
+            "촉법소년 연령을 낮춰야 한다": {
+                assertion: "저희 팀은 형사 처벌을 받지 않는 촉법소년의 연령 상한을 현행 만 14세 미만에서 만 12세 미만으로 하향 조정해야 한다고 생각합니다.",
+                reasoning: "왜냐하면 현대 청소년의 신체적·정신적 성장 속도가 과거보다 훨씬 빨라졌고, 범죄가 한층 지능화·강력화되고 있어 기존 법적 기준이 사회적 정의를 실현하지 못하기 때문입니다.",
+                evidence: "실제로 경찰청 범죄 통계에 따르면 10~13세 청소년의 강력범죄 건수가 최근 5년간 30% 이상 증가했으며, 법적 처벌을 받지 않는 점을 악용하는 범죄 사례가 지속적으로 보고되고 있습니다."
+            },
+            "9시 등교제를 전면 실시해야 한다": {
+                assertion: "저희 팀은 전국 초·중·고등학교에 9시 등교제를 전면 실시해야 한다고 생각합니다.",
+                reasoning: "왜냐하면 청소년의 수면권을 보장하여 신체적·정신적 건강을 증진하고, 오전 수업의 학습 집중도 및 학업 성취도를 높일 수 있기 때문입니다.",
+                evidence: "실제로 수면의학회 연구에 따르면 등교 시간을 9시로 늦춘 학교 학생들의 수면 장애 비율이 24% 감소하고 아침 식사 섭취율이 18% 증가했습니다."
+            },
+            "대학 입시 정시 비중을 확대해야 한다": {
+                assertion: "저희 팀은 대학 입시에서 수능 위주의 정시 모집 비중을 50% 이상으로 확대해야 한다고 주장합니다.",
+                reasoning: "왜냐하면 수능은 국가 차원의 단일 기준 평가로서 주관적 개입 여지를 최소화하고, 모든 수험생에게 공정한 기회를 제공하기 때문입니다.",
+                evidence: "실제로 입시 관련 설문조사 결과 응답자의 68%가 수시 학생부 종합 전형보다 수능 중심 정시 전형이 공정성 측면에서 우수하다고 평가했습니다."
+            },
+            "교내 스마트폰 사용을 전면 금지해야 한다": {
+                assertion: "저희 팀은 등교 후 하교 시까지 교내 스마트폰 사용을 전면 금지해야 한다고 주장합니다.",
+                reasoning: "왜냐하면 수업 중 잦은 알림과 딴짓으로 인한 학습권 침해를 방지하고, 쉬는 시간 동료 학생들과의 대면 소통을 활성화할 수 있기 때문입니다.",
+                evidence: "실제로 런던정경대(LSE) 연구에 따르면 교내 스마트폰 사용을 금지한 학교 학생들의 기말고사 성적이 평균 6.4% 향상되었습니다."
+            },
+            "AI 창작물에 저작권을 인정해야 한다": {
+                assertion: "저희 팀은 인공지능(AI)이 생성한 독창적 창작물에 대해서도 저작권을 인정해야 한다고 생각합니다.",
+                reasoning: "왜냐하면 AI 프롬프트 엔지니어링과 데이터 정제에도 인간의 독창적 기여가 포함되며, 기술 혁신과 창작 산업 투자를 촉진하기 때문입니다.",
+                evidence: "글로벌 컨설팅 보고서에 따르면 AI 저작권 보호 체계를 선제 도입한 국가의 콘텐츠 산업 투자액이 연평균 15% 이상 성장하는 것으로 예측되었습니다."
+            }
+        };
+
+        // 역할별 설명 팁
+        const roleTips = {
+            "찬성 1번 (입론 & 첫 번째 주장)": "💡 찬성 1번: 사회적 문제 제기와 핵심 용어 정의를 내린 후, 찬성 측의 1차 핵심 입론을 선명하게 제시합니다.",
+            "찬성 2번 (반박 & 두 번째 주장)": "💡 찬성 2번: 반대 1번의 주장을 핵심 논거 중심으로 반박한 뒤, 찬성 측의 2차 핵심 이유와 근거로 논리를 확장합니다.",
+            "찬성 3번 (종합 반박 & 요약 변론)": "💡 찬성 3번: 반대 측 논리의 허점을 종합 요약하여 반박하고, 우리 팀의 핵심 가치를 재강조하며 강력히 마무리합니다.",
+            "반대 1번 (반박 & 첫 번째 주장)": "💡 반대 1번: 찬성 1번의 입론에 담긴 전제를 반박한 뒤, 반대 측의 1차 핵심 논거를 명확히 제시합니다.",
+            "반대 2번 (반박 & 두 번째 주장)": "💡 반대 2번: 찬성 2번의 반박에 맞응하여 재반박하고, 반대 측 2차 논거의 현실적/정책적 타당성을 강조합니다.",
+            "반대 3번 (종합 반박 & 요약 변론)": "💡 반대 3번: 찬성 측의 핵심 논거를 최종 반박하고, 반대 측 입장이 가져올 사회적 유익과 정당성을 최종 요약합니다.",
+            "사회자 - 오프닝": "💡 사회자 오프닝: 토론 주제, 토론자 소개, 토론 규칙을 공평하고 중립적인 어조로 안내합니다.",
+            "사회자 - 찬성 발언 직후 진행": "💡 사회자 진행: 찬성 측 발언 핵심 내용을 1문장으로 요약 정리한 뒤 자연스럽게 반대 측 발언을 유도합니다.",
+            "사회자 - 반대 발언 직후 진행": "💡 사회자 진행: 반대 측 발언 핵심 내용을 1문장으로 요약 정리한 뒤 다음 찬성 측 발언을 유도합니다.",
+            "사회자 - 클로징": "💡 사회자 클로징: 양 측의 쟁점을 공정하게 정리하고 열띤 토론을 진행해 준 토론자들에게 감사를 표하며 마칩니다."
+        };
+
+        /* ============================================================
+           UI 탭 전환 및 커스텀 알림/모달
+           ============================================================ */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active', 'text-indigo-600');
+                el.classList.add('text-slate-500');
+            });
+
+            document.getElementById(tabId).classList.remove('hidden');
+            const navBtn = document.getElementById(`nav-${tabId}`);
+            if (navBtn) navBtn.classList.add('active');
+
+            if (tabId === 'practiceTab') {
+                updatePrompter();
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-800';
+            toast.className = `${bgClass} text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg transition-all transform translate-y-2 opacity-0 flex items-center gap-2 pointer-events-auto`;
+            toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '⚠️' : 'ℹ️'}</span> ${message}`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 200);
+            }, 3000);
+        }
+
+        function showConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('confirmModal');
+            const modalBox = document.getElementById('modalBox');
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalBox.classList.remove('scale-95');
+            }, 10);
+
+            const cancelBtn = document.getElementById('modalCancelBtn');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+
+            const cleanup = () => {
+                modal.classList.add('opacity-0');
+                modalBox.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+                cancelBtn.onclick = null;
+                confirmBtn.onclick = null;
+            };
+
+            cancelBtn.onclick = cleanup;
+            confirmBtn.onclick = () => {
+                cleanup();
+                onConfirm();
+            };
+        }
+
+        /* ============================================================
+           STEP 1 & 2: 대본 빌더 & 실시간 편집기 핸들러
+           ============================================================ */
+        function handleTopicChange() {
             const select = document.getElementById('topicSelect');
-            document.getElementById('customTopic').classList.toggle('hidden', select.value !== 'custom');
+            const customInput = document.getElementById('customTopic');
+            const val = select.value;
+
+            customInput.classList.toggle('hidden', val !== 'custom');
+
+            if (topicExamples[val]) {
+                document.getElementById('assertion').placeholder = topicExamples[val].assertion;
+                document.getElementById('reasoning').placeholder = topicExamples[val].reasoning;
+                document.getElementById('evidence').placeholder = topicExamples[val].evidence;
+            } else {
+                document.getElementById('assertion').placeholder = "한 문장으로 결론을 작성하세요";
+                document.getElementById('reasoning').placeholder = "왜 그렇게 생각하는지 근거 논리를 작성하세요";
+                document.getElementById('evidence').placeholder = "객관적 사실, 연구, 데이터 등을 제시하세요";
+            }
         }
 
         function toggleRoleFields() {
-            const isModerator = document.getElementById('role').value.startsWith('사회자');
+            const role = document.getElementById('role').value;
+            const isModerator = role.startsWith('사회자');
             document.getElementById('speakerFields').classList.toggle('hidden', isModerator);
             document.getElementById('moderatorFields').classList.toggle('hidden', !isModerator);
+            
+            document.getElementById('roleTip').textContent = roleTips[role] || "";
+        }
+
+        function loadSampleData() {
+            const topic = document.getElementById('topicSelect').value;
+            if (topicExamples[topic]) {
+                document.getElementById('assertion').value = topicExamples[topic].assertion;
+                document.getElementById('reasoning').value = topicExamples[topic].reasoning;
+                document.getElementById('evidence').value = topicExamples[topic].evidence;
+                showToast("선택한 주제의 표준 예시 입력 데이터가 채워졌습니다.", "success");
+            } else {
+                document.getElementById('assertion').value = "저희 팀은 해당 의안에 찬성하는 바입니다.";
+                document.getElementById('reasoning').value = "왜냐하면 사회적 공익과 안전을 확보할 수 있기 때문입니다.";
+                document.getElementById('evidence').value = "관련 연구 보고서에 따르면 긍정적 효과가 25% 이상 높게 나왔습니다.";
+                showToast("기본 예시 데이터가 입력되었습니다.", "info");
+            }
         }
 
         function getTopic() {
@@ -168,74 +632,66 @@
             const role = document.getElementById('role').value;
             let script = '';
 
-            if (!topic) { alert('토론 주제를 입력해 주세요!'); return; }
+            if (!topic) {
+                showToast('토론 주제를 먼저 입력해 주세요.', 'error');
+                return;
+            }
 
             if (role.startsWith('사회자')) {
                 const note = document.getElementById('moderatorNote').value;
-                if (!note) { alert('진행 메모를 입력해 주세요!'); return; }
+                if (!note) {
+                    showToast('사회자 진행 메모를 입력해 주세요.', 'error');
+                    return;
+                }
 
                 const templates = {
-                    '사회자 - 오프닝': `안녕하십니까. 지금부터 '${topic}'를 주제로 한 토론을 시작하겠습니다.
-오늘 토론은 찬성 측과 반대 측이 각각 1, 2, 3번 토론자로 참여하며, 입론-반박-요약 순으로 진행됩니다.
-
-${note}
-
-그럼 먼저 찬성 측 1번 토론자부터 입론을 시작해 주시기 바랍니다.`,
-                    '사회자 - 찬성 발언 직후 진행': `네, 찬성 측의 발언 잘 들었습니다.
-
-${note}
-
-이어서 반대 측의 반박을 들어보겠습니다. 반대 측 토론자, 발언해 주시기 바랍니다.`,
-                    '사회자 - 반대 발언 직후 진행': `네, 반대 측의 발언 잘 들었습니다.
-
-${note}
-
-이어서 찬성 측의 반박을 들어보겠습니다. 찬성 측 토론자, 발언해 주시기 바랍니다.`,
-                    '사회자 - 클로징': `양측의 열띤 토론 잘 들었습니다. 이것으로 '${topic}'에 대한 토론을 마치겠습니다.
-
-${note}
-
-오늘 토론에 참여해 주신 모든 토론자 여러분께 감사드립니다. 이것으로 토론을 마치겠습니다.`
+                    '사회자 - 오프닝': `안녕하십니까, 오늘 토론의 사회를 맡은 사회자입니다.\n지금부터 '${topic}'라는 주제로 3:3 팀 토론을 시작하겠습니다.\n\n[진행 안내]\n오늘 토론은 찬성 측과 반대 측이 번갈아 입론, 반박, 요약 변론 순서로 진행됩니다.\n${note}\n\n그럼 먼저 찬성 측 1번 토론자부터 입론을 시작해 주시기 바랍니다.`,
+                    '사회자 - 찬성 발언 직후 진행': `네, 찬성 측 토론자의 발언 잘 들었습니다.\n\n[진행 요약 & 전달]\n${note}\n\n이어서 반대 측 토론자, 준비되셨으면 반박 및 발언해 주시기 바랍니다.`,
+                    '사회자 - 반대 발언 직후 진행': `네, 반대 측 토론자의 발언 잘 들었습니다.\n\n[진행 요약 & 전달]\n${note}\n\n이어서 찬성 측 토론자, 반박 및 발언을 진행해 주시기 바랍니다.`,
+                    '사회자 - 클로징': `양 측 토론자의 열띤 주장과 입론을 잘 들었습니다.\n이것으로 '${topic}' 주제에 대한 3:3 팀 토론을 마칩니다.\n\n[토론 총평 메모]\n${note}\n\n참여해 주신 토론자 분들과 청중 여러분께 감사드립니다.`
                 };
-                script = templates[role];
+                script = templates[role] || `${topic} - ${role}\n${note}`;
             } else {
-                const assertion = document.getElementById('assertion').value;
-                const reasoning = document.getElementById('reasoning').value;
-                const evidence = document.getElementById('evidence').value;
-                if (!assertion || !reasoning || !evidence) { alert('모든 항목을 입력해 주세요!'); return; }
+                const assertion = document.getElementById('assertion').value.trim();
+                const reasoning = document.getElementById('reasoning').value.trim();
+                const evidence = document.getElementById('evidence').value.trim();
 
-                script = `안녕하십니까. 오늘 '${topic}'에 대해 발언을 맡은 ${role}입니다.
+                if (!assertion || !reasoning || !evidence) {
+                    showToast('주장, 이유, 근거(ARE)를 모두 입력해 주세요.', 'error');
+                    return;
+                }
 
-${assertion}
-
-${reasoning}
-
-${evidence}
-
-따라서 이러한 이유와 객관적 근거를 바탕으로 저희 팀의 입장을 강력히 주창합니다. 감사합니다.`;
+                script = `안녕하십니까. 오늘 '${topic}'에 대해 발언을 맡은 ${role}입니다.\n\n[주장 (Assertion)]\n${assertion}\n\n[이유 (Reasoning)]\n${reasoning}\n\n[근거 (Evidence)]\n${evidence}\n\n따라서 이러한 이유와 객관적인 근거를 바탕으로 저희 팀의 입장을 강력히 주장하는 바입니다. 감사합니다.`;
             }
 
             const box = document.getElementById('scriptBox');
-            if (box.value.trim() && box.value !== script &&
-                !confirm('지금 대본을 새로 만든 대본으로 바꿀까요?\n(직접 고친 내용은 되돌리기로 복구할 수 있어요)')) return;
-            setScript(script);
-            renderEmptyFeedback();
-            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (box.value.trim() && box.value !== script) {
+                showConfirm('새로운 대본으로 덮어쓸까요?', '현재 작성된 대본 내용을 새로 생성된 초안으로 교체합니다.', () => {
+                    setScript(script);
+                    showToast('새 초안 대본이 적용되었습니다.', 'success');
+                });
+            } else {
+                setScript(script);
+                showToast('대본 초안이 생성되었습니다.', 'success');
+            }
         }
-    </script>
-
-    <!-- ===== 대본 편집 도우미 ===== -->
-    <script>
-        const CHARS_PER_MIN = 330; // 한국어 발화 기준 대략치(공백 제외)
-        const undoStack = [];
 
         function updateMeta() {
-            const t = document.getElementById('scriptBox').value;
-            const n = t.replace(/\s/g, '').length;
-            const sec = Math.round(n / CHARS_PER_MIN * 60);
-            document.getElementById('scriptMeta').textContent =
-                `${n.toLocaleString()}자 · 약 ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+            const text = document.getElementById('scriptBox').value;
+            const cleanText = text.replace(/\s/g, '');
+            const charCount = cleanText.length;
+            const wpm = parseInt(document.getElementById('wpmSelect').value) || 330;
+            
+            const totalSeconds = Math.round(charCount / wpm * 60);
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+
+            document.getElementById('charCount').textContent = `${charCount.toLocaleString()}자`;
+            document.getElementById('timeEstimate').textContent = mins > 0 ? `약 ${mins}분 ${secs}초` : `약 ${secs}초`;
+
+            updatePrompter();
         }
+
         function setScript(text) {
             const box = document.getElementById('scriptBox');
             if (undoStack[undoStack.length - 1] !== box.value) undoStack.push(box.value);
@@ -243,103 +699,98 @@ ${evidence}
             box.value = text;
             updateMeta();
         }
+
         function undoScript() {
-            if (!undoStack.length) { alert('되돌릴 내용이 없어요.'); return; }
+            if (!undoStack.length) {
+                showToast('되돌릴 이전 내용이 없습니다.', 'info');
+                return;
+            }
             document.getElementById('scriptBox').value = undoStack.pop();
             updateMeta();
+            showToast('이전 상태로 되돌렸습니다.', 'info');
         }
-        let typingTimer = null;
+
         function snapUndo() {
-            // 직접 타이핑할 때 4초 단위로 '고치기 전' 상태를 저장
             if (typingTimer) return;
             const v = document.getElementById('scriptBox').value;
             if (undoStack[undoStack.length - 1] !== v) undoStack.push(v);
             if (undoStack.length > 30) undoStack.shift();
-            typingTimer = setTimeout(() => { typingTimer = null; }, 4000);
+            typingTimer = setTimeout(() => { typingTimer = null; }, 3000);
         }
-    </script>
 
-    <!-- ===== AI 보완·피드백 스크립트 ===== -->
-    <script>
-        // ▼▼▼ 여기에 Gemini API 키를 붙여 넣으세요 (AI Studio에서 발급) ▼▼▼
-        const GEMINI_API_KEY = 'AQ.Ab8RN6IsPGDELV-EV3e7sXb8D8RQnXIvHwT0ozgeJ6IYpQMeKQ';
-        const GEMINI_MODEL = 'gemini-3.8-flash';
-        const GEMINI_FALLBACK_MODEL = 'gemini-flash-lite-latest'; // 서버가 붐빌 때 대신 쓸 모델
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        function copyScript() {
+            const script = document.getElementById('scriptBox').value;
+            if (!script.trim()) {
+                showToast('복사할 대본이 없습니다.', 'error');
+                return;
+            }
 
-        const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const el = document.createElement('textarea');
+            el.value = script;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            showToast('대본이 클립보드에 복사되었습니다.', 'success');
+        }
+
+        function updatePrompter() {
+            const text = document.getElementById('scriptBox').value;
+            const box = document.getElementById('prompterBox');
+            box.textContent = text.trim() ? text : "대본이 여기에 표시됩니다.\n[1. 대본 작성 & AI 피드백] 탭에서 대본을 작성해 주세요.";
+        }
+
+        function adjustFontSize(delta) {
+            prompterFontSize = Math.max(12, Math.min(32, prompterFontSize + delta * 2));
+            document.getElementById('prompterBox').style.fontSize = `${prompterFontSize}px`;
+        }
+
+        /* ============================================================
+           AI 호출 (Apps Script 서버 경유)
+           - 서버가 붐비면 즉시 가벼운 모델로 전환
+           - 6초 안에 답이 없으면 두 모델에 동시에 요청해 먼저 온 답 사용
+           ============================================================ */
         const sleep = ms => new Promise(r => setTimeout(r, ms));
-        // 대본에서 대괄호 없애기: [머리표]만 있는 줄과 문장 속 [ ... ]를 모두 지움
-        const stripBrackets = s => String(s ?? '')
-            .split('\n').filter(l => !/^\s*\[[^\]]*\]\s*$/.test(l)).join('\n')
-            .replace(/ ?\[[^\]\n]*\]/g, '').replace(/[\[\]]/g, '')
-            .replace(/\n{3,}/g, '\n\n').trim();
-
-        function renderEmptyFeedback() {
-            document.getElementById('aiFbArea').innerHTML = `
-                <div class="text-center py-16 text-slate-400">
-                    <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-2xl grid place-items-center mx-auto mb-3">🤖</div>
-                    <p class="font-semibold text-slate-600">아직 피드백이 없어요</p>
-                    <p class="text-sm mt-1">위 대본 칸에 대본을 만들거나 직접 쓴 뒤<br><b class="text-emerald-600">AI 보완 · 피드백 받기</b>를 눌러 보세요.</p>
-                    <ol class="text-xs text-left inline-block mt-5 space-y-1 list-decimal list-inside text-slate-500">
-                        <li>AI 피드백을 읽고</li>
-                        <li>위 대본을 직접 고친 다음</li>
-                        <li>다시 피드백을 받아 점수가 오르는지 확인!</li>
-                    </ol>
-                </div>`;
-        }
-
-        // 추론 단계를 최소로 → 가장 빠름. 모델이 지원하지 않으면 minimal → low → 끔 순서로 자동 조정
         const THINKING_LEVELS = ['minimal', 'low', null];
         let thinkingIdx = 0;
-        const HEDGE_AFTER_MS = 6000; // 이 시간 안에 답이 없으면 가벼운 모델에도 동시에 요청 → 먼저 온 답 사용
 
-        async function geminiOnce(model, system, prompt, json = true, signal) {
-            const generationConfig = json
-                ? { responseMimeType: 'application/json', temperature: 0.6 }
-                : { temperature: 0.7 };
+        async function aiOnce(model, system, prompt, signal) {
             const level = THINKING_LEVELS[thinkingIdx];
-            if (level) generationConfig.thinkingConfig = { thinkingLevel: level };
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
+            const res = await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    systemInstruction: { parts: [{ text: system }] },
-                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                    generationConfig
-                }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ model, system, prompt, json: true, thinkingLevel: level }),
                 signal
             });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) {
-                if (res.status === 400 && level && /thinking/i.test(data.error?.message || '')) {
-                    thinkingIdx++;
-                    return geminiOnce(model, system, prompt, json, signal);
-                }
-                const err = new Error(data.error?.message || ('오류 (' + res.status + ')'));
-                err.busy = [429, 500, 503].includes(res.status) || /high demand|overloaded|try again later|unavailable/i.test(err.message);
-                throw err;
+            const raw = await res.text();
+            let data;
+            try { data = JSON.parse(raw); }
+            catch { throw new Error(/<html/i.test(raw) ? 'Apps Script 접근 권한을 확인해 주세요. (배포 시 액세스 권한: 모든 사용자)' : '서버 응답을 읽지 못했어요.'); }
+            if (data.ok) return data.text;
+            const status = data.status || 500;
+            if (status === 400 && level && /thinking/i.test(data.error || '')) {
+                thinkingIdx++;
+                return aiOnce(model, system, prompt, signal);
             }
-            const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
-            if (!text) throw new Error('AI 응답이 비어 있어요. 다시 시도해 주세요.');
-            return text;
+            const err = new Error(data.error || ('서버 오류 (' + status + ')'));
+            err.busy = ([429, 500, 503].includes(status) && !/GEMINI_API_KEY|비어 있어요/.test(err.message))
+                || /high demand|overloaded|try again later|unavailable/i.test(err.message);
+            throw err;
         }
 
-        // 기본 모델과 가벼운 모델을 '경주'시켜 먼저 도착한 답을 씀
-        // - 기본 모델이 6초 안에 답하면 그대로 사용
-        // - 6초가 지나거나 서버가 붐비면 가벼운 모델도 출발
-        function raceOnce(system, prompt, onStatus, json) {
+        function aiRace(system, prompt, onStatus) {
             return new Promise((resolve, reject) => {
                 const ctrls = [];
-                let done = false, failed = 0, started = 0, lastErr = null, hedgeTimer = null;
+                let done = false, failed = 0, started = 0, hedgeTimer = null;
                 const finish = (fn, v) => { if (done) return; done = true; clearTimeout(hedgeTimer); ctrls.forEach(c => c.abort()); fn(v); };
                 const start = (model) => {
                     const c = new AbortController(); ctrls.push(c); started++;
-                    geminiOnce(model, system, prompt, json, c.signal)
+                    aiOnce(model, system, prompt, c.signal)
                         .then(t => finish(resolve, t))
                         .catch(e => {
                             if (e.name === 'AbortError') return;
-                            lastErr = e; failed++;
+                            failed++;
                             if (!e.busy) return finish(reject, e);
                             if (started < 2) { onStatus('서버가 붐벼서 가벼운 모델로 바로 전환했어요'); startHedge(); }
                             else if (failed >= started) finish(reject, e);
@@ -351,177 +802,404 @@ ${evidence}
             });
         }
 
-        async function callGemini(system, prompt, onStatus, json = true) {
-            try { return await raceOnce(system, prompt, onStatus, json); }
+        async function callAI(system, prompt, onStatus = () => {}) {
+            try { return await aiRace(system, prompt, onStatus); }
             catch (e) { if (!e.busy) throw e; }
             onStatus('잠시 후 한 번 더 시도하는 중…');
             await sleep(2000);
-            try { return await raceOnce(system, prompt, onStatus, json); }
+            try { return await aiRace(system, prompt, onStatus); }
             catch (e) { if (e.busy) throw new Error('구글 서버가 지금 많이 붐벼요. 1~2분 뒤 다시 눌러 주세요.'); throw e; }
         }
 
         function parseJSON(text) {
-            const t = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+            const t = String(text).trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
             try { return JSON.parse(t); } catch {}
-            const a = t.indexOf('{'), b = t.lastIndexOf('}');
-            if (a >= 0 && b > a) return JSON.parse(t.slice(a, b + 1));
+            const a = Math.min(...['{', '['].map(c => t.indexOf(c)).filter(i => i >= 0));
+            const b = Math.max(t.lastIndexOf('}'), t.lastIndexOf(']'));
+            if (isFinite(a) && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch {} }
             throw new Error('AI 응답을 해석하지 못했어요. 다시 시도해 주세요.');
         }
 
-        let lastFb = null;
-        let prevScore = null;
-        async function getAIFeedback() {
-            const area = document.getElementById('aiFbArea');
-            const btn = document.getElementById('aiFbBtn');
-            const script = document.getElementById('scriptBox').value.trim();
-            const role = document.getElementById('role').value;
-            const topic = getTopic();
-            const isModerator = role.startsWith('사회자');
+        // 로딩 화면에 경과 시간과 진행 상황 표시
+        function startLoadingTicker(statusId, firstNote) {
+            const t0 = Date.now(); let note = firstNote;
+            const tick = () => { const s = document.getElementById(statusId); if (s) s.textContent = `${Math.floor((Date.now() - t0) / 1000)}초 · ${note}`; };
+            const timer = setInterval(tick, 1000); tick();
+            return { set: t => { note = t; tick(); }, stop: () => clearInterval(timer) };
+        }
 
-            if (!GEMINI_API_KEY) {
-                area.innerHTML = `<div class="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl text-sm">API 키가 없어요. HTML 코드에서 <code class="font-mono bg-white px-1 rounded">GEMINI_API_KEY</code> 줄에 키를 넣어 주세요.</div>`;
+        /* ============================================================
+           TAB 2: AI 피드백 (Gemini 3 Flash & Structured JSON)
+           ============================================================ */
+        async function requestAIFeedback() {
+            const script = document.getElementById('scriptBox').value.trim();
+            const topic = getTopic();
+            const role = document.getElementById('role').value;
+
+            if (!script) {
+                showToast('분석할 대본을 먼저 작성해 주세요.', 'error');
+                switchTab('builderTab');
                 return;
             }
-            if (!script) { alert('대본을 먼저 만들거나 직접 써 주세요!'); document.getElementById('scriptBox').focus(); return; }
 
-            const criteria = isModerator
-                ? ['진행 안내의 명확성', '중립성', '발언 요약의 정확성', '순서·시간 안내', '전달력']
-                : ['주장의 명확성', '이유의 논리성', '근거의 객관성', '역할 수행', '전달력'];
+            const area = document.getElementById('aiFbArea');
+            const btn = document.getElementById('aiFbBtn');
+            btn.disabled = true; btn.classList.add('opacity-60');
+            document.getElementById('aiFbCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            area.innerHTML = `
+                <div class="text-center py-16 text-slate-500 space-y-3">
+                    <div class="w-10 h-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-2"></div>
+                    <h3 class="font-bold text-slate-800">Gemini 3 AI 코치가 대본을 정밀 분석하는 중입니다...</h3>
+                    <p class="text-xs text-slate-400">주장, 이유, 근거의 명확성과 역할 수행력을 다각도로 평가합니다.</p>
+                    <p id="aiFbStatus" class="text-xs text-emerald-600 font-mono"></p>
+                </div>`;
 
-            const system = '당신은 고등학생 토론 수업을 지도하는 토론 코치입니다. 학생 눈높이에 맞춰 친절하지만 구체적으로 피드백합니다. 학생이 스스로 고쳐 볼 수 있도록 무엇을 왜 바꿔야 하는지 설명합니다. 근거가 지어낸 것처럼 보이거나 출처가 불분명하면 반드시 지적하고, 학생이 직접 확인할 수 있는 자료 종류를 안내합니다. 존재가 확실하지 않은 통계나 연구를 새로 지어내지 않습니다. 고친 문장에는 대괄호([ ])를 절대 쓰지 않고, 출처 확인이 필요한 부분은 고친 문장이 아니라 설명(reason)에서 알려 줍니다. 반드시 JSON만 출력합니다.';
-            const prompt = `토론 주제: ${topic}
+            const systemPrompt = `당신은 대한민국 고등학교 토론 대회 심사위원이자 토론 코치입니다. 학생의 3:3 팀 토론 대본을 체계적으로 검토하고 개선점을 제안하십시오. 학생이 스스로 대본을 고치는 것이 목표이므로, 대본을 대신 다시 써 주지 말고 무엇을 왜 어떻게 고치면 좋을지 방향과 힌트를 줍니다. 예시 문장이 꼭 필요하면 한 문장 이내로 짧게만 보여 줍니다. 학생 눈높이에 맞춰 친절하지만 구체적으로 설명합니다. 근거의 출처가 불분명하거나 지어낸 것처럼 보이면 반드시 지적하고, 존재가 확실하지 않은 통계나 연구를 새로 지어내지 않습니다. 반드시 JSON만 출력합니다.`;
+            const userPrompt = `토론 주제: ${topic}
 역할: ${role}
-평가 기준(각 20점, 합계 100점): ${criteria.join(', ')}
 
-아래 ${isModerator ? '사회자 진행 대본' : '토론 발언 대본'}을 평가하고 보완해 주세요.
+아래 대본을 평가하고, 학생이 직접 고칠 수 있도록 보완 포인트를 알려 주세요. 세부 점수는 각 0~25점, 종합 점수는 0~100점입니다.
 
 출력 JSON 형식:
 {
-  "total": 0~100 정수,
-  "criteria": [${criteria.map(c => `{"name":"${c}","score":0~20 정수,"comment":"한 줄 평"}`).join(',')}],
+  "totalScore": 정수,
   "summary": "총평 2~3문장",
-  "strengths": ["잘한 점", ...] (2~3개),
-  "improvements": [{"title":"짧은 제목","reason":"왜 고쳐야 하는지","original":"대본에서 그대로 복사한 부분(글자 하나도 바꾸지 말 것)","revised":"고친 문장"}] (2~5개, 중요한 순)
+  "scores": { "areCompleteness": 정수, "logicalFlow": 정수, "persuasiveness": 정수, "roleAlignment": 정수 },
+  "strengths": ["돋보이는 강점", ...] (2~3개),
+  "improvements": [ { "point": "짧은 제목", "quote": "대본에서 고칠 부분을 글자 그대로 복사 (없으면 빈 문자열)", "reason": "왜 고쳐야 하는지", "suggestion": "어떻게 고치면 좋을지 방향·힌트 (완성 대본을 대신 써 주지 말 것)" } ] (2~5개, 중요한 순)
 }
 
 --- 대본 시작 ---
 ${script}
 --- 대본 끝 ---`;
 
-            lastFb = { system, script, topic, role };
-            btn.disabled = true;
-            area.innerHTML = `<div class="text-center py-16 text-slate-500 text-sm"><div class="w-8 h-8 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mx-auto mb-3"></div>AI가 대본을 분석하는 중…<div id="aiFbStatus" class="text-xs text-slate-400 mt-1">보통 5~15초 걸려요</div></div>`;
-            const t0 = Date.now();
-            let note = '보통 5~15초 걸려요';
-            const setStatus = t => { note = t; tick(); };
-            const tick = () => { const s = document.getElementById('aiFbStatus'); if (s) s.textContent = `${Math.floor((Date.now() - t0) / 1000)}초 · ${note}`; };
-            const ticker = setInterval(tick, 1000); tick();
-
+            const ticker = startLoadingTicker('aiFbStatus', '보통 10~30초 걸려요');
             try {
-                const d = parseJSON(await callGemini(system, prompt, setStatus));
-                (d.improvements || []).forEach(m => { if (m.revised) m.revised = stripBrackets(m.revised); });
-                lastFb.feedback = d;
-                renderAIFeedback(d);
-                area.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } catch (e) {
-                area.innerHTML = `<div class="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl text-sm"><b>피드백 실패:</b> ${escHTML(e.message)}</div>`;
+                const result = parseJSON(await callAI(systemPrompt, userPrompt, ticker.set));
+                result.scores = result.scores || {};
+                result.strengths = Array.isArray(result.strengths) ? result.strengths : [];
+                result.improvements = Array.isArray(result.improvements) ? result.improvements : [];
+                renderAIFeedbackResult(result);
+            } catch (err) {
+                console.error(err);
+                area.innerHTML = `
+                    <div class="bg-rose-50 border border-rose-200 p-6 rounded-2xl text-center text-rose-700 space-y-3">
+                        <div class="text-3xl">⚠️</div>
+                        <h3 class="font-bold text-rose-900">AI 피드백 생성 실패</h3>
+                        <p class="text-xs text-rose-600">${escHTML(err.message || '네트워크 상태를 확인해 주세요.')}</p>
+                        <div class="flex justify-center gap-2 pt-2">
+                            <button onclick="requestAIFeedback()" class="px-4 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-xl shadow hover:bg-rose-700">다시 시도하기</button>
+                        </div>
+                    </div>`;
             } finally {
-                clearInterval(ticker);
-                btn.disabled = false;
+                ticker.stop();
+                btn.disabled = false; btn.classList.remove('opacity-60');
             }
         }
 
-        function renderAIFeedback(d) {
+        function renderAIFeedbackResult(res) {
             const area = document.getElementById('aiFbArea');
-            const crit = Array.isArray(d.criteria) ? d.criteria : [];
-            const total = Number.isFinite(+d.total) ? Math.round(+d.total) : crit.reduce((a, c) => a + (+c.score || 0), 0);
-            const color = p => p >= 80 ? 'bg-emerald-500' : p >= 60 ? 'bg-indigo-500' : p >= 40 ? 'bg-amber-500' : 'bg-rose-500';
-            const diff = prevScore == null ? '' :
-                total > prevScore ? `<span class="text-sm font-bold text-emerald-600">▲ ${total - prevScore}</span>` :
-                total < prevScore ? `<span class="text-sm font-bold text-rose-500">▼ ${prevScore - total}</span>` :
-                `<span class="text-sm font-bold text-slate-400">－</span>`;
-            prevScore = total;
+            window.latestFeedback = res;
 
-            let h = `
-            <div>
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="text-4xl font-extrabold text-slate-900 whitespace-nowrap">${total}<span class="text-base font-medium text-slate-400"> / 100</span> ${diff}</div>
-                    <p class="text-sm text-slate-600 flex-1">${escHTML(d.summary || '')}</p>
+            let html = `
+            <div class="space-y-6">
+                <!-- 총점 & 총평 카드 -->
+                <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row items-center gap-6">
+                    <div class="text-center md:border-r md:border-slate-700 md:pr-6 min-w-[120px]">
+                        <div class="text-xs text-indigo-300 font-bold uppercase tracking-wider">종합 점수</div>
+                        <div class="text-5xl font-black text-amber-400 mt-1 font-mono">${escHTML(res.totalScore)}<span class="text-lg text-slate-400 font-normal">/100</span></div>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-base font-bold text-indigo-200 flex items-center gap-2">
+                            <span>💬</span> AI 코치의 총평
+                        </h3>
+                        <p class="text-sm text-slate-200 leading-relaxed font-normal">${escHTML(res.summary)}</p>
+                    </div>
                 </div>
+
+                <!-- 세부 영역 점수 지표 -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-center">
+                        <div class="text-xs font-bold text-slate-500">ARE 완성도</div>
+                        <div class="text-xl font-bold text-indigo-600 mt-1 font-mono">${escHTML(res.scores.areCompleteness ?? '-')}점</div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-center">
+                        <div class="text-xs font-bold text-slate-500">논리적 흐름</div>
+                        <div class="text-xl font-bold text-emerald-600 mt-1 font-mono">${escHTML(res.scores.logicalFlow ?? '-')}점</div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-center">
+                        <div class="text-xs font-bold text-slate-500">설득력/근거</div>
+                        <div class="text-xl font-bold text-amber-600 mt-1 font-mono">${escHTML(res.scores.persuasiveness ?? '-')}점</div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-center">
+                        <div class="text-xs font-bold text-slate-500">역할 적합성</div>
+                        <div class="text-xl font-bold text-violet-600 mt-1 font-mono">${escHTML(res.scores.roleAlignment ?? '-')}점</div>
+                    </div>
+                </div>
+
+                <!-- 강점 포인트 -->
+                <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl">
+                    <h4 class="font-bold text-emerald-900 text-sm mb-2 flex items-center gap-1.5">
+                        <span>👍</span> 돋보이는 강점 (Strengths)
+                    </h4>
+                    <ul class="text-xs text-emerald-900 space-y-1.5 list-disc list-inside font-medium">
+                        ${res.strengths.map(s => `<li>${escHTML(s)}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <!-- 보완점 리스트 -->
                 <div class="space-y-3">
-                    ${crit.map(c => {
-                        const s = Math.max(0, Math.min(20, +c.score || 0));
-                        return `<div>
-                            <div class="flex justify-between text-sm font-semibold text-slate-700"><span>${escHTML(c.name)}</span><span class="font-mono text-slate-400">${s}/20</span></div>
-                            <div class="h-2 bg-slate-100 rounded-full overflow-hidden mt-1"><div class="h-full ${color(s * 5)} rounded-full" style="width:${s * 5}%"></div></div>
-                            ${c.comment ? `<p class="text-xs text-slate-500 mt-1">${escHTML(c.comment)}</p>` : ''}
-                        </div>`;
-                    }).join('')}
+                    <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                        <span>🛠️</span> 보완 포인트 — 위 대본을 직접 고쳐 보세요
+                    </h4>
+                    ${res.improvements.map((item, idx) => `
+                        <div class="border border-slate-200 rounded-xl p-4 bg-white space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md">포인트 ${idx + 1}</span>
+                                <span class="text-xs font-bold text-slate-800">${escHTML(item.point)}</span>
+                            </div>
+                            <p class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100"><b>이유:</b> ${escHTML(item.reason)}</p>
+                            ${item.quote ? `<p class="text-xs text-rose-800 bg-rose-50/70 p-2.5 rounded-lg border border-rose-100"><b>고칠 부분:</b> "${escHTML(item.quote)}"</p>` : ''}
+                            <div class="text-xs text-emerald-800 bg-emerald-50/70 p-2.5 rounded-lg border border-emerald-100">
+                                <b>💡 이렇게 고쳐 보세요:</b> ${escHTML(item.suggestion)}
+                            </div>
+                            ${item.quote ? `<div class="flex justify-end"><button type="button" onclick="findInScript(${idx})" class="text-xs font-semibold px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600">🔍 대본에서 찾아 고치기</button></div>` : ''}
+                        </div>
+                    `).join('')}
                 </div>
+
             </div>`;
 
-            if (Array.isArray(d.strengths) && d.strengths.length) {
-                h += `<div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
-                    <h3 class="font-bold text-emerald-900 text-sm mb-2">👍 잘한 점</h3>
-                    <ul class="text-sm text-emerald-800 space-y-1 list-disc list-inside">${d.strengths.map(s => `<li>${escHTML(s)}</li>`).join('')}</ul>
-                </div>`;
-            }
-
-            if (Array.isArray(d.improvements) && d.improvements.length) {
-                h += `<div class="space-y-3"><h3 class="font-bold text-slate-900 text-sm">🛠 보완할 점 <span class="font-normal text-xs text-slate-400">— 직접 고쳐 보거나, 예시를 적용해 보세요</span></h3>
-                    ${d.improvements.map((m, i) => `
-                    <div class="border border-slate-200 rounded-xl p-4" id="imp-${i}">
-                        <div class="font-bold text-sm text-slate-900 mb-1">${i + 1}. ${escHTML(m.title || '')}</div>
-                        ${m.reason ? `<p class="text-sm text-slate-600 mb-2">${escHTML(m.reason)}</p>` : ''}
-                        ${m.original ? `<div class="text-sm bg-rose-50 text-rose-800 line-through decoration-rose-300 p-2 rounded-lg mb-1 whitespace-pre-line">${escHTML(m.original)}</div>` : ''}
-                        ${m.revised ? `<div class="text-sm bg-emerald-50 text-emerald-800 p-2 rounded-lg whitespace-pre-line"><span class="text-xs font-bold text-emerald-600">예시 </span>${escHTML(m.revised)}</div>` : ''}
-                        <div class="flex justify-end gap-2 mt-2">
-                            ${m.original ? `<button type="button" onclick="findInScript(${i})" class="text-xs font-semibold px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50">🔍 대본에서 찾기</button>` : ''}
-                            ${m.original && m.revised ? `<button type="button" onclick="applyImprovement(${i})" class="text-xs font-semibold px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100">예시 적용</button>` : ''}
-                        </div>
-                    </div>`).join('')}
-                </div>`;
-            }
-
-            area.innerHTML = h;
+            area.innerHTML = html;
         }
 
-        // 원문 위치를 찾아 왼쪽 편집기에서 선택(하이라이트)
-        function locate(original) {
+        // 보완 포인트가 가리키는 부분을 대본 편집기에서 선택해 보여 주기
+        function findInScript(idx) {
+            const item = window.latestFeedback?.improvements?.[idx];
             const box = document.getElementById('scriptBox');
-            let i = box.value.indexOf(original);
-            if (i >= 0) return [i, i + original.length];
-            const re = new RegExp(original.trim().split(/\s+/).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'));
-            const m = re.exec(box.value);
-            return m ? [m.index, m.index + m[0].length] : null;
-        }
-        function findInScript(i) {
-            const m = lastFb?.feedback?.improvements?.[i];
-            const box = document.getElementById('scriptBox');
-            const pos = m && locate(m.original);
-            if (!pos) { alert('대본에서 해당 부분을 찾지 못했어요. 이미 고쳤을 수도 있어요!'); return; }
-            box.focus();
-            box.setSelectionRange(pos[0], pos[1]);
-            // 선택한 위치가 보이도록 스크롤
-            const before = box.value.slice(0, pos[0]).split('\n').length;
-            const lineH = parseFloat(getComputedStyle(box).lineHeight) || 22;
-            box.scrollTop = Math.max(0, (before - 3) * lineH);
+            if (!item || !item.quote) return;
+            let start = box.value.indexOf(item.quote), end = start + item.quote.length;
+            if (start < 0) {
+                const re = new RegExp(item.quote.trim().split(/\s+/).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'));
+                const m = re.exec(box.value);
+                if (!m) { showToast('대본에서 해당 부분을 찾지 못했어요. 이미 고쳤을 수도 있어요!', 'info'); return; }
+                start = m.index; end = start + m[0].length;
+            }
             box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        function applyImprovement(i) {
-            const m = lastFb?.feedback?.improvements?.[i];
-            const box = document.getElementById('scriptBox');
-            const pos = m && locate(m.original);
-            if (!pos) { alert('대본에서 해당 부분을 찾지 못했어요. 이미 고쳤을 수도 있어요!'); return; }
-            setScript(box.value.slice(0, pos[0]) + m.revised + box.value.slice(pos[1]));
-            const card = document.getElementById('imp-' + i);
-            if (card) card.classList.add('opacity-50');
             box.focus();
-            box.setSelectionRange(pos[0], pos[0] + m.revised.length);
+            box.setSelectionRange(start, end);
+            const lineH = parseFloat(getComputedStyle(box).lineHeight) || 22;
+            box.scrollTop = Math.max(0, (box.value.slice(0, start).split('\n').length - 3) * lineH);
+            showToast('선택된 부분을 내 말로 고쳐 보세요.', 'info');
         }
 
-        renderEmptyFeedback();
-        updateMeta();
+        /* ============================================================
+           TAB 3: 예상 반박 & 재반박 시뮬레이터 (Gemini 3 Flash)
+           ============================================================ */
+        async function generateRebuttals() {
+            const script = document.getElementById('scriptBox').value.trim();
+            const topic = getTopic();
+            const role = document.getElementById('role').value;
+
+            if (!script) {
+                showToast('대본을 먼저 작성해 주세요.', 'error');
+                switchTab('builderTab');
+                return;
+            }
+
+            switchTab('rebuttalTab');
+            const area = document.getElementById('rebuttalArea');
+            area.innerHTML = `
+                <div class="text-center py-16 text-slate-500 space-y-3">
+                    <div class="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin mx-auto mb-2"></div>
+                    <h3 class="font-bold text-slate-800">상대팀의 입장에서 허점을 공격하고 반박을 구성하고 있습니다...</h3>
+                    <p class="text-xs text-slate-400">3가지 핵심 예상 반박과 재반박 논리를 생성 중입니다.</p>
+                    <p id="rebuttalStatus" class="text-xs text-violet-600 font-mono"></p>
+                </div>`;
+
+            const systemPrompt = `당신은 3:3 팀 토론의 상대팀 베테랑 토론자입니다. 상대방 대본의 논리적 약점, 근거의 한계, 현실적 부작용을 매섭게 공략할 반박 논리를 구성하고, 그에 대한 대비책(재반박)까지 조언하세요. 존재가 확실하지 않은 통계나 연구를 지어내지 않습니다. 반드시 JSON만 출력합니다.`;
+            const userPrompt = `주제: ${topic}
+발언자 역할: ${role}
+
+아래 대본에 대해 상대팀이 할 핵심 예상 반박 3가지와 재반박 전략을 만들어 주세요.
+
+출력 JSON 형식:
+{ "rebuttals": [ { "counterArgumentTitle": "짧은 제목", "counterArgumentDetail": "상대가 실제로 할 법한 질문/반박 문장", "rebuttalStrategy": "추천 재반박 방어 전략" } ] }
+
+--- 대본 시작 ---
+${script}
+--- 대본 끝 ---`;
+
+            const ticker = startLoadingTicker('rebuttalStatus', '보통 10~30초 걸려요');
+            try {
+                const parsed = parseJSON(await callAI(systemPrompt, userPrompt, ticker.set));
+                const items = Array.isArray(parsed) ? parsed : (parsed.rebuttals || parsed.items || []);
+                if (!items.length) throw new Error('반박 데이터 생성 실패');
+                renderRebuttalResults(items);
+            } catch (err) {
+                console.error(err);
+                area.innerHTML = `
+                    <div class="bg-rose-50 border border-rose-200 p-6 rounded-2xl text-center text-rose-700 space-y-3">
+                        <div class="text-3xl">⚠️</div>
+                        <h3 class="font-bold">반박 시뮬레이션 생성 실패</h3>
+                        <p class="text-xs text-rose-600">${escHTML(err.message)}</p>
+                        <button onclick="generateRebuttals()" class="px-4 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-xl shadow hover:bg-rose-700">다시 시도하기</button>
+                    </div>`;
+            } finally {
+                ticker.stop();
+            }
+        }
+
+        function renderRebuttalResults(items) {
+            const area = document.getElementById('rebuttalArea');
+            let html = `<div class="space-y-4">`;
+
+            items.forEach((item, idx) => {
+                html += `
+                <div class="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm hover:border-violet-300 transition space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-violet-100 text-violet-700 text-xs font-bold flex items-center justify-center font-mono">${idx + 1}</span>
+                        <h3 class="font-bold text-slate-900 text-sm">상대팀 예상 공격: ${escHTML(item.counterArgumentTitle)}</h3>
+                    </div>
+                    <div class="bg-rose-50/70 p-3 rounded-xl border border-rose-100 text-xs text-rose-900 leading-relaxed font-medium">
+                        <b>🎯 상대의 예상 질문/반박:</b> "${escHTML(item.counterArgumentDetail)}"
+                    </div>
+                    <div class="bg-emerald-50/70 p-3 rounded-xl border border-emerald-100 text-xs text-emerald-900 leading-relaxed font-medium">
+                        <b>🛡️ 추천 재반박 방어 전략:</b> ${escHTML(item.rebuttalStrategy)}
+                    </div>
+                </div>`;
+            });
+
+            html += `</div>`;
+            area.innerHTML = html;
+        }
+
+        /* ============================================================
+           TAB 4: 실전 스피치 타이머 & Gemini 2.5 TTS
+           ============================================================ */
+        let timerInterval = null;
+        let timerSeconds = 180;
+        let timerMax = 180;
+        let isTimerRunning = false;
+
+        function setTimer(secs) {
+            resetTimer();
+            timerSeconds = secs;
+            timerMax = secs;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            
+            const circumference = 2 * Math.PI * 88;
+            const progress = timerSeconds / timerMax;
+            const offset = circumference * (1 - progress);
+            document.getElementById('timerRing').style.strokeDashoffset = offset;
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('startTimerBtn');
+            const status = document.getElementById('timerStatus');
+
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                btn.textContent = '▶ 시작';
+                btn.className = 'w-28 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition text-sm';
+                status.textContent = 'Paused';
+                status.className = 'text-xs font-bold text-amber-500 mt-1 uppercase';
+            } else {
+                if (timerSeconds <= 0) return;
+                isTimerRunning = true;
+                btn.textContent = '⏸ 일시정지';
+                btn.className = 'w-28 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow transition text-sm';
+                status.textContent = 'Speaking...';
+                status.className = 'text-xs font-bold text-emerald-500 mt-1 uppercase animate-pulse';
+
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        btn.textContent = '▶ 시작';
+                        btn.className = 'w-28 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition text-sm';
+                        status.textContent = 'Finished';
+                        status.className = 'text-xs font-bold text-rose-500 mt-1 uppercase';
+                        showToast('발언 시간이 종료되었습니다!', 'info');
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSeconds = timerMax;
+            const btn = document.getElementById('startTimerBtn');
+            btn.textContent = '▶ 시작';
+            btn.className = 'w-28 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition text-sm';
+            document.getElementById('timerStatus').textContent = 'Ready';
+            document.getElementById('timerStatus').className = 'text-xs font-bold text-slate-400 mt-1 uppercase';
+            updateTimerDisplay();
+        }
+
+        /* ------------------------------------------------------------
+           음성 낭독 (브라우저 내장 Web Speech API · 별도 API 사용량 없음)
+           ------------------------------------------------------------ */
+        let koVoices = [];
+        function loadVoices() {
+            if (!('speechSynthesis' in window)) return;
+            koVoices = speechSynthesis.getVoices().filter(v => /^ko/i.test(v.lang));
+            const sel = document.getElementById('ttsVoice');
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">기본 한국어 음성</option>' +
+                koVoices.map(v => `<option value="${escHTML(v.name)}">${escHTML(v.name)}</option>`).join('');
+            sel.value = koVoices.some(v => v.name === cur) ? cur : '';
+        }
+
+        function generateTTSAudio() {
+            const script = document.getElementById('scriptBox').value.trim();
+            if (!script) { showToast('읽어 줄 대본이 없습니다.', 'error'); return; }
+            if (!('speechSynthesis' in window)) { showToast('이 브라우저는 음성 읽기를 지원하지 않아요. 크롬이나 엣지에서 열어 주세요.', 'error'); return; }
+
+            speechSynthesis.cancel();
+            const voiceName = document.getElementById('ttsVoice').value;
+            const rate = parseFloat(document.getElementById('ttsRate').value) || 1;
+            // 긴 대본은 문단 단위로 나눠 읽기 (브라우저에 따라 긴 문장이 끊기는 문제 방지)
+            const chunks = script.split(/\n\s*\n/).map(c => c.trim()).filter(Boolean);
+            const voice = koVoices.find(v => v.name === voiceName) || koVoices[0];
+            if (!voice) showToast('한국어 음성이 없어 기본 음성으로 읽어요.', 'info');
+
+            chunks.forEach((text, i) => {
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'ko-KR'; u.rate = rate;
+                if (voice) u.voice = voice;
+                if (i === chunks.length - 1) u.onend = () => showToast('낭독이 끝났어요.', 'success');
+                speechSynthesis.speak(u);
+            });
+            showToast('대본을 읽기 시작합니다.', 'success');
+        }
+
+        function stopTTS() {
+            if ('speechSynthesis' in window) speechSynthesis.cancel();
+        }
+
+        /* ============================================================
+           페이지 초기화
+           ============================================================ */
+        window.onload = function() {
+            handleTopicChange();
+            toggleRoleFields();
+            updateMeta();
+            updateTimerDisplay();
+            loadVoices();
+            if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
+        };
     </script>
 </body>
 </html>
